@@ -1,6 +1,6 @@
 # Capybara - A noobish, humble and umpretentious tool for process simulation using simultaneous equation solving (DAE)
 
-!()[https://github.com/hfsf/capybara/blob/master/capybara_mod.png]
+!(https://github.com/hfsf/capybara/blob/master/docs/imgs/capybara_mod.png)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Build Status](https://travis-ci.com/hfsf/capybara.svg?branch=master)](https://travis-ci.com/hfsf/capybara)
