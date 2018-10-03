@@ -3,8 +3,7 @@ A class-container for the problems defined, holding all the equations in one pla
 """
 
 import numpy as np
-import daetools.pyDAE as pydae
-
+from daetools.pyDAE import *
 
 class Problem:
 
@@ -81,6 +80,6 @@ class Problem:
         :rtype: int
         """
 
-        return(len(self.processes.keys()))
+        return(len(self.processes.keys())) 
 
 
