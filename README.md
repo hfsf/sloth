@@ -1,6 +1,6 @@
 # Capybara - A noobish, humble and umpretentious tool for process simulation using simultaneous equation solving
 
-##Capybara aims to be:
+## Capybara aims to be:
 
 * Simple, as the application scenario are intendly restricted (eg:process simulation using simultaneous equation solving)
 * Easy to be extended, as a minimal workin kernel is provided (Process connection, Degrees of Freedom Analysis, Support for external optimizers, etc)
@@ -14,5 +14,5 @@
 
 ## Contact
 
-One can contact me through the email <hanniel.freitas@ifrn.edu.br>.
+For further questions, suggestions and help support (please! ;) ) contact me through: <hanniel.freitas@ifrn.edu.br>.
 
