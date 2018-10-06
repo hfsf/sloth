@@ -6,7 +6,6 @@ Define the dimensional unit for ulterior utilization (eg:Variable,Parameter)
 """
 import copy
 
-
 class Unit:
 
     null_dimension = {'m':0,'kg':0,'s':0,'A':0,'K':0,'mol':0,'cd':0}
@@ -189,3 +188,33 @@ class Unit:
         new_unit = self._returnProtoUnit(dimension_dict=new_dimension)
 
         return(new_unit)
+
+    def _checkDimensionalCoherence(self, other_unit):
+
+        """
+        Function for quick checking of dimensional coherence between two units.
+
+        :param Unit other_unit:
+        Second unit to be tested
+
+        :rtype bool:
+        Return if the dimension between both units are equal.
+        """
+
+        keys_ = sorted(self.dimension.keys())
+
+        """
+        Syntatic convenience vodoo for conversion of dimensions of both units to one single str object.
+        Thus the comparison between the two Unit objects is easy
+
+        [str() for ...] -> List of each dimension converted to str
+
+        "".join() -> Concatenation of str objects in one single string
+        
+        """
+
+        dim_1 = "".join([str(self.dimension[idx_i]) for idx_i in keys_])
+
+        dim_2 = "".join([str(other_unit.dimension[idx_i]) for idx_i in keys_])
+
+        return(dim_1==dim_2)
