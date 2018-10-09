@@ -17,7 +17,7 @@ class DimensionalCoherenceError(Exception):
 
         msg = "Dimensions are incohent \n(" + \
                str(self.unit_1.dimension)   + \
-               " != "                       + \
+               "\n != \n"                       + \
                str(self.unit_2.dimension)   + \
                ")."
 

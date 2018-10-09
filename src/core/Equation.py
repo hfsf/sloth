@@ -35,3 +35,8 @@ class Equation:
 
         self.description = description
 
+        #Residual of the current equation
+
+        self.residual = None
+
+

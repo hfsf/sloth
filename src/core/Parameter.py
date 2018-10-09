@@ -19,7 +19,7 @@ class Parameter:
     """
 
 
-    def __init__(self, name, units , description):
+    def __init__(self, name, units , description="", value=0):
 
         """
         Initial definition.

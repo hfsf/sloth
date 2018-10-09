@@ -1,10 +1,191 @@
 #*coding:utf-8*
 
 """
-Define unit class
-Define the dimensional unit for ulterior utilization (eg:Variable,Parameter)
+Define Unit class, for ulterior utilization (eg:Variable,Parameter)
+
+Define the UnitContainingObject (UCO), base-class for all unit-containg objects (Variables, Parameters, Constants)
 """
+
 import copy
+
+class UnitContainingObject:
+
+       """
+
+       Return an Unit-Containing object (UCO) class with given name, description and other variables (defaults to "", False and None, when aplicable). Used for return of an Variable object as the result of variable operations, with dimension given by units
+
+       :param str name:
+       Name for the current UCO
+
+       :param Unit units:
+       Definition of dimensional unit of current UCO
+
+       :param str description:
+       Description for the present UCO. Defauls to ""
+
+       """
+
+    def __init__(self, name, units, description = "", value = 0.):
+
+        """
+
+        Initial definition.
+
+        :param str name:
+        Name for the current Unit-Containing Object (UCO)
+
+        :param Unit units:
+        Definition of dimensional unit of current UCO
+
+        :param str description:
+        Description for the present UCO. Defauls to ""
+
+        :param float value:
+        Value of the current UCO. Defaults to 0.  
+
+        """
+
+        self.name = name
+
+        self.units = units
+
+        self.description = description
+
+        self.value = value
+
+
+    def _returnProtoObject(self, name="", units={""}, description = "", value = 0):
+
+       """
+
+       Return a Proto Unit-Containing object (UCO) class with given name, description and other variables (defaults to "", False and None, when aplicable). Used for return of an Variable object as the result of variable operations, with dimension given by units
+
+       :param str name:
+       Name for the current UCO
+
+       :param Unit units:
+       Definition of dimensional unit of current UCO
+
+       :param str description:
+       Description for the present UCO. Defauls to ""
+
+       """
+
+        return( self.__class__(name=name, units=units, description=description, value = value) )
+
+    def __add__(self, other_var):
+
+        """
+
+        Overloaded function for summation of two unit-containing-objects.
+        The __add__ function calls self.units._checkDimensionalCoherence which uses objects
+        'dimensions'. Also, uses object 'value'. Thus, parameters and constants must have this objects as their instances when summed.
+
+        :param Variable other_var:
+        Second Variable object to perform arithmetic operation.
+
+        :rtype Variable new_var:
+        Proto-variable returned as the result of the arithmetical operation
+
+        """
+
+        if self.units._checkDimensionalCoherence(other_var.units) == True:
+
+            # Dimensional coherence confirmed. Insert here commands
+
+            new_var = self._returnProtoVariable(units = self.units, value = self.value+other_var.value)
+
+            return(new_var) 
+
+        else:
+
+            raise(Errors.DimensionalCoherenceError(self.units, other_var.units))
+
+    def __sub__(self, other_var):
+
+        """
+
+        Overloaded function for subtraction of two unit-containing-objects.
+        The __sub__ function calls self.units._checkDimensionalCoherence which uses objects
+        'dimensions'. Also, uses object 'value'. Thus, parameters and constants must have this objects as their instances when subtracted.
+
+        :param Variable other_var:
+        Second Variable object to perform arithmetic operation.
+
+        :rtype Variable new_var:
+        Proto-variable returned as the result of the arithmetical operation
+
+        """
+
+        if self.units._checkDimensionalCoherence(other_var.units) == True:
+
+            # Dimensional coherence confirmed. Insert here commands
+
+            new_var = self._returnProtoVariable(units = self.units, value = self.value+other_var.value)
+
+            return(new_var) 
+
+        else:
+
+            raise(Errors.DimensionalCoherenceError(self.units, other_var.units))
+
+    def __mul__(self, other_var):
+
+        """
+
+        Overloaded function for multiplication of two unit-containing-objects.
+        The __mul__ function does not requires dimensional coherence, but resultant variable units should be modified
+
+        :param Variable other_var:
+        Second Variable object to perform arithmetic operation.
+
+        :rtype Variable new_var:
+        Proto-variable returned as the result of the arithmetical operation
+
+        """
+
+        new_var = self._returnProtoVariable(units = self.units*other_var.units, value = self.value*other_var.value)
+
+        return(new_var) 
+
+
+    def __div__(self, other_var):
+
+        """
+
+        Overloaded function for division of two unit-containing-objects.
+        The __div__ function does not requires dimensional coherence, but resultant variable units should be modified
+
+        :param Variable other_var:
+        Second Variable object to perform arithmetic operation.
+
+        :rtype Variable new_var:
+        Proto-variable returned as the result of the arithmetical operation
+
+        """
+
+        new_var = self._returnProtoVariable(units = self.units/other_var.units, value = self.value/other_var.value)
+
+        return(new_var) 
+
+    def __pow__(self, power):
+
+        """
+
+        Overloaded function for exponentiation of one unit-containing-object.
+        The __pow__ function does not requires dimensional coherence, but resultant variable units should be modified
+
+        :param float power:
+        Power for operation with the unit(self).
+
+        :rtype Variable new_var:
+        Proto-variable returned as the result of the arithmetical operation
+
+        """
+
+        new_var = self._returnProtoVariable(units = self.units**power, value = self.value**power)
+
+        return(new_var) 
 
 class Unit:
 
