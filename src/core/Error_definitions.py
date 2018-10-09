@@ -1,11 +1,28 @@
 """
 Defines overloaded operators for basic mathematical operations over unit-containing members (Constant, Parameter, Variables)
 """
+class NonDimensionalArgumentError(Exception):
+
+    """
+    Error raised when a non-dimensional argument was expected but a dimensional one was provided.
+    Typically occurs in transcendental functions (log, log10, sin, cos, etc...)
+    """
+
+    def __init__(self, unit):
+
+        self.unit = unit
+
+    def __str__(self):
+
+        msg = "A dimensionless argument was expected \n" + \
+              str(self.unit.dimension)
+
+        return(msg)
 
 class DimensionalCoherenceError(Exception):
 
     """
-    Error raised when two non-coherent dimensions are summed
+    Error raised when two non-coherent dimensions are summed or subtracted
     """
     def __init__(self, unit_1, unit_2):
 
