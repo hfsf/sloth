@@ -6,11 +6,9 @@ NonDimensionalArgument error. This can be avoided with the argument ignore_dimen
 """
 
 from numpy import log, log10, exp, abs, sin, cos, tan
-import copy
+from copy import copy
 import ErrorDefinitions as Errors
 import Unit
-
-dimless_ = Unit.Unit("dimless", Unit.null_dimension, "a generic dimensionless unit")
 
 def Log(obj, ignore_dimensions=False):
 
@@ -18,7 +16,7 @@ def Log(obj, ignore_dimensions=False):
     Computes the natural logarithm (neper) of an Quantity.
     The function uses objects 'dimensions' and 'value' from obj.
     By default, If ignore_dimensions
-    THe value is calculated using np.log
+    THe value is calculated using log
 
     :param [Variable, Parameter, Constant] obj:
     Quantity
@@ -30,13 +28,13 @@ def Log(obj, ignore_dimensions=False):
 
     if ignore_dimensions != True:
 
-        if dimless_._checkDimensionalCoherence(obj.units) == True:
+        if obj.units._isDimless_() == True:
 
             # Dimensional coherence confirmed. Insert here commands
 
             res = copy(obj)
 
-            res.value = np.log(obj.value)
+            res.value = log(obj.value)
 
         else:
 
@@ -46,7 +44,7 @@ def Log(obj, ignore_dimensions=False):
 
         res = copy(obj)
 
-        res.value = np.log(obj.value)
+        res.value = log(obj.value)
 
     return(res)
 
@@ -57,7 +55,7 @@ def Log10(obj, ignore_dimensions=False):
     Computes the logarithm of base-10 of an Quantity.
     The function uses objects 'dimensions' and 'value' from obj.
     By default, If ignore_dimensions
-    THe value is calculated using np.log
+    THe value is calculated using log
 
     :param [Variable, Parameter, Constant] obj:
     Quantity
@@ -69,13 +67,13 @@ def Log10(obj, ignore_dimensions=False):
 
     if ignore_dimensions != True:
 
-        if dimless_._checkDimensionalCoherence(obj.units) == True:
+        if obj.units._isDimless_() == True:
 
             # Dimensional coherence confirmed. Insert here commands
 
             res = copy(obj)
 
-            res.value = np.log10(obj.value)
+            res.value = log10(obj.value)
 
         else:
 
@@ -85,7 +83,7 @@ def Log10(obj, ignore_dimensions=False):
 
         res = copy(obj)
 
-        res.value = np.log10(obj.value)
+        res.value = log10(obj.value)
 
     return(res)
 
@@ -96,7 +94,7 @@ def Exp(obj, ignore_dimensions=False):
     Computes the exponential function of an Quantity.
     The function uses objects 'dimensions' and 'value' from obj.
     By default, If ignore_dimensions
-    THe value is calculated using np.log
+    THe value is calculated using log
 
     :param [Variable, Parameter, Constant] obj:
     Quantity
@@ -108,13 +106,13 @@ def Exp(obj, ignore_dimensions=False):
 
     if ignore_dimensions != True:
 
-        if dimless_._checkDimensionalCoherence(obj.units) == True:
+        if obj.units._isDimless_() == True:
 
             # Dimensional coherence confirmed. Insert here commands
 
             res = copy(obj)
 
-            res.value = np.exp(obj.value)
+            res.value = exp(obj.value)
 
         else:
 
@@ -124,7 +122,7 @@ def Exp(obj, ignore_dimensions=False):
 
         res = copy(obj)
 
-        res.value = np.exp(obj.value)
+        res.value = exp(obj.value)
 
     return(res)
 
@@ -135,7 +133,7 @@ def Abs(obj, ignore_dimensions=False):
     Computes the absolute value of an Quantity.
     The function uses objects 'dimensions' and 'value' from obj.
     By default, If ignore_dimensions
-    THe value is calculated using np.log
+    THe value is calculated using log
 
     :param [Variable, Parameter, Constant] obj:
     Quantity
@@ -147,13 +145,13 @@ def Abs(obj, ignore_dimensions=False):
 
     if ignore_dimensions != True:
 
-        if dimless_._checkDimensionalCoherence(obj.units) == True:
+        if obj.units._isDimless_() == True:
 
             # Dimensional coherence confirmed. Insert here commands
 
             res = copy(obj)
 
-            res.value = np.abs(obj.value)
+            res.value = abs(obj.value)
 
         else:
 
@@ -163,7 +161,7 @@ def Abs(obj, ignore_dimensions=False):
 
         res = copy(obj)
 
-        res.value = np.abs(obj.value)
+        res.value = abs(obj.value)
 
     return(res)
 
@@ -174,7 +172,7 @@ def Sin(obj, ignore_dimensions=False):
     Computes the sin value of an Quantity.
     The function uses objects 'dimensions' and 'value' from obj.
     By default, If ignore_dimensions
-    THe value is calculated using np.log
+    THe value is calculated using log
 
     :param [Variable, Parameter, Constant] obj:
     Quantity
@@ -186,13 +184,13 @@ def Sin(obj, ignore_dimensions=False):
 
     if ignore_dimensions != True:
 
-        if dimless_._checkDimensionalCoherence(obj.units) == True:
+        if obj.units._isDimless_() == True:
 
             # Dimensional coherence confirmed. Insert here commands
 
             res = copy(obj)
 
-            res.value = np.sin(obj.value)
+            res.value = sin(obj.value)
 
         else:
 
@@ -202,7 +200,7 @@ def Sin(obj, ignore_dimensions=False):
 
         res = copy(obj)
 
-        res.value = np.sin(obj.value)
+        res.value = sin(obj.value)
 
     return(res)
 
@@ -213,7 +211,7 @@ def Cos(obj, ignore_dimensions=False):
     Computes the cosin value of an Quantity.
     The function uses objects 'dimensions' and 'value' from obj.
     By default, If ignore_dimensions
-    THe value is calculated using np.log
+    THe value is calculated using log
 
     :param [Variable, Parameter, Constant] obj:
     Quantity
@@ -225,13 +223,13 @@ def Cos(obj, ignore_dimensions=False):
 
     if ignore_dimensions != True:
 
-        if dimless_._checkDimensionalCoherence(obj.units) == True:
+        if obj.units._isDimless_() == True:
 
             # Dimensional coherence confirmed. Insert here commands
 
             res = copy(obj)
 
-            res.value = np.cos(obj.value)
+            res.value = cos(obj.value)
 
         else:
 
@@ -241,7 +239,7 @@ def Cos(obj, ignore_dimensions=False):
 
         res = copy(obj)
 
-        res.value = np.cos(obj.value)
+        res.value = cos(obj.value)
 
     return(res)
 
@@ -252,7 +250,7 @@ def Tan(obj, ignore_dimensions=False):
     Computes the tangent of an Quantity.
     The function uses objects 'dimensions' and 'value' from obj.
     By default, If ignore_dimensions
-    THe value is calculated using np.log
+    THe value is calculated using log
 
     :param [Variable, Parameter, Constant] obj:
     Quantity
@@ -264,13 +262,13 @@ def Tan(obj, ignore_dimensions=False):
 
     if ignore_dimensions != True:
 
-        if dimless_._checkDimensionalCoherence(obj.units) == True:
+        if obj.units._isDimless_() == True:
 
             # Dimensional coherence confirmed. Insert here commands
 
             res = copy(obj)
 
-            res.value = np.tan(obj.value)
+            res.value = tan(obj.value)
 
         else:
 
@@ -280,6 +278,6 @@ def Tan(obj, ignore_dimensions=False):
 
         res = copy(obj)
 
-        res.value = np.tan(obj.value)
+        res.value = tan(obj.value)
 
     return(res)

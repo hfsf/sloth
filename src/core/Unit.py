@@ -250,6 +250,23 @@ class Unit(object): #New-style class syntax
 
         self._reEvalDimensions(dimension_dict)
 
+    def _isDimless_(self):
+
+        """
+
+        Check if the current Unit object is adimensional.
+
+        :rtype Bool is_dimless:
+        Boolean return of the function, checking if the unit is adimensional or not
+
+        """
+
+        keys_ = sorted(self.dimension.keys())
+
+        is_dimless = all([float(self.dimension[idx_i]) == 0. for idx_i in keys_])
+
+        return(is_dimless)
+
     def _returnProtoUnit(self, name="", dimension_dict={""}, description = ""):
 
         """

@@ -6,7 +6,8 @@ Define the ExpressionTree class, that holds capabilities to process arbitrary op
 
 from anytree import NodeMixin, RenderTree, PreOrderIter
 import ErrorDefinitions as Errors
- 
+import math_functions 
+
 class base_(object):
 
     """
@@ -427,3 +428,9 @@ class EquationNode(object):
         node_2 = arguments[1]        
 
         self.base_object = node_1.base_object ** node_2.base_object
+
+    def Log(self, arguments):
+
+        node = arguments[0]
+
+        self.base_object = math_functions.Log( node.base_object )
