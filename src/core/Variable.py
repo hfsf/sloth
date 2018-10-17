@@ -2,10 +2,10 @@
 Define variable class.
 """
 
-from Unit import UnitContainingObject as UCO
+from Unit import Quantity
 import Error_definitions as Errors
 
-class Variable(UCO):
+class Variable(Quantity):
 
     """
 
@@ -76,4 +76,3 @@ class Variable(UCO):
 
         self.upperBound = upperBound
 
-        

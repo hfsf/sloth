@@ -1,18 +1,18 @@
 """
-Define parameter class.
+Define constant class.
 """
 
-from Unit import Quantity
+from Unit import UnitContainingObject as UCO
 import numpy as np
 
 
-class Parameter(Quantity):
+class Constant(UCO):
 
     """
 
-    Parameter class definition, that holds capabilities for:
-    - Parameter definition, including its units for posterior dimensional coherence analysis
-    - Parameter operations using overloaded mathematical operators, making possible an almost-writing-syntax (eg: a() + b() )
+    Constant(Urameter class definition, that holds capabilities for:
+    - Constant(Urameter definition, including its units for posterior dimensional coherence analysis
+    - Constant(Urameter operations using overloaded mathematical operators, making possible an almost-writing-syntax (eg: a() + b() )
 
     * TODO: - Overload mathematical operators (call, add, subtract, multiply, divide) with dimensional analysis coherence    
 
@@ -27,13 +27,13 @@ class Parameter(Quantity):
         Initial definition.
 
         :param str name:
-        Name for the current parameter
+        Name for the current constant
 
         :param Unit units:
-        Definition of dimensional unit of current parameter
+        Definition of dimensional unit of current constant
 
         :param str description:
-        Description for the present parameter. Defauls to ""
+        Description for the present constant. Defauls to ""
 
         """
 

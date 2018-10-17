@@ -12,16 +12,16 @@ import Unit
 
 dimless_ = Unit.Unit("dimless", Unit.null_dimension, "a generic dimensionless unit")
 
-def log(obj, ignore_dimensions=False):
+def Log(obj, ignore_dimensions=False):
 
     """
-    Computes the natural logarithm (neper) of an unit-containing object.
+    Computes the natural logarithm (neper) of an Quantity.
     The function uses objects 'dimensions' and 'value' from obj.
     By default, If ignore_dimensions
     THe value is calculated using np.log
 
     :param [Variable, Parameter, Constant] obj:
-    Unit-containing object
+    Quantity
 
     :rtype Object-like res:
     Resultant object, with the same type as the input argument.
@@ -51,16 +51,16 @@ def log(obj, ignore_dimensions=False):
     return(res)
 
 
-def log10(obj, ignore_dimensions=False):
+def Log10(obj, ignore_dimensions=False):
 
     """
-    Computes the logarithm of base-10 of an unit-containing object.
+    Computes the logarithm of base-10 of an Quantity.
     The function uses objects 'dimensions' and 'value' from obj.
     By default, If ignore_dimensions
     THe value is calculated using np.log
 
     :param [Variable, Parameter, Constant] obj:
-    Unit-containing object
+    Quantity
 
     :rtype Object-like res:
     Resultant object, with the same type as the input argument.
@@ -90,16 +90,16 @@ def log10(obj, ignore_dimensions=False):
     return(res)
 
 
-def exp(obj, ignore_dimensions=False):
+def Exp(obj, ignore_dimensions=False):
 
     """
-    Computes the exponential function of an unit-containing object.
+    Computes the exponential function of an Quantity.
     The function uses objects 'dimensions' and 'value' from obj.
     By default, If ignore_dimensions
     THe value is calculated using np.log
 
     :param [Variable, Parameter, Constant] obj:
-    Unit-containing object
+    Quantity
 
     :rtype Object-like res:
     Resultant object, with the same type as the input argument.
@@ -129,16 +129,16 @@ def exp(obj, ignore_dimensions=False):
     return(res)
 
 
-def abs(obj, ignore_dimensions=False):
+def Abs(obj, ignore_dimensions=False):
 
     """
-    Computes the absolute value of an unit-containing object.
+    Computes the absolute value of an Quantity.
     The function uses objects 'dimensions' and 'value' from obj.
     By default, If ignore_dimensions
     THe value is calculated using np.log
 
     :param [Variable, Parameter, Constant] obj:
-    Unit-containing object
+    Quantity
 
     :rtype Object-like res:
     Resultant object, with the same type as the input argument.
@@ -168,16 +168,16 @@ def abs(obj, ignore_dimensions=False):
     return(res)
 
 
-def sin(obj, ignore_dimensions=False):
+def Sin(obj, ignore_dimensions=False):
 
     """
-    Computes the sin value of an unit-containing object.
+    Computes the sin value of an Quantity.
     The function uses objects 'dimensions' and 'value' from obj.
     By default, If ignore_dimensions
     THe value is calculated using np.log
 
     :param [Variable, Parameter, Constant] obj:
-    Unit-containing object
+    Quantity
 
     :rtype Object-like res:
     Resultant object, with the same type as the input argument.
@@ -207,16 +207,16 @@ def sin(obj, ignore_dimensions=False):
     return(res)
 
 
-def cos(obj, ignore_dimensions=False):
+def Cos(obj, ignore_dimensions=False):
 
     """
-    Computes the cosin value of an unit-containing object.
+    Computes the cosin value of an Quantity.
     The function uses objects 'dimensions' and 'value' from obj.
     By default, If ignore_dimensions
     THe value is calculated using np.log
 
     :param [Variable, Parameter, Constant] obj:
-    Unit-containing object
+    Quantity
 
     :rtype Object-like res:
     Resultant object, with the same type as the input argument.
@@ -246,16 +246,16 @@ def cos(obj, ignore_dimensions=False):
     return(res)
 
 
-def tan(obj, ignore_dimensions=False):
+def Tan(obj, ignore_dimensions=False):
 
     """
-    Computes the tangent of an unit-containing object.
+    Computes the tangent of an Quantity.
     The function uses objects 'dimensions' and 'value' from obj.
     By default, If ignore_dimensions
     THe value is calculated using np.log
 
     :param [Variable, Parameter, Constant] obj:
-    Unit-containing object
+    Quantity
 
     :rtype Object-like res:
     Resultant object, with the same type as the input argument.

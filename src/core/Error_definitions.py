@@ -1,6 +1,42 @@
 """
 Defines overloaded operators for basic mathematical operations over unit-containing members (Constant, Parameter, Variables)
 """
+
+class UnexpectedValueError(Exception):
+
+    """
+    Error raised by input of an unexpected value. Typically, when the user should input a string an insert a numerical value.
+    """
+
+    def __init__(self, expected_type):
+
+        self.expected_type = expected_type
+
+    def __str__(self):
+
+        msg = "Unexpected value error. A %s was expected, but one divergent type was supplied." % (expected_type)
+
+        return(msg)
+
+
+class UnresolvedPanicError(Exception):
+
+    """
+    Error raised by unresolved problems. Ideally this exception would never arises. It is included only for debugging purposes
+    """
+
+    def __init__(self):
+
+        pass
+
+    def __str__(self):
+
+        msg = "Unresolved Panic Error. This should not have ocurrred. \n Perhaps you should debug your code."
+
+        return(msg)
+
+
+
 class NonDimensionalArgumentError(Exception):
 
     """

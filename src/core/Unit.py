@@ -3,48 +3,54 @@
 """
 Define Unit class, for ulterior utilization (eg:Variable,Parameter)
 
-Define the UnitContainingObject (UCO), base-class for all unit-containg objects (Variables, Parameters, Constants)
+Define the Quantity (QTY), base-class for all unit-containg objects (Variables, Parameters, Constants)
 """
 
 import copy
+import Error_definitions as Errors
+#from ExpressionTrees import EquationNode
+from ExpressionEvaluation import EquationNode, ExpressionTree
 
 #Null dimension dict
 null_dimension = {'m':0,'kg':0,'s':0,'A':0,'K':0,'mol':0,'cd':0}
 
-class UnitContainingObject(object): #New-style class syntax
+class Quantity(object): #New-style class syntax
 
     """
 
-    Return an Unit-Containing object (UCO) class with given name, description and other variables (defaults to "", False and None, when aplicable). Used for return of an Variable object as the result of variable operations, with dimension given by units
+    Return an Quantity (QTY) class with given name, description and other variables (defaults to "", False and None, when aplicable). Used for return of an Variable object as the result of variable operations, with dimension given by units
 
     :param str name:
-    Name for the current UCO
+    Name for the current QTY
 
     :param Unit units:
-    Definition of dimensional unit of current UCO
+    Definition of dimensional unit of current QTY
 
     :param str description:
-    Description for the present UCO. Defauls to ""
+    Description for the present QTY. Defauls to ""
 
     """
 
-    def __init__(self, name, units, description = "", value = 0.):
+    def __init__(self, name, units, description = "", value = 0., latex_text = ""):
 
         """
 
         Initial definition.
 
         :param str name:
-        Name for the current Unit-Containing Object (UCO)
+        Name for the current Quantity (QTY)
 
         :param Unit units:
-        Definition of dimensional unit of current UCO
+        Definition of dimensional unit of current QTY
 
         :param str description:
-        Description for the present UCO. Defauls to ""
+        Description for the present QTY. Defauls to ""
 
         :param float value:
-        Value of the current UCO. Defaults to 0.  
+        Value of the current QTY. Defaults to 0.
+
+        :param str latex_text:
+        Text for latex representation
 
         """
 
@@ -56,21 +62,23 @@ class UnitContainingObject(object): #New-style class syntax
 
         self.value = value
 
+        self.latex_text = latex_text
+
 
     def _returnProtoObject(self, name="", units={""}, description = "", value = 0):
 
         """
 
-        Return a Proto Unit-Containing object (UCO) class with given name, description and other variables (defaults to "", False and None, when aplicable). Used for return of an Variable object as the result of variable operations, with dimension given by units
+        Return a Proto Quantity (QTY) class with given name, description and other variables (defaults to "", False and None, when aplicable). Used for return of an Variable object as the result of variable operations, with dimension given by units
 
         :param str name:
-        Name for the current UCO
+        Name for the current QTY
 
         :param Unit units:
-        Definition of dimensional unit of current UCO
+        Definition of dimensional unit of current QTY
 
         :param str description:
-        Description for the present UCO. Defauls to ""
+        Description for the present QTY. Defauls to ""
 
         """
 
@@ -80,12 +88,12 @@ class UnitContainingObject(object): #New-style class syntax
 
         """
 
-        Overloaded function for calling the UCO as an function. 
-        Return the __code__ expression for ulterior evaluation of the final expression inside an equation.
+        Overloaded function for calling the QTY as an function. 
+        Return the EquationNode expression for composition of an ExpressionTree
 
         """
 
-        return(self.value)
+        return( ExpressionTree(EquationNode(name = self.name, base_object = self)) )
 
     def __add__(self, other_obj):
 
