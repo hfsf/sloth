@@ -434,3 +434,39 @@ class EquationNode(object):
         node = arguments[0]
 
         self.base_object = math_functions.Log( node.base_object )
+
+    def Log10(self, arguments):
+
+        node = arguments[0]
+
+        self.base_object = math_functions.Log10( node.base_object )
+
+    def Abs(self, arguments):
+
+        node = arguments[0]
+
+        self.base_object = math_functions.Abs( node.base_object )
+
+    def Exp(self, arguments):
+
+        node = arguments[0]
+
+        self.base_object = math_functions.Exp( node.base_object )
+
+    def Sin(self, arguments):
+
+        node = arguments[0]
+
+        self.base_object = math_functions.Sin( node.base_object )
+
+    def Cos(self, arguments):
+
+        node = arguments[0]
+
+        self.base_object = math_functions.Cos( node.base_object )
+
+    def Tan(self, arguments):
+
+        node = arguments[0]
+
+        self.base_object = math_functions.Tan( node.base_object )
