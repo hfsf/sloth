@@ -7,12 +7,12 @@ Define the Quantity (QTY), base-class for all unit-containg objects (Variables, 
 """
 
 import copy
-import Error_definitions as Errors
+import ErrorDefinitions as Errors
 #from ExpressionTrees import EquationNode
 from ExpressionEvaluation import EquationNode, ExpressionTree
 
 #Null dimension dict
-null_dimension = {'m':0,'kg':0,'s':0,'A':0,'K':0,'mol':0,'cd':0}
+null_dimension = {'m':0.0,'kg':0.0,'s':0.0,'A':0.0,'K':0.0,'mol':0.0,'cd':0.0}
 
 class Quantity(object): #New-style class syntax
 
@@ -28,6 +28,8 @@ class Quantity(object): #New-style class syntax
 
     :param str description:
     Description for the present QTY. Defauls to ""
+
+    * TODO: Ensure that 'value' is a float for minimization of round-off errors
 
     """
 
@@ -205,7 +207,10 @@ class Quantity(object): #New-style class syntax
 
         """
 
-        new_obj = self._returnProtoObject(units = self.units**power, value = self.value**power)
+        new_obj = self._returnProtoObject(
+                                          units = self.units**power.value, \
+                                          value = self.value**power.value
+                                         )
 
         return(new_obj) 
 
@@ -413,8 +418,8 @@ class Unit(object): #New-style class syntax
         
         """
 
-        dim_1 = "".join([str(self.dimension[idx_i]) for idx_i in keys_])
+        dim_1 = "".join([str(float(self.dimension[idx_i])) for idx_i in keys_])
 
-        dim_2 = "".join([str(other_unit.dimension[idx_i]) for idx_i in keys_])
+        dim_2 = "".join([str(float(other_unit.dimension[idx_i])) for idx_i in keys_])
 
         return(dim_1==dim_2)

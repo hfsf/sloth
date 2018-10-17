@@ -5,7 +5,7 @@ Define the ExpressionTree class, that holds capabilities to process arbitrary op
 """
 
 from anytree import NodeMixin, RenderTree, PreOrderIter
-import Error_definitions as Errors
+import ErrorDefinitions as Errors
  
 class base_(object):
 
@@ -28,6 +28,17 @@ class ExpressionTree(base_, NodeMixin):
 
     def __init__(self, object_, parent=None):
 
+        """
+        Initial definitions
+
+        :param EquationNode object_:
+        Object contained in the current node of ExpressionTree
+
+        :parent ExpressionTree parent:
+        Parent node of ExpressionTree for the current node
+
+        """
+
         super(self.__class__,self).__init__() # NodeMixin class instantiation
 
         self.object = object_
@@ -36,6 +47,12 @@ class ExpressionTree(base_, NodeMixin):
 
     def __str__(self):
 
+        """
+
+        Print informations about current ExpressionTree for easy visualization
+
+        """
+
         for pre,fill,node in RenderTree(self):
 
             print("%s%s" % (pre,node.object.name))
@@ -43,6 +60,18 @@ class ExpressionTree(base_, NodeMixin):
         return ""
 
     def __getitem__(self,item_name):
+
+        """
+
+        Return the EquationNode with name equivalent to 'item_name'
+
+        TODO: Prevent for cases with name duplicity
+
+        :param str item_name:
+        Name of the EquationNode to be returned
+
+        """
+
 
         if isinstance(item_name,str) != True:
 
@@ -56,7 +85,7 @@ class ExpressionTree(base_, NodeMixin):
 
                     return(node.object)
 
-    def __infoBaseObjectDicts__(self, verbosity_level = 2 ):
+    def _info_(self, verbosity_level = 2 ):
 
         #TODO: Change function to return specific atributes supplied by one list by the user
 
@@ -91,7 +120,16 @@ class ExpressionTree(base_, NodeMixin):
                 print("%s%s" % (pre,node.object.name))
 
     
-    def _sweepForObjects_(self):
+    def _sweep_(self):
+
+        """
+
+        Search the current ExpressionTree to search for the leaf-nodes, which contains the variables declared. 
+
+        :rtype dict sweeped_objects:
+        Dict sorted by key-names of the 'base_objects' contained in homonymous EquationNode objects.
+
+        """
 
         sweeped_objects = {}
 
@@ -108,10 +146,7 @@ class ExpressionTree(base_, NodeMixin):
 
         """
 
-        Evaluates equation residual using equation previously provided, returning a Variable object.
-
-        :rtype Quantity result_quantity:
-        Quantity object representing the evaluation of the previously provided equation through processing of the ExpressionTree into an EquationNode, and extracted from the later.
+        Evaluates equation residual using equation previously provided.
 
         """
         #List nodes from the last to the top
@@ -132,7 +167,6 @@ class ExpressionTree(base_, NodeMixin):
                                              node_i.object, \
                                              [ child_i.object for child_i in node_i.children ]
                                             )
-
 
     def __add__(self, other_object):
 
@@ -174,6 +208,137 @@ class ExpressionTree(base_, NodeMixin):
                                 base_object = None, \
                                 base_operation = EquationNode.summation, \
                                 base_operation_name = 'add'
+                              )
+
+            branch_root = self.__class__(
+                              object_ = branch_root_node
+                            )
+
+            self.parent = branch_root
+
+            other_object.parent = branch_root
+
+            return(branch_root)
+
+
+    def __sub__(self, other_object):
+
+        """
+        
+        Overloaded function for subtraction of two ExpressionTree objects. Returns a ExpressionTree object containing the current tree extended to include the 'other_object' argument.
+
+        """
+
+        if isinstance(other_object, self.__class__) == False:
+
+            raise(Errors.UnexpectedValueError("ExpressionTree"))
+
+        else:
+
+
+            branch_root_node =  EquationNode( 
+                                name = " - ".join([self.object.name, other_object.object.name]), \
+                                base_object = None, \
+                                base_operation = EquationNode.subtraction, \
+                                base_operation_name = 'sub'
+                              )
+
+            branch_root = self.__class__(
+                              object_ = branch_root_node
+                            )
+
+            self.parent = branch_root
+
+            other_object.parent = branch_root
+
+            return(branch_root)
+
+
+    def __mul__(self, other_object):
+
+        """
+        
+        Overloaded function for multiplication of two ExpressionTree objects. Returns a ExpressionTree object containing the current tree extended to include the 'other_object' argument.
+
+        """
+
+        if isinstance(other_object, self.__class__) == False:
+
+            raise(Errors.UnexpectedValueError("ExpressionTree"))
+
+        else:
+
+
+            branch_root_node =  EquationNode( 
+                                name = " * ".join([self.object.name, other_object.object.name]), \
+                                base_object = None, \
+                                base_operation = EquationNode.multiply, \
+                                base_operation_name = 'mul'
+                              )
+
+            branch_root = self.__class__(
+                              object_ = branch_root_node
+                            )
+
+            self.parent = branch_root
+
+            other_object.parent = branch_root
+
+            return(branch_root)
+
+
+    def __div__(self, other_object):
+
+        """
+        
+        Overloaded function for division of two ExpressionTree objects. Returns a ExpressionTree object containing the current tree extended to include the 'other_object' argument.
+
+        """
+
+        if isinstance(other_object, self.__class__) == False:
+
+            raise(Errors.UnexpectedValueError("ExpressionTree"))
+
+        else:
+
+
+            branch_root_node =  EquationNode( 
+                                name = " / ".join([self.object.name, other_object.object.name]), \
+                                base_object = None, \
+                                base_operation = EquationNode.divide, \
+                                base_operation_name = 'div'
+                              )
+
+            branch_root = self.__class__(
+                              object_ = branch_root_node
+                            )
+
+            self.parent = branch_root
+
+            other_object.parent = branch_root
+
+            return(branch_root)
+
+
+    def __pow__(self, other_object):
+
+        """
+        
+        Overloaded function for exponentiation of one ExpressionTree object. Returns a ExpressionTree object containing the current tree extended to include the 'other_object' argument.
+
+        """
+
+        if isinstance(other_object, self.__class__) == False:
+
+            raise(Errors.UnexpectedValueError("ExpressionTree"))
+
+        else:
+
+            branch_root_node =  EquationNode( 
+                                name = " ** ".join([self.object.name, other_object.object.name]), \
+                                base_object = None, \
+                                base_operation = EquationNode.power, \
+                                base_operation_name = 'pow'
                               )
 
             branch_root = self.__class__(
@@ -230,3 +395,35 @@ class EquationNode(object):
         node_2 = arguments[1]
 
         self.base_object = node_1.base_object + node_2.base_object
+
+    def subtraction(self, arguments):
+
+        node_1 = arguments[0]
+
+        node_2 = arguments[1]
+
+        self.base_object = node_1.base_object - node_2.base_object
+
+    def multiply(self, arguments):
+
+        node_1 = arguments[0]
+
+        node_2 = arguments[1]
+
+        self.base_object = node_1.base_object * node_2.base_object
+
+    def divide(self, arguments):
+
+        node_1 = arguments[0]
+
+        node_2 = arguments[1]
+
+        self.base_object = node_1.base_object / node_2.base_object
+
+    def power(self, arguments):
+
+        node_1 = arguments[0]
+
+        node_2 = arguments[1]        
+
+        self.base_object = node_1.base_object ** node_2.base_object

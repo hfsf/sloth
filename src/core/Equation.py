@@ -59,7 +59,7 @@ class Equation:
 
         self._equation_expression_ = equation_expression
 
-        self.objects_declared = self.equation_expression._sweepForObjects_()
+        self.objects_declared = self.equation_expression._sweep_()
 
     def resolveResidual(self):
 

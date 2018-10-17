@@ -14,7 +14,7 @@ class UnexpectedValueError(Exception):
 
     def __str__(self):
 
-        msg = "Unexpected value error. A %s was expected, but one divergent type was supplied." % (expected_type)
+        msg = "Unexpected value error. A %s was expected, but one divergent type was supplied." % (self.expected_type)
 
         return(msg)
 

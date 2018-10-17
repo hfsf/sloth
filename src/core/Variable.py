@@ -3,7 +3,6 @@ Define variable class.
 """
 
 from Unit import Quantity
-import Error_definitions as Errors
 
 class Variable(Quantity):
 
@@ -51,10 +50,6 @@ class Variable(Quantity):
 
         :param float value:
         Value of the current variable. Defaults to 0.       
-
-        """
-
-        """
 
         === Coming from base class ===
 

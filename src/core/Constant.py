@@ -2,22 +2,32 @@
 Define constant class.
 """
 
-from Unit import UnitContainingObject as UCO
+from Unit import Quantity, null_dimension
 import numpy as np
 
 
-class Constant(UCO):
+def convert_to_constant(num):
 
     """
 
-    Constant(Urameter class definition, that holds capabilities for:
-    - Constant(Urameter definition, including its units for posterior dimensional coherence analysis
-    - Constant(Urameter operations using overloaded mathematical operators, making possible an almost-writing-syntax (eg: a() + b() )
+    Convert one float argument to Constant, returning the converted object.
 
-    * TODO: - Overload mathematical operators (call, add, subtract, multiply, divide) with dimensional analysis coherence    
+    :param [float,int] num:
+    Float number to be converted to Constant
 
     """
 
+    return(Constant( name = str(num), units = null_dimension, value = float(num) ))
+
+class Constant(Quantity):
+
+    """
+
+    Constant class definition, that holds capabilities for:
+    - Constant definition, including its units for posterior dimensional coherence analysis
+    - Constant operations using overloaded mathematical operators, making possible an almost-writing-syntax (eg: a() + b() )
+
+    """
 
     def __init__(self, name, units , description="", value=0):
 

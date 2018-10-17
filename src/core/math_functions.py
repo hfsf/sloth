@@ -7,7 +7,7 @@ NonDimensionalArgument error. This can be avoided with the argument ignore_dimen
 
 from numpy import log, log10, exp, abs, sin, cos, tan
 import copy
-import Error_definitions as Errors
+import ErrorDefinitions as Errors
 import Unit
 
 dimless_ = Unit.Unit("dimless", Unit.null_dimension, "a generic dimensionless unit")

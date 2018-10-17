@@ -14,8 +14,6 @@ class Parameter(Quantity):
     - Parameter definition, including its units for posterior dimensional coherence analysis
     - Parameter operations using overloaded mathematical operators, making possible an almost-writing-syntax (eg: a() + b() )
 
-    * TODO: - Overload mathematical operators (call, add, subtract, multiply, divide) with dimensional analysis coherence    
-
     """
 
 
