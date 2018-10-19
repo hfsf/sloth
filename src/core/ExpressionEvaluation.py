@@ -208,7 +208,8 @@ class ExpressionTree(base_, NodeMixin):
                                 name = " + ".join([self.object.name, other_object.object.name]), \
                                 base_object = None, \
                                 base_operation = EquationNode.summation, \
-                                base_operation_name = 'add'
+                                base_operation_name = 'add', \
+                                latex_text = self.object.latex_text+" + "+other_object.object.latex_text
                               )
 
             branch_root = self.__class__(
@@ -241,7 +242,8 @@ class ExpressionTree(base_, NodeMixin):
                                 name = " - ".join([self.object.name, other_object.object.name]), \
                                 base_object = None, \
                                 base_operation = EquationNode.subtraction, \
-                                base_operation_name = 'sub'
+                                base_operation_name = 'sub', \
+                                latex_text = self.object.latex_text+" - "+other_object.object.latex_text
                               )
 
             branch_root = self.__class__(
@@ -274,7 +276,8 @@ class ExpressionTree(base_, NodeMixin):
                                 name = " * ".join([self.object.name, other_object.object.name]), \
                                 base_object = None, \
                                 base_operation = EquationNode.multiply, \
-                                base_operation_name = 'mul'
+                                base_operation_name = 'mul', \
+                                latex_text = self.object.latex_text+"\times"+other_object.object.latex_text
                               )
 
             branch_root = self.__class__(
@@ -307,7 +310,8 @@ class ExpressionTree(base_, NodeMixin):
                                 name = " / ".join([self.object.name, other_object.object.name]), \
                                 base_object = None, \
                                 base_operation = EquationNode.divide, \
-                                base_operation_name = 'div'
+                                base_operation_name = 'div', \
+                                latex_text = "\frac{"+self.object.latex_text+"}{"+other_object.object.latex_text+"}"
                               )
 
             branch_root = self.__class__(
@@ -339,7 +343,8 @@ class ExpressionTree(base_, NodeMixin):
                                 name = " ** ".join([self.object.name, other_object.object.name]), \
                                 base_object = None, \
                                 base_operation = EquationNode.power, \
-                                base_operation_name = 'pow'
+                                base_operation_name = 'pow', \
+                                latex_text = self.object.latex_text+"^{"+other_object.object.latex_text+"}"
                               )
 
             branch_root = self.__class__(
@@ -361,7 +366,7 @@ class EquationNode(object):
     """
 
     def __init__(self, name = '', base_object = None, base_operation = None, \
-                args = None, base_operation_name = 'eval', was_evaluated = False):
+                args = None, base_operation_name = 'eval', was_evaluated = False, latex_text=''):
 
         """
     
@@ -384,6 +389,8 @@ class EquationNode(object):
         self.args = args
 
         self.was_evaluated = was_evaluated
+
+        self.latex_text = latex_text
 
     def evalNode(self):
 

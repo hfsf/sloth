@@ -1,4 +1,5 @@
 numpy>=1.13.3
+anytree
 pytest>=3.8.0
 scipy>=1.1.0
 sphinx_rtd_theme

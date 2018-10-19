@@ -95,7 +95,7 @@ class Quantity(object): #New-style class syntax
 
         """
 
-        return( ExpressionTree(EquationNode(name = self.name, base_object = self)) )
+        return( ExpressionTree(EquationNode(name = self.name, base_object = self, latex_text = self.latex_text)) )
 
     def __add__(self, other_obj):
 
@@ -261,9 +261,9 @@ class Unit(object): #New-style class syntax
 
         """
 
-        keys_ = sorted(self.dimension.keys())
+        #is_dimless = all([float(self.dimension[idx_i]) == 0. for idx_i in keys_])
 
-        is_dimless = all([float(self.dimension[idx_i]) == 0. for idx_i in keys_])
+        is_dimless = all(float(d_i) == 0. for d_i in self.dimension.values())
 
         return(is_dimless)
 
