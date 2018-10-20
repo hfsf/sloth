@@ -14,5 +14,5 @@
 
 ## Contact
 
-For further questions, suggestions and help support (please! ;) ) contact me through: <hanniel.freitas@ifrn.edu.br>.
+For further questions, suggestions and collaborations (please! ;) ) contact me through: <hanniel.freitas@ifrn.edu.br>.
 

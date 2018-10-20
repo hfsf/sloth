@@ -156,11 +156,11 @@ class Equation:
     Equation class
 
 
-    TODO: Deprecate string-based equation creation and adopt expression tree paradigm
+    TODO: Insert curatorship mechanism for DOF, through the analysis of the declares object for each equation.
 
     """
 
-    def __init__(self, name, description):
+    def __init__(self, name, description, fast_expr = None):
 
         """
         Inidial definitions.
@@ -170,6 +170,9 @@ class Equation:
 
         :param str description:
         Description for the present equation. Defauls to ""
+
+        :param ExpressionTree fast_expr:
+        ExpressionTree object to declare for the current Equation object.  If declared, the moethod '.setResidual' are executed as a shortcut. Defaults to None.
         
         """
 
@@ -186,6 +189,10 @@ class Equation:
         self._equation_expression_ = None
 
         self.objects_declared = {}
+
+        if fast_expr != None:
+
+            self.setResidual( fast_expr )
 
     def setResidual(self, equation_expression):
 

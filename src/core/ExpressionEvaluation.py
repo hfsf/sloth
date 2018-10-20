@@ -363,6 +363,12 @@ class EquationNode(object):
 
     Definition of an EquationNode. Represent an object from which arithmetical operations can be performed. The EquationNode's are arrenged in a binary tree and later evaluated through tree renderization. Each operation returns a bigger tree, that will be later evaluated.
 
+    *TODO
+        - Include comparison operators for EquationNode objects (<,>,<=,>=,etc) as unary operation that compares values directly.
+        - Include overloading of arithmetical operators for EquationNode objects
+        - Include Conditional evaluation operator (IfThen) as binary operations
+          Eg: IfThen(CONDITION, [THEN_CLAUSE,ELSE_CAUSE]) 
+
     """
 
     def __init__(self, name = '', base_object = None, base_operation = None, \

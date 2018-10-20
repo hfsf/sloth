@@ -12,10 +12,6 @@ class Variable(Quantity):
     - Variable definition, including its units for posterior dimensional coherence analysis
     - Variable operations using overloaded mathematical operators, making possible an almost-writing-syntax (eg: a() + b() )
 
-    * TODO: - Overload mathematical operators (call, add, subtract, multiply, divide) with dimensional analysis coherence
-            - Provide the mathematical complex functions (abs, exp, log, log10, etc)
-            - Include restrictions for variable value.    
-
     """
 
     def __init__(self, name, units , description = "", isLowerBounded = False, isUpperBounded = False, lowerBound = None, upperBound = None, value = 0):
