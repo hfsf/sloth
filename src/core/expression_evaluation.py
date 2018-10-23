@@ -5,7 +5,7 @@ Define the ExpressionTree class, that holds capabilities to process arbitrary op
 """
 
 from anytree import NodeMixin, RenderTree, PreOrderIter
-import ErrorDefinitions as Errors
+import error_definitions as errors
 import math_functions 
 
 class base_(object):
@@ -76,7 +76,7 @@ class ExpressionTree(base_, NodeMixin):
 
         if isinstance(item_name,str) != True:
 
-            raise(Errors.UnexpectedValueError("string"))
+            raise(errors.UnexpectedValueError("string"))
 
         else:
 
@@ -199,7 +199,7 @@ class ExpressionTree(base_, NodeMixin):
 
         if isinstance(other_object, self.__class__) == False:
 
-            raise(Errors.UnexpectedValueError("ExpressionTree"))
+            raise(errors.UnexpectedValueError("ExpressionTree"))
 
         else:
 
@@ -233,7 +233,7 @@ class ExpressionTree(base_, NodeMixin):
 
         if isinstance(other_object, self.__class__) == False:
 
-            raise(Errors.UnexpectedValueError("ExpressionTree"))
+            raise(errors.UnexpectedValueError("ExpressionTree"))
 
         else:
 
@@ -267,7 +267,7 @@ class ExpressionTree(base_, NodeMixin):
 
         if isinstance(other_object, self.__class__) == False:
 
-            raise(Errors.UnexpectedValueError("ExpressionTree"))
+            raise(errors.UnexpectedValueError("ExpressionTree"))
 
         else:
 
@@ -301,7 +301,7 @@ class ExpressionTree(base_, NodeMixin):
 
         if isinstance(other_object, self.__class__) == False:
 
-            raise(Errors.UnexpectedValueError("ExpressionTree"))
+            raise(errors.UnexpectedValueError("ExpressionTree"))
 
         else:
 
@@ -335,7 +335,7 @@ class ExpressionTree(base_, NodeMixin):
 
         if isinstance(other_object, self.__class__) == False:
 
-            raise(Errors.UnexpectedValueError("ExpressionTree"))
+            raise(errors.UnexpectedValueError("ExpressionTree"))
 
         else:
 

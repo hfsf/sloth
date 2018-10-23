@@ -2,6 +2,24 @@
 Defines overloaded operators for basic mathematical operations over unit-containing members (Constant, Parameter, Variables)
 """
 
+class UnexpectedObjectDeclarationError(Exception):
+
+    """
+    Error raised by the utilization of a non-registered Varaible, Parameter or Constant for the current Model.
+    """
+
+    def __init__(self, objects, declared_objects):
+
+        self.objects = objects
+
+        self.declared_objects
+
+    def __str__(self):
+
+        msg = "Unexpected object declaration error. \n The following objects were used: %s \n But the following objects were declared for the current model. \n %s" % (self.objects, self.declared_objects)
+
+        return(msg)
+
 class UnexpectedValueError(Exception):
 
     """

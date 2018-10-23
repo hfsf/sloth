@@ -7,8 +7,8 @@ NonDimensionalArgument error. This can be avoided with the argument ignore_dimen
 
 from numpy import log, log10, exp, abs, sin, cos, tan
 from copy import copy
-import ErrorDefinitions as Errors
-import Unit
+import error_definitions as errors
+import unit
 
 def Log(obj, ignore_dimensions=False):
 
@@ -38,7 +38,7 @@ def Log(obj, ignore_dimensions=False):
 
         else:
 
-            raise(Errors.NonDimensionalArgumentError(obj.units))
+            raise(errors.NonDimensionalArgumentError(obj.units))
 
     else:
 
@@ -77,7 +77,7 @@ def Log10(obj, ignore_dimensions=False):
 
         else:
 
-            raise(Errors.NonDimensionalArgumentError(obj.units))
+            raise(errors.NonDimensionalArgumentError(obj.units))
 
     else:
 
@@ -116,7 +116,7 @@ def Exp(obj, ignore_dimensions=False):
 
         else:
 
-            raise(Errors.NonDimensionalArgumentError(obj.units))
+            raise(errors.NonDimensionalArgumentError(obj.units))
 
     else:
 
@@ -155,7 +155,7 @@ def Abs(obj, ignore_dimensions=False):
 
         else:
 
-            raise(Errors.NonDimensionalArgumentError(obj.units))
+            raise(errors.NonDimensionalArgumentError(obj.units))
 
     else:
 
@@ -194,7 +194,7 @@ def Sin(obj, ignore_dimensions=False):
 
         else:
 
-            raise(Errors.NonDimensionalArgumentError(obj.units))
+            raise(errors.NonDimensionalArgumentError(obj.units))
 
     else:
 
@@ -233,7 +233,7 @@ def Cos(obj, ignore_dimensions=False):
 
         else:
 
-            raise(Errors.NonDimensionalArgumentError(obj.units))
+            raise(errors.NonDimensionalArgumentError(obj.units))
 
     else:
 
@@ -272,7 +272,7 @@ def Tan(obj, ignore_dimensions=False):
 
         else:
 
-            raise(Errors.NonDimensionalArgumentError(obj.units))
+            raise(errors.NonDimensionalArgumentError(obj.units))
 
     else:
 

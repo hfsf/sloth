@@ -7,10 +7,12 @@ Define Model class.
 
 """
 
-from core.Equation import *
-import core.Variable as Variable
-import core.Constant as Constant
-from DOF import curatorship
+import core.error_definitions as errors  
+from core.equation import *
+import core.variable as variable
+import core.constant as constant
+from connection import *
+import beautifultable
 
 class Model(object):
 
@@ -77,13 +79,88 @@ class Model(object):
 
         if parent_model == None:
 
-            self.exposed_vars = {'input':[],'output':[]}
+            self.exposed_vars = {'input':[],'output':[], 'source':[], 'sink':[]}
 
         self.parameters = {}
 
         self.variables = {}
 
+        self.constants = {}
+
         self.equations = {}
+
+        self.connections = {}
+
+        self.objects_info = {}
+
+    def _gatherObjectsInfo_(self):
+
+        """
+
+        Function for gathering information about the name of all declared objects for the current model. Mainly used for reporting error of utilization of non-declared objects, or debug purposes.
+
+        """
+
+        self.objects_info = {}
+
+        self.objects_info[ 'equations' ] = self.equations.keys()
+
+        self.objects_info[ 'constants' ] = self.constants.keys()
+
+        self.objects_info[ 'parameters' ] = self.parameters.keys()
+
+        self.objects_info[ 'variables' ] = self.variables.keys()
+
+        self.objects_info[ 'connections' ] = self.connections.keys()
+
+        self.objects_info[ 'exposed_vars' ] = self.exposed_vars
+
+    def _infoDegreesOfFreedom_(self):
+
+        """
+
+        Return information about the number of degrees of freedom
+
+        """
+
+        rtrn_tab = beautifultable.BeautifulTable()
+
+        rtrn_tab.insert_row(['Nb. Equations','Nb. Variables', 'Nb. Parameters'])
+        rtrn_tab.insert_row([ str(len(self.equations)), \
+                              str(len(self.variables)) , \
+                              str(len(self.parameters))
+                            ])
+        print rtrn_tab
+
+        rtrn_tab = beautifultable.BeautifulTable()
+
+        rtrn_tab.insert_row(['Nb. Components','Nb. Phases'])
+        rtrn_tab.insert_row([ str(0), str(0) ])
+
+        print rtrn_tab
+
+
+        rtrn_tab = beautifultable.BeautifulTable()
+
+        rtrn_tab.insert_row(['Nb. M.V.'])
+        rtrn_tab.insert_row([ str(0)])
+
+        print rtrn_tab
+
+        rtrn_tab = beautifultable.BeautifulTable()
+
+        rtrn_tab.insert_row(['Nb. DF. Design','Nb. DF. Control', 'Nb. DF. Chemical'])
+        rtrn_tab.insert_row([ str(df_design), str(df_control), str(df_chemical) ])
+
+        print rtrn_tab
+
+        df_design = len(self.equations) - (len(self.variables) + len(self.parameters))
+
+        df_control = 0
+
+        df_chemical = 0
+
+        return(df_design, df_control, df_chemical)
 
     def __call__(self):
 
@@ -113,6 +190,13 @@ class Model(object):
 
             print "Warning: No equations were declared."
 
+    def createExposedVariable(self, exposed_var, connection_type = 'source'):
+
+        if any(exposed_var.name in exposed_var_i.name \
+               for exposed_var_i in self.exposed_vars[connection_type]
+              ) != True:
+
+            raise ( errors.UnexpectedObjectDeclarationError( exposed_var.name, self.objects_info ) )            
     def createEquation(self, name, description, fast_expr = None):
 
         """
@@ -132,9 +216,73 @@ class Model(object):
 
         eq = Equation(name, description, fast_expr)
 
-        self.equations[eq.name] = eq
+        eq._sweep_()
 
-        return eq
+        #Check if all objects used in the current equation were declared
+
+        all_objects_keys = self.variables.keys()  + \
+                           self.parameters.keys() + \
+                           self.constants.keys()
+
+        if all( obj_i in all_objects_keys for obj_i in eq.declared_objects.keys() ) != True:
+
+            self._gatherObjectsInfo_()
+
+            raise (errors.UnexpectedObjectDeclarationError( eq.declared_objects.keys(), \
+                                                            self.objects_info 
+                                                          )
+                  )
+        else:
+
+            self.equations[eq.name] = eq
+
+            return eq
+
+    def createConnection(self, name, description, connection_type = 'source', fast_expr = None):
+
+        """
+        
+        Function for creation of an Connection object. Store an Connection object in '.connections' dict. Mandatory interface for model connection creation in the DeclareConnections() function.
+
+        :param str name:
+        Name for the current equation
+
+        :param str description:
+        Description for the present equation. Defauls to ""
+
+        :param str connection_type:
+        Type of the connection. Options are 'source', when a source term is declared (eg: process inlet); 'sink', when a sink term is declared (eq: process outlet); 'input', when a input from the other model output is declared (thus, a source term coming from the sink term from another model); 'output', when a output the output of a model is declared (used as input by another model). Defaults to 'source'.
+
+        :param ExpressionTree fast_expr:
+        ExpressionTree object to declare for the current Equation object.  If declared, the moethod '.setResidual' are executed as a shortcut. Defaults to None.
+
+        """
+
+        eq = Connection(name, description, connection_type, fast_expr)
+
+        eq._sweep_()
+
+        #Check if all objects used in the current equation were declared
+
+        all_objects_keys = self.variables.keys()  + \
+                           self.parameters.keys() + \
+                           self.constants.keys()
+
+        if all( obj_i in all_objects_keys for obj_i in eq.declared_objects.keys() ) != True:
+
+            self._gatherObjectsInfo_()
+
+            raise (errors.UnexpectedObjectDeclarationError( eq.declared_objects.keys(), \
+                                                            self.objects_info 
+                                                          )
+                  )
+        else:
+
+            self.equations[eq.name] = eq
+
+            self.connections[eq.name] = eq
+
+            return eq
 
     def createVariable(self, name, units , description = "", isLowerBounded = False, isUpperBounded = False, lowerBound = None, upperBound = None, value = 0):
 
@@ -170,7 +318,7 @@ class Model(object):
 
         """
 
-        var = Variable.Variable(name, units , description, isLowerBounded, isUpperBounded, lowerBound, upperBound, value)
+        var = variable.Variable(name, units , description, isLowerBounded, isUpperBounded, lowerBound, upperBound, value)
 
         self.variables[var.name] = var
 
@@ -207,7 +355,7 @@ class Model(object):
 
         """
         
-        Function for creation of an Constant object. Optional interface for model Constant creation in the DeclareConstants() function.
+        Function for creation of an Constant object. Mandatory interface for model Constant creation in the DeclareConstants() function.
 
         :param str name:
         Name for the current Constant
@@ -216,14 +364,16 @@ class Model(object):
         Definition of dimensional unit of current Constant
 
         :param str description:
-        Description for the present Constant. Defauls to ""
+        Description for the present constant. Defauls to ""
 
         :param float value:
-        Value of the current Constant. Defaults to 0.      
+        Value of the current constant. Defaults to 0.      
 
         """
 
-        con = Constant.Constant(name, units , description, value)
+        con = constant.Constant(name, units , description, value)
+
+        self.constants[con.name] = con
 
         return con
 

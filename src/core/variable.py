@@ -2,7 +2,7 @@
 Define variable class.
 """
 
-from Unit import Quantity
+from unit import Quantity
 
 class Variable(Quantity):
 

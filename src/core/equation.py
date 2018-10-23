@@ -6,7 +6,7 @@ Define functions for utilization in the equation definition
 """
 
 import numpy as np
-import ExpressionEvaluation
+import expression_evaluation
 
 
 #=====================================================================================================
@@ -20,14 +20,14 @@ def Log(obj):
     Return a ExpressionTree branch-root containing an EquationNode for which the EquationNode.Log function is defined.
     """
     
-    branch_root_node =  ExpressionEvaluation.EquationNode( 
+    branch_root_node =  expression_evaluation.EquationNode( 
                                 name = "Log ( " + obj.object.name + " )", \
                                 base_object = None, \
-                                base_operation = ExpressionEvaluation.EquationNode.Log, \
+                                base_operation = expression_evaluation.EquationNode.Log, \
                                 base_operation_name = 'log'
                               )
 
-    branch_root = ExpressionEvaluation.ExpressionTree( object_ = branch_root_node )
+    branch_root = expression_evaluation.ExpressionTree( object_ = branch_root_node )
 
     obj.parent = branch_root
 
@@ -39,14 +39,14 @@ def Log10(obj):
     Return a ExpressionTree branch-root containing an EquationNode for which the EquationNode.Log10 function is defined.
     """
     
-    branch_root_node =  ExpressionEvaluation.EquationNode( 
+    branch_root_node =  expression_evaluation.EquationNode( 
                                 name = "Log10 ( " + obj.object.name + " )", \
                                 base_object = None, \
-                                base_operation = ExpressionEvaluation.EquationNode.Log10, \
+                                base_operation = expression_evaluation.EquationNode.Log10, \
                                 base_operation_name = 'log10'
                               )
 
-    branch_root = ExpressionEvaluation.ExpressionTree( object_ = branch_root_node )
+    branch_root = expression_evaluation.ExpressionTree( object_ = branch_root_node )
 
     obj.parent = branch_root
 
@@ -58,14 +58,14 @@ def Abs(obj):
     Return a ExpressionTree branch-root containing an EquationNode for which the EquationNode.Abs function is defined.
     """
     
-    branch_root_node =  ExpressionEvaluation.EquationNode( 
+    branch_root_node =  expression_evaluation.EquationNode( 
                                 name = "Abs ( " + obj.object.name + " )", \
                                 base_object = None, \
-                                base_operation = ExpressionEvaluation.EquationNode.Abs, \
+                                base_operation = expression_evaluation.EquationNode.Abs, \
                                 base_operation_name = 'abs'
                               )
 
-    branch_root = ExpressionEvaluation.ExpressionTree( object_ = branch_root_node )
+    branch_root = expression_evaluation.ExpressionTree( object_ = branch_root_node )
 
     obj.parent = branch_root
 
@@ -77,14 +77,14 @@ def Exp(obj):
     Return a ExpressionTree branch-root containing an EquationNode for which the EquationNode.Exp function is defined.
     """
     
-    branch_root_node =  ExpressionEvaluation.EquationNode( 
+    branch_root_node =  expression_evaluation.EquationNode( 
                                 name = "Exp ( " + obj.object.name + " )", \
                                 base_object = None, \
-                                base_operation = ExpressionEvaluation.EquationNode.Exp, \
+                                base_operation = expression_evaluation.EquationNode.Exp, \
                                 base_operation_name = 'exp'
                               )
 
-    branch_root = ExpressionEvaluation.ExpressionTree( object_ = branch_root_node )
+    branch_root = expression_evaluation.ExpressionTree( object_ = branch_root_node )
 
     obj.parent = branch_root
 
@@ -96,14 +96,14 @@ def Sin(obj):
     Return a ExpressionTree branch-root containing an EquationNode for which the EquationNode.Sin function is defined.
     """
     
-    branch_root_node =  ExpressionEvaluation.EquationNode( 
+    branch_root_node =  expression_evaluation.EquationNode( 
                                 name = "Sin ( " + obj.object.name + " )", \
                                 base_object = None, \
-                                base_operation = ExpressionEvaluation.EquationNode.Sin, \
+                                base_operation = expression_evaluation.EquationNode.Sin, \
                                 base_operation_name = 'sin'
                               )
 
-    branch_root = ExpressionEvaluation.ExpressionTree( object_ = branch_root_node )
+    branch_root = expression_evaluation.ExpressionTree( object_ = branch_root_node )
 
     obj.parent = branch_root
 
@@ -115,14 +115,14 @@ def Cos(obj):
     Return a ExpressionTree branch-root containing an EquationNode for which the EquationNode.Cos function is defined.
     """
     
-    branch_root_node =  ExpressionEvaluation.EquationNode( 
+    branch_root_node =  expression_evaluation.EquationNode( 
                                 name = "Cos ( " + obj.object.name + " )", \
                                 base_object = None, \
-                                base_operation = ExpressionEvaluation.EquationNode.Cos, \
+                                base_operation = expression_evaluation.EquationNode.Cos, \
                                 base_operation_name = 'cos'
                               )
 
-    branch_root = ExpressionEvaluation.ExpressionTree( object_ = branch_root_node )
+    branch_root = expression_evaluation.ExpressionTree( object_ = branch_root_node )
 
     obj.parent = branch_root
 
@@ -134,14 +134,14 @@ def Tan(obj):
     Return a ExpressionTree branch-root containing an EquationNode for which the EquationNode.Tan function is defined.
     """
     
-    branch_root_node =  ExpressionEvaluation.EquationNode( 
+    branch_root_node =  expression_evaluation.EquationNode( 
                                 name = "Tan ( " + obj.object.name + " )", \
                                 base_object = None, \
-                                base_operation = ExpressionEvaluation.EquationNode.Tan, \
+                                base_operation = expression_evaluation.EquationNode.Tan, \
                                 base_operation_name = 'tan'
                               )
 
-    branch_root = ExpressionEvaluation.ExpressionTree( object_ = branch_root_node )
+    branch_root = expression_evaluation.ExpressionTree( object_ = branch_root_node )
 
     obj.parent = branch_root
 
@@ -224,3 +224,22 @@ class Equation:
     def evalResidual(self):
 
         self.equation_expression._evalExpressionTree_()
+
+
+class Connection(Equation):
+
+    def __init__(self, name, description, fast_expr = None):
+
+        """
+        Inidial definitions.
+
+        :param str name:
+        Name for the current equation
+
+        :param str description:
+        Description for the present equation. Defauls to ""
+
+        :param ExpressionTree fast_expr:
+        ExpressionTree object to declare for the current Equation object.  If declared, the moethod '.setResidual' are executed as a shortcut. Defaults to None.
+        
+        """

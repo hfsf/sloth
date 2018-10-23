@@ -7,9 +7,9 @@ Define the Quantity (QTY), base-class for all unit-containg objects (Variables, 
 """
 
 import copy
-import ErrorDefinitions as Errors
+import error_definitions as errors
 #from ExpressionTrees import EquationNode
-from ExpressionEvaluation import EquationNode, ExpressionTree
+from expression_evaluation import EquationNode, ExpressionTree
 
 #Null dimension dict
 null_dimension = {'m':0.0,'kg':0.0,'s':0.0,'A':0.0,'K':0.0,'mol':0.0,'cd':0.0}
@@ -123,7 +123,7 @@ class Quantity(object): #New-style class syntax
 
         else:
 
-            raise(Errors.DimensionalCoherenceError(self.units, other_obj.units))
+            raise(errors.DimensionalCoherenceError(self.units, other_obj.units))
 
     def __sub__(self, other_obj):
 
@@ -151,7 +151,7 @@ class Quantity(object): #New-style class syntax
 
         else:
 
-            raise(Errors.DimensionalCoherenceError(self.units, other_obj.units))
+            raise(errors.DimensionalCoherenceError(self.units, other_obj.units))
 
     def __mul__(self, other_obj):
 

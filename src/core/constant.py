@@ -2,7 +2,7 @@
 Define constant class.
 """
 
-from Unit import Quantity, null_dimension
+from unit import Quantity, null_dimension
 import numpy as np
 
 
