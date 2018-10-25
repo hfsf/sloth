@@ -7,6 +7,8 @@ Define Model class.
 
 """
 
+import sys
+
 import core.error_definitions as errors  
 from core.equation import *
 import core.variable as variable
@@ -49,7 +51,7 @@ class Model(object):
 
     """
 
-    def __init__(self, name = "", description = "", parent_model = None)
+    def __init__(self, name = "", description = "", parent_model = None):
 
         if parent_model != None: #Inherit from parent_model if it was defined.
 
