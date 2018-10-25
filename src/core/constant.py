@@ -3,30 +3,31 @@ Define constant class.
 """
 
 from unit import Quantity, null_dimension
-import numpy as np
 
 
 def convert_to_constant(num):
-
     """
-
     Convert one float argument to Constant, returning the converted object.
 
-    :param [float,int] num:
-    Float number to be converted to Constant
+    :param float num:
+        Float number to be converted to Constant
 
+    :return:
+        Float number converted to a Constant object
+    :rtype: object
     """
 
-    return(Constant( name = str(num), units = null_dimension, value = float(num) ))
+    return Constant(name=str(num), units = null_dimension, value = float(num) )
+
 
 class Constant(Quantity):
-
     """
-
     Constant class definition, that holds capabilities for:
-    - Constant definition, including its units for posterior dimensional coherence analysis
-    - Constant operations using overloaded mathematical operators, making possible an almost-writing-syntax (eg: a() + b() )
 
+    * Constant definition, including its units for posterior dimensional coherence analysis
+
+    * Constant operations using overloaded mathematical operators,
+    making possible an almost-writing-syntax (eg: a() + b() )
     """
 
     def __init__(self, name, units , description="", value=0):
