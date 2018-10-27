@@ -1,10 +1,7 @@
+# *coding:utf-8*
+
 """
-
-Define Model class.
--Stores several equations.
--Stores one domain in which the variables are distributed.
--Stores information about input and output variables (exposed variables).
-
+Define Model class, for storage of equations, distribution on domains and information about input and output variables (exposed variables)
 """
 
 import sys

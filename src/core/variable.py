@@ -14,9 +14,9 @@ class Variable(Quantity):
 
     """
 
-    def __init__(self, name, units , description = "", isLowerBounded = False, isUpperBounded = False, lowerBound = None, upperBound = None, value = 0):
+    def __init__(self, name, units , description = "", isLowerBounded = False, isUpperBounded = False, lowerBound = None, upperBound = None, latex_text=None, value = 0):
 
-        super(self.__class__,self).__init__(name, units, description, value)
+        super(self.__class__,self).__init__(name, units, description, value, latex_text)
 
         """
         Initial definition.

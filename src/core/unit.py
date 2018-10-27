@@ -8,17 +8,16 @@ Define the Quantity (QTY), base-class for all unit-containg objects (Variables, 
 
 import copy
 import error_definitions as errors
-from expression_evaluation import EquationNode, ExpressionTree
+import sympy as sp
+from expression_evaluation import EquationNode
 
 # Null dimension dict
 null_dimension = {'m':0.0,'kg':0.0,'s':0.0,'A':0.0,'K':0.0,'mol':0.0,'cd':0.0}
 
-
 class Quantity:  # New-style class syntax
     """
     Return an Quantity (QTY) class with given name, description and other variables
-    (defaults to "", False and None, when aplicable). Used for return of an Variable object
-    as the result of variable operations, with dimension given by units
+    (defaults to "", False and None, when aplicable). Used for return of an Variable object as the result of variable operations, with dimension given by units
 
     :ivar str name:
     Name for the current QTY
@@ -90,12 +89,15 @@ class Quantity:  # New-style class syntax
     def __call__(self):
         """
         Overloaded function for calling the QTY as an function. 
-        Return the EquationNode expression for composition of an ExpressionTree
+        Return an EquationNode object.
+
+        :return:
+            Return an EquationNode object corresponding to current QTY object
+        :rtype EquationNode:
         """
 
-        return ExpressionTree(
-            EquationNode(name=self.name, base_object=self, latex_text=self.latex_text)
-        )
+        return EquationNode(name=self.name, symbolic_object=sp.symbols(self.name), symbolic_map={self.name:self}, unit_object=self.units, \
+            latex_text=self.latex_text)
 
     def __add__(self, other_obj):
         """
@@ -141,7 +143,7 @@ class Quantity:  # New-style class syntax
 
             # Dimensional coherence confirmed. Insert here commands
 
-            new_obj = self._return_proto_object(units = self.units, value = self.value+other_obj.value)
+            new_obj = self._return_proto_object(units = self.units, value = self.value-other_obj.value)
 
             return new_obj
 
@@ -313,6 +315,53 @@ class Unit:  # New-style class syntax
 
                 self.dimension[dim_i] = null_dimension[dim_i]
 
+
+    def __add__(self, other_unit):
+        """
+        Overloaded function for summation of two units . As by definition the overloaded function returns the same unit if dimensional coherence is confirmed, or raise a error otherwise (retuning None).
+
+        :param Unit other_unit:
+            Other unit for summation.
+
+        :return:
+            New unit returned by the arithmetic operation between two primitive units,
+            with corresponding dimension.
+        :rtype Unit new_unit:
+        """
+
+        if self._check_dimensional_coherence(other_unit) == True:
+
+            return(self)
+
+        else:
+
+            raise errors.DimensionalCoherenceError(self,other_unit)
+
+            return(None)
+
+    def __sub__(self, other_unit):
+        """
+        Overloaded function for subtraction of two units . As by definition the overloaded function returns the same unit if dimensional coherence is confirmed, or raise a error otherwise (retuning None).
+
+        :param Unit other_unit:
+            Other unit for subtraction.
+
+        :return:
+            New unit returned by the arithmetic operation between two primitive units,
+            with corresponding dimension.
+        :rtype Unit new_unit:
+        """
+
+        if self._check_dimensional_coherence(other_unit) == True:
+
+            return(self)
+
+        else:
+
+            raise errors.DimensionalCoherenceError(self,other_unit)
+
+            return(None)
+
     def __mul__(self, other_unit):
         """
         Overloaded function for multiplication of two units with subsequent
@@ -345,7 +394,41 @@ class Unit:  # New-style class syntax
 
         return new_unit
 
+
     def __div__(self, other_unit):
+        """
+        Overloaded function for division of two units with subsequent subtraction of its
+        dimensions. As by definition the overloaded function returns a new dimensional dict,
+        typical usage scenario is the definition of units
+        derived from base-ones (eg:m / s = m/s).
+
+        :param Unit other_unit:
+            Other unit for division.
+
+        :return:
+            New unit returned by the arithmetic operation between two primitive units,
+            with corresponding dimension.
+        :rtype Unit new_unit:
+        """
+
+        new_dimension = copy.copy(other_unit.dimension)
+
+        for (dim_i, idx_i) in zip(new_dimension.keys(), new_dimension.values()):
+
+            try:
+
+                new_dimension[dim_i] = self.dimension[dim_i] - idx_i
+
+            except KeyError:  # First unit (self) has no dimension 'dim_i' defined
+
+                new_dimension[dim_i] = -idx_i
+
+        new_unit = self._return_proto_unit(dimension_dict=new_dimension)
+
+        return new_unit
+
+
+    def __truediv__(self, other_unit):
         """
         Overloaded function for division of two units with subsequent subtraction of its
         dimensions. As by definition the overloaded function returns a new dimensional dict,

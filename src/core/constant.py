@@ -30,9 +30,9 @@ class Constant(Quantity):
     making possible an almost-writing-syntax (eg: a() + b() )
     """
 
-    def __init__(self, name, units , description="", value=0):
+    def __init__(self, name, units , description="", value=0, latex_text=""):
 
-        super(self.__class__,self).__init__(name, units, description, value)
+        super(self.__class__,self).__init__(name, units, description, value, latex_text)
 
         """
         Initial definition.
