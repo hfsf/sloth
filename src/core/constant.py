@@ -2,7 +2,8 @@
 Define constant class.
 """
 
-from unit import Quantity, null_dimension
+from quantity import Quantity
+from unit import null_dimension
 
 
 def convert_to_constant(num):
@@ -32,7 +33,7 @@ class Constant(Quantity):
 
     def __init__(self, name, units , description="", value=0, latex_text=""):
 
-        super(self.__class__,self).__init__(name, units, description, value, latex_text)
+        super().__init__(name, units, description, value, latex_text)
 
         """
         Initial definition.

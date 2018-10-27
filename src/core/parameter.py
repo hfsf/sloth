@@ -2,7 +2,7 @@
 Define parameter class.
 """
 
-from unit import Quantity
+from quantity import Quantity
 import numpy as np
 
 
@@ -19,7 +19,7 @@ class Parameter(Quantity):
 
     def __init__(self, name, units , description="", value=0, latex_text=""):
 
-        super(self.__class__,self).__init__(name, units, description, value, latex_text)
+        super().__init__(name, units, description, value, latex_text)
 
         """
         Initial definition.
