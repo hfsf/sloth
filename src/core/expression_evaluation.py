@@ -1,10 +1,11 @@
 # *coding:utf-8*
 
 """
-Define EquationNode class, that holds the reference to variables in the ExpressionTrees.
+Define EquationNode class, that holds the reference to variables in the equations
 """
 
 import error_definitions as errors
+from template_units import _ as dimless
 import sympy as sp
 
 class EquationNode:
@@ -19,7 +20,7 @@ class EquationNode:
           Eg: IfThen(CONDITION, [THEN_CLAUSE,ELSE_CAUSE]) 
     """
 
-    def __init__(self, name='', symbolic_object=None, symbolic_map=[], unit_object=None, args=[], latex_text=''):
+    def __init__(self, name='', symbolic_object=None, symbolic_map=[], unit_object=dimless, args=[], latex_text=''):
 
         """
         Instantiate EquationNode
@@ -77,17 +78,28 @@ class EquationNode:
             enode_ = self.__class__(
                                 name="+".join([self.name, other_obj.name]), \
                                 symbolic_object=self.symbolic_object+other_obj.symbolic_object, \
-                                symbolic_map={**self.symbolic_map, 
-                                                **other_obj.symbolic_map
-                                              }, \
+                                symbolic_map={**self.symbolic_map, **other_obj.symbolic_map}, \
                                 unit_object=self.unit_object+other_obj.unit_object,
                                 latex_text=self.latex_text+"+"+other_obj.latex_text
                                 )
 
             return(enode_)
+
+        elif isinstance(other_obj, int) or isinstance(other_obj, float):
+
+            enode_ = self.__class__(
+                            name="+".join([self.name, str(other_obj)]), \
+                            symbolic_object=self.symbolic_object+other_obj,
+                            symbolic_map={**self.symbolic_map}, \
+                            unit_object=self.unit_object, \
+                            latex_text=self.latex_text+"+"+str(other_obj)
+                                )
+
+            return(enode_)
+
         else:
 
-            raise errors.UnexpectedValueError("EquationNode")
+            raise errors.UnexpectedValueError("(int, float, EquationNode)")
 
     def __sub__(self, other_obj):
 
@@ -104,6 +116,7 @@ class EquationNode:
 
         # * === Code snippet only work on Python 3.5+ ===
 
+
         if isinstance(other_obj, self.__class__):
 
             # other_obj is another ENODE.
@@ -111,17 +124,28 @@ class EquationNode:
             enode_ = self.__class__(
                                 name="-".join([self.name, other_obj.name]), \
                                 symbolic_object=self.symbolic_object-other_obj.symbolic_object, \
-                                symbolic_map={**self.symbolic_map, 
-                                                **other_obj.symbolic_map
-                                              }, \
+                                symbolic_map={**self.symbolic_map, **other_obj.symbolic_map}, \
                                 unit_object=self.unit_object-other_obj.unit_object,
                                 latex_text=self.latex_text+"-"+other_obj.latex_text
                                 )
 
             return(enode_)
+
+        elif isinstance(other_obj, int) or isinstance(other_obj, float):
+
+            enode_ = self.__class__(
+                            name="-".join([self.name, str(other_obj)]), \
+                            symbolic_object=self.symbolic_object-other_obj,
+                            symbolic_map={**self.symbolic_map}, \
+                            unit_object=self.unit_object, \
+                            latex_text=self.latex_text+"-"+str(other_obj)
+                                )
+
+            return(enode_)
+
         else:
 
-            raise errors.UnexpectedValueError("EquationNode")
+            raise errors.UnexpectedValueError("(int, float, EquationNode)")
 
     def __mul__(self, other_obj):
 
@@ -145,17 +169,29 @@ class EquationNode:
             enode_ = self.__class__(
                                 name="*".join([self.name, other_obj.name]), \
                                 symbolic_object=self.symbolic_object*other_obj.symbolic_object, \
-                                symbolic_map={**self.symbolic_map, 
-                                                **other_obj.symbolic_map
-                                              }, \
+                                symbolic_map={**self.symbolic_map, **other_obj.symbolic_map}, \
                                 unit_object=self.unit_object*other_obj.unit_object,
                                 latex_text=self.latex_text+"*"+other_obj.latex_text
                                 )
 
             return(enode_)
+
+        elif isinstance(other_obj, int) or isinstance(other_obj, float):
+
+            enode_ = self.__class__(
+                            name="*".join([self.name, str(other_obj)]), \
+                            symbolic_object=self.symbolic_object*other_obj,
+                            symbolic_map={**self.symbolic_map}, \
+                            unit_object=self.unit_object, \
+                            latex_text=self.latex_text+"*"+str(other_obj)
+                                )
+
+            return(enode_)
+
         else:
 
-            raise errors.UnexpectedValueError("EquationNode")
+            raise errors.UnexpectedValueError("(int, float, EquationNode)")
+
 
     def __div__(self, other_obj):
 
@@ -179,17 +215,29 @@ class EquationNode:
             enode_ = self.__class__(
                                 name="/".join([self.name, other_obj.name]), \
                                 symbolic_object=self.symbolic_object/other_obj.symbolic_object, \
-                                symbolic_map={**self.symbolic_map, 
-                                                **other_obj.symbolic_map
-                                              }, \
+                                symbolic_map={**self.symbolic_map, **other_obj.symbolic_map}, \
                                 unit_object=self.unit_object/other_obj.unit_object,
-                                latex_text=self.latex_text+"/"+other_obj.latex_text
+                                latex_text="\\frac{"+self.latex_text+"}{"+other_obj.latex_text+"}"
                                 )
 
             return(enode_)
+
+        elif isinstance(other_obj, int) or isinstance(other_obj, float):
+
+            enode_ = self.__class__(
+                        name="/".join([self.name, str(other_obj)]), \
+                        symbolic_object=self.symbolic_object/other_obj,
+                        symbolic_map={**self.symbolic_map}, \
+                        unit_object=self.unit_object, \
+                        latex_text="\\frac{"+self.latex_text+"}{"+str(other_obj)+"}"
+                                )
+
+            return(enode_)
+
         else:
 
-            raise errors.UnexpectedValueError("EquationNode")
+            raise errors.UnexpectedValueError("(int, float, EquationNode)")
+
 
     def __truediv__(self, other_obj):
 
@@ -214,13 +262,81 @@ class EquationNode:
                                 name="/".join([self.name, other_obj.name]), \
                                 symbolic_object=self.symbolic_object/other_obj.symbolic_object, \
                                 symbolic_map={**self.symbolic_map, 
-                                                **other_obj.symbolic_map
-                                              }, \
+                                                **other_obj.symbolic_map}, \
                                 unit_object=self.unit_object/other_obj.unit_object,
-                                latex_text=self.latex_text+"/"+other_obj.latex_text
+                                latex_text="\\frac{"+self.latex_text+"}{"+other_obj.latex_text+"}"
                                 )
 
             return(enode_)
+
+        elif isinstance(other_obj, int) or isinstance(other_obj, float):
+
+            enode_ = self.__class__(
+                        name="/".join([self.name, str(other_obj)]), \
+                        symbolic_object=self.symbolic_object/other_obj,
+                        symbolic_map={**self.symbolic_map}, \
+                        unit_object=self.unit_object, \
+                        latex_text="\\frac{"+self.latex_text+"}{"+str(other_obj)+"}"
+                                )
+
+            return(enode_)
+
         else:
 
-            raise errors.UnexpectedValueError("EquationNode")
+            raise errors.UnexpectedValueError("(int, float, EquationNode)")
+
+
+    def __pow__(self, other_obj):
+
+        """
+        Overloaded function for power of ENODE object. The __pow__ function check the dimensional coherence through other_obj.unit_object._is_dimensionless
+
+        :param ENODE other_obj:
+            Second ENODE object for which mathematical operation will be performed.
+
+        :return:
+            Return a new ENODE corresponding to the result of mathematical operation.
+        :rtype EquationNode:
+        """
+
+        # * === Code snippet only work on Python 3.5+ ===
+
+        if isinstance(other_obj, self.__class__):
+
+            # other_obj is another ENODE.
+
+            if other_obj.unit_object._is_dimensionless() == True:
+
+                #other_obj is dimensionless
+
+                enode_ = self.__class__(
+                                    name="**".join([self.name, other_obj.name]), \
+                                    symbolic_object=self.symbolic_object**other_obj.symbolic_object, \
+                                    symbolic_map={**self.symbolic_map, 
+                                                    **other_obj.symbolic_map
+                                                  }, \
+                                    unit_object=self.unit_object**other_obj.unit_object,
+                                    latex_text=self.latex_text+"^"+other_obj.latex_text
+                                    )
+
+                return(enode_)
+
+            else:
+
+                raise errors.DimensionalCoherenceError(other_obj.unit_object, None)
+        
+        elif isinstance(other_obj, int) or isinstance(other_obj, float):
+
+                enode_ = self.__class__(
+                                name="**".join([self.name, str(other_obj)]), \
+                                symbolic_object=self.symbolic_object**other_obj,
+                                symbolic_map={**self.symbolic_map}, \
+                                unit_object=self.unit_object**other_obj, \
+                                latex_text=self.latex_text+"^"+str(other_obj)
+                                    )
+
+                return(enode_)
+
+        else:
+
+            raise errors.UnexpectedValueError("(int, float, EquationNode)")

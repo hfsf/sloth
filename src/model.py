@@ -4,7 +4,6 @@
 Define Model class, for storage of equations, distribution on domains and information about input and output variables (exposed variables)
 """
 
-import sys
 
 import core.error_definitions as errors  
 from core.equation import *
@@ -13,7 +12,7 @@ import core.constant as constant
 from connection import *
 import beautifultable
 
-class Model(object):
+class Model:
 
     """
     

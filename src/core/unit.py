@@ -274,15 +274,33 @@ class Unit:  # New-style class syntax
         :rtype Unit new_unit:
         """
 
-        new_dimension = copy.copy(self.dimension)
+        if isinstance(power, int) or isinstance(power, float):
 
-        for (dim_i, idx_i) in zip(self.dimension.keys(), self.dimension.values()):
+            # power is a number.
 
-            new_dimension[dim_i] = idx_i*power
+            new_dimension = copy.copy(self.dimension)
 
-        new_unit = self._return_proto_unit(dimension_dict=new_dimension)
+            for (dim_i, idx_i) in zip(self.dimension.keys(), self.dimension.values()):
 
-        return new_unit
+                new_dimension[dim_i] = idx_i*power
+
+            new_unit = self._return_proto_unit(dimension_dict=new_dimension)
+
+            return new_unit
+
+        elif isinstance(power, self.__class__) and power._is_dimensionless():
+
+            # power is another unit, presumably dimensionless
+
+            new_unit = self._return_proto_unit(dimension_dict=self.dimension)
+
+            return new_unit
+
+        else:
+
+            # power is not a number, neither a dimensionless unit.
+
+            raise errors.UnexpectedValueError("(int, float, dimensionless unit)")
 
     def _check_dimensional_coherence(self, other_unit):
         """

@@ -80,9 +80,15 @@ class DimensionalCoherenceError(Exception):
     """
     def __init__(self, unit_1, unit_2):
 
-        self.unit_1 = unit_1
+        if unit_1 == None:
+            self.unit_1 = {'m':0.0,'kg':0.0,'s':0.0,'A':0.0,'K':0.0,'mol':0.0,'cd':0.0}
+        else:
+            self.unit_1 = unit_1
 
-        self.unit_2 = unit_2
+        if unit_2 == None:
+            self.unit_2 = {'m':0.0,'kg':0.0,'s':0.0,'A':0.0,'K':0.0,'mol':0.0,'cd':0.0}
+        else:
+            self.unit_2 = unit_2
 
     def __str__(self):
 
