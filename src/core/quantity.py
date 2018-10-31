@@ -5,14 +5,15 @@ Define the Quantity (QTY), base-class for all unit-containg objects (Variables, 
 """
 
 import copy
-import error_definitions as errors
+from .error_definitions import DimensionalCoherenceError
 import sympy as sp
-from expression_evaluation import EquationNode
+from .expression_evaluation import EquationNode
 
 # Null dimension dict
 null_dimension = {'m':0.0,'kg':0.0,'s':0.0,'A':0.0,'K':0.0,'mol':0.0,'cd':0.0}
 
 class Quantity:  # New-style class syntax
+
     """
     Return an Quantity (QTY) class with given name, description and other variables
     (defaults to "", False and None, when aplicable). Used for return of an Variable object as the result of variable operations, with dimension given by units
@@ -120,7 +121,7 @@ class Quantity:  # New-style class syntax
 
         else:
 
-            raise(errors.DimensionalCoherenceError(self.units, other_obj.units))
+            raise(DimensionalCoherenceError(self.units, other_obj.units))
 
     def __sub__(self, other_obj):
         """
@@ -147,7 +148,7 @@ class Quantity:  # New-style class syntax
 
         else:
 
-            raise(errors.DimensionalCoherenceError(self.units, other_obj.units))
+            raise(DimensionalCoherenceError(self.units, other_obj.units))
 
     def __mul__(self, other_obj):
         """

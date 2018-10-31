@@ -5,7 +5,7 @@ Define Unit class, for ulterior utilization (eg:Variable,Parameter)
 """
 
 import copy
-import error_definitions as errors
+from .error_definitions import DimensionalCoherenceError, UnexpectedValueError
 
 # Null dimension dict
 null_dimension = {'m':0.0,'kg':0.0,'s':0.0,'A':0.0,'K':0.0,'mol':0.0,'cd':0.0}
@@ -135,7 +135,7 @@ class Unit:  # New-style class syntax
 
         else:
 
-            raise errors.DimensionalCoherenceError(self,other_unit)
+            raise DimensionalCoherenceError(self,other_unit)
 
             return(None)
 
@@ -158,7 +158,7 @@ class Unit:  # New-style class syntax
 
         else:
 
-            raise errors.DimensionalCoherenceError(self,other_unit)
+            raise DimensionalCoherenceError(self,other_unit)
 
             return(None)
 
@@ -300,7 +300,7 @@ class Unit:  # New-style class syntax
 
             # power is not a number, neither a dimensionless unit.
 
-            raise errors.UnexpectedValueError("(int, float, dimensionless unit)")
+            raise UnexpectedValueError("(int, float, dimensionless unit)")
 
     def _check_dimensional_coherence(self, other_unit):
         """

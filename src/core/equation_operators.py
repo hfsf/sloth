@@ -5,7 +5,7 @@ All those functions return EquationNode objects.
 import sympy as sp
 import numpy as np
 from expression_evaluation import EquationNode
-import error_definitions as errors
+#import error_definitions as errors
 
 
 """
@@ -58,7 +58,9 @@ def wrapper(own_func, obj, base_func, latex_func_name=None):
 
         else:
 
-            raise errors.UnexpectedValueError("(int, float, EquationNode)")            
+            # Defined directly to avoid circular dependency error while importing expression_evaluation
+
+            raise TypeError("Unexpected value error. A (int, float, EquationNode) was expected, but one divergent type was supplied.")            
 def Log(obj):
 
     return wrapper(Log, obj, sp.log)

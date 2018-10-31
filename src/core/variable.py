@@ -2,7 +2,7 @@
 Define variable class.
 """
 
-from quantity import Quantity
+from .quantity import Quantity
 
 class Variable(Quantity):
 
@@ -14,7 +14,7 @@ class Variable(Quantity):
 
     """
 
-    def __init__(self, name, units , description = "", isLowerBounded = False, isUpperBounded = False, lowerBound = None, upperBound = None, latex_text=None, value = 0):
+    def __init__(self, name, units , description = "", is_lower_bounded = False, is_upper_bounded = False, lower_bound = None, upper_bound = None,  value = 0, latex_text=""):
 
         super().__init__(name, units, description, value, latex_text)
 
@@ -30,18 +30,18 @@ class Variable(Quantity):
         :param str description:
         Description for the present variable. Defauls to ""
 
-        :param bool isLowerBounded:
+        :param bool isLower_bounded:
         Define if the Variable object has some minimum value restriction.
         A sanity check is performed and if lowerBound != None, isLowerBounded = True.
 
-        :param bool isUpperBounded:
+        :param bool isUpper_bounded:
         Define if the Variable object has some maximum value restriction.
         A sanity check is performed and if upperBound != None, isUpperBounded = True.
 
-        :param float lowerBound:
+        :param float lower_bound:
         Minimum value for Variable object
 
-        :param float upperBound:
+        :param float upper_bound:
         Minimum value for Variable object
 
         :param float value:
@@ -59,11 +59,11 @@ class Variable(Quantity):
 
         """
 
-        self.isLowerBounded = ( lowerBound != None ) 
+        self.is_lower_bounded = ( lower_bound != None ) 
 
-        self.isUpperBounded = ( upperBound != None )
+        self.is_upper_bounded = ( upper_bound != None )
 
-        self.lowerBound = lowerBound
+        self.lower_bound = lower_bound
 
-        self.upperBound = upperBound
+        self.upper_bound = upper_bound
 

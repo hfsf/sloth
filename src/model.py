@@ -1,72 +1,64 @@
 # *coding:utf-8*
 
 """
-Define Model class, for storage of equations, distribution on domains and information about input and output variables (exposed variables)
+Define Model class, for storage of equations, distribution on domains and information about input and output variables (exposed variables).
 """
-
 
 import core.error_definitions as errors  
 from core.equation import *
 import core.variable as variable
 import core.constant as constant
-from connection import *
+import core.parameter as parameter
 import beautifultable
 
 class Model:
 
-    """
-    
-    Model class definition. Holds capabilites for:
-    - Storage of several Equation objects, curating for DOF
-    - Declaration of exposed variables (input, output) through Connections.
+    """   
+    Model class definition. Stores several Equation objects, map exposed the exposed variables of the model and allow distribution of a variable among a specific domain.
 
-    * TODO: 
-    - Include capabilities for inheriting from parent models (parent_model)
+    * Note: 
 
-    -------------------------------------------------------------------------
+        Mandatory structure that user should supply when importing Model:
 
-    ## Mandatory structure that user should supply when importing Model:
+        * DeclareVariables() 
+            Function  that is executed in the initial preparation of the model, declaring all the Variable objects for later reference.
 
-    * DeclareVariables() 
-        Function  that is executed in the initial preparation of the model, declaring all the Variable objects for later reference.
+        * DeclareExposedVariables()
+            Function for setting already defined variables as 'input' or 'output'.
 
-    * DeclareExposedVariables()
-        Function for setting already defined variables as 'input' or 'output'.
+        * DeclareParameters()
+            Likewise DeclareVariables(), this function is used in the initial preparation of the model, declaring the Parameter objects.
 
-    * DeclareParameters()
-        Likewise DeclareVariables(), this function is used in the initial preparation of the model, declaring the Parameter objects.
+        * DeclareConstants()
+            By now, you shall have got the idea ;)
 
-    * DeclareConstants()
-        By now, you shall have got the idea ;)
+        *DeclareEquations()
+            Function for declaration of the Equations. Later, a sanity check (method .performSanityCheck) is performed examinating all the declared Variables, Parameters, Constants and checking if those was declared.
 
-    *DeclareEquations()
-        Function for declaration of the Equations. Later, a sanity check (method .performSanityCheck) is performed examinating all the declared Variables, Parameters, Constants and checking if those was declared.
-
-    * DeclareConnections()
-        Function for declaration of the Connections. Those special equations are used to receive external input (eg: output from another model, external input for the current process, etc) and provide output (eg: input to another model, or simple output for the current process).
+        * DeclareConnections()
+            Function for declaration of the Connections. Those special equations are used to receive external input (eg: output from another model, external input for the current process, etc) and provide output (eg: input to another model, or simple output for the current process).
 
     """
 
     def __init__(self, name = "", description = "", parent_model = None):
 
-        if parent_model != None: #Inherit from parent_model if it was defined.
+        if parent_model != None: 
 
-            super(self.__class__,self).__init__(name, description)
+            # Inherit from parent_model if it was defined.
+
+            super().__init__(name, description)
 
         """
+        Instantiate Model.
 
-        Initial definitions.
+        :ivar str name:
+            Name for the current model
 
-        :param str name:
-        Name for the current model
-
-        :param str description"
-        Short description of the current model
+        :ivar str description"
+            Short description of the current model
 
         :param Model parent_model:
-        Base model fro the current, which will inherit equations, exposed variables, etc from the first.
-        Defaults to 'None' (so, its a brand new model).
-
+            Base model fro the current, which will inherit equations, exposed variables, etc from the first. Defaults to None
         """
 
         self.name = name
@@ -94,63 +86,57 @@ class Model:
     def _gatherObjectsInfo_(self):
 
         """
-
-        Function for gathering information about the name of all declared objects for the current model. Mainly used for reporting error of utilization of non-declared objects, or debug purposes.
-
+        Function for gathering information about the name of all declared objects for the current model.
         """
 
         self.objects_info = {}
 
-        self.objects_info[ 'equations' ] = self.equations.keys()
+        self.objects_info[ 'equations' ] = list(self.equations.keys())
 
-        self.objects_info[ 'constants' ] = self.constants.keys()
+        self.objects_info[ 'constants' ] = list(self.constants.keys())
 
-        self.objects_info[ 'parameters' ] = self.parameters.keys()
+        self.objects_info[ 'parameters' ] = list(self.parameters.keys())
 
-        self.objects_info[ 'variables' ] = self.variables.keys()
+        self.objects_info[ 'variables' ] = list(self.variables.keys())
 
-        self.objects_info[ 'connections' ] = self.connections.keys()
+        self.objects_info[ 'connections' ] = list(self.connections.keys())
 
         self.objects_info[ 'exposed_vars' ] = self.exposed_vars
 
     def _infoDegreesOfFreedom_(self):
 
         """
-
         Return information about the number of degrees of freedom
-
+        
+        :return:
+            Number of design, control and chemical degrees of freedom.
+        :rtype:
+            tuple (int,int,int)
         """
 
         rtrn_tab = beautifultable.BeautifulTable()
 
-        rtrn_tab.insert_row(['Nb. Equations','Nb. Variables', 'Nb. Parameters'])
-        rtrn_tab.insert_row([ str(len(self.equations)), \
+        rtrn_tab.column_headers = ['Nb. Equations','Nb. Variables', 'Nb. Parameters']
+        rtrn_tab.append_row([ str(len(self.equations)), \
                               str(len(self.variables)) , \
                               str(len(self.parameters))
                             ])
-        print rtrn_tab
+        print(rtrn_tab)
 
         rtrn_tab = beautifultable.BeautifulTable()
 
-        rtrn_tab.insert_row(['Nb. Components','Nb. Phases'])
-        rtrn_tab.insert_row([ str(0), str(0) ])
+        rtrn_tab.column_headers = ['Nb. Components','Nb. Phases']
+        rtrn_tab.append_row([ str(0), str(0) ])
 
-        print rtrn_tab
+        print(rtrn_tab)
 
-
-        rtrn_tab = beautifultable.BeautifulTable()
-
-        rtrn_tab.insert_row(['Nb. M.V.'])
-        rtrn_tab.insert_row([ str(0)])
-
-        print rtrn_tab
 
         rtrn_tab = beautifultable.BeautifulTable()
 
-        rtrn_tab.insert_row(['Nb. DF. Design','Nb. DF. Control', 'Nb. DF. Chemical'])
-        rtrn_tab.insert_row([ str(df_design), str(df_control), str(df_chemical) ])
+        rtrn_tab.column_headers = ['Nb. M.V.']
+        rtrn_tab.append_row([ str(0)])
 
-        print rtrn_tab
+        print(rtrn_tab)
 
         df_design = len(self.equations) - (len(self.variables) + len(self.parameters))
 
@@ -158,14 +144,20 @@ class Model:
 
         df_chemical = 0
 
+        rtrn_tab = beautifultable.BeautifulTable()
+
+        rtrn_tab.column_headers = ['Nb. DF. Design','Nb. DF. Control', 'Nb. DF. Chemical']
+        rtrn_tab.append_row([ str(df_design), str(df_control), str(df_chemical) ])
+
+        print(rtrn_tab)
+
+
         return(df_design, df_control, df_chemical)
 
     def __call__(self):
 
         """
-
         Overloaded function used to resolve all the configurations necessary for model definition, such as equation, variable, parameters and constant declarations, etc
-
         """
 
         self.DeclareConstants()
@@ -182,11 +174,11 @@ class Model:
 
         if len(self.variables) == 0:
 
-            print "Warning: No variables were declared."
+            print("Warning: No variables were declared.")
 
         if len(self.equations) == 0:
 
-            print "Warning: No equations were declared."
+            print("Warning: No equations were declared.")
 
     def createExposedVariable(self, exposed_var, connection_type = 'source'):
 
@@ -194,42 +186,44 @@ class Model:
                for exposed_var_i in self.exposed_vars[connection_type]
               ) != True:
 
-            raise ( errors.UnexpectedObjectDeclarationError( exposed_var.name, self.objects_info ) )            
-    def createEquation(self, name, description, fast_expr = None):
+            raise ( errors.UnexpectedObjectDeclarationError( exposed_var.name, self.objects_info ) )
+
+        else:
+
+            self.exposed_vars[exposed_var.name] = exposed_var
+
+            return(exposed_var)
+
+    def createEquation(self, name, description="", expr=None):
 
         """
-        
-        Function for creation of an Equation object. Store an Equation object in '.equations' dict. Mandatory interface for model equation creation in the DeclareEquations() function.
+        Function for creation of an Equation object. Mandatory interface for model equation creation in the specific declaratory section.
 
-        :param str name:
-        Name for the current equation
+        :ivar str name:
+            Name for the current equation
 
-        :param str description:
-        Description for the present equation. Defauls to ""
+        :ivar str description:
+            Description for the present equation. Defaults to ""
 
-        :param ExpressionTree fast_expr:
-        ExpressionTree object to declare for the current Equation object.  If declared, the moethod '.setResidual' are executed as a shortcut. Defaults to None.
-
+        :param EquationNode expr:
+            EquationNode object to declare for the current Equation object. Defaults to None
         """
 
-        eq = Equation(name, description, fast_expr)
+        eq = Equation(name, description, expr)
 
-        eq._sweep_()
+        eq._sweepObjects()
 
         #Check if all objects used in the current equation were declared
 
-        all_objects_keys = self.variables.keys()  + \
-                           self.parameters.keys() + \
-                           self.constants.keys()
+        all_objects_keys = list(self.variables.keys())  + \
+                           list(self.parameters.keys()) + \
+                           list(self.constants.keys())
 
-        if all( obj_i in all_objects_keys for obj_i in eq.declared_objects.keys() ) != True:
+        if all( obj_i in all_objects_keys for obj_i in eq.objects_declared.keys() ) != True:
 
             self._gatherObjectsInfo_()
 
-            raise (errors.UnexpectedObjectDeclarationError( eq.declared_objects.keys(), \
-                                                            self.objects_info 
-                                                          )
-                  )
+            raise (errors.UnexpectedObjectDeclarationError( eq.objects_declared.keys(), self.objects_info ))
         else:
 
             self.equations[eq.name] = eq
@@ -239,7 +233,6 @@ class Model:
     def createConnection(self, name, description, connection_type = 'source', fast_expr = None):
 
         """
-        
         Function for creation of an Connection object. Store an Connection object in '.connections' dict. Mandatory interface for model connection creation in the DeclareConnections() function.
 
         :param str name:
@@ -258,7 +251,7 @@ class Model:
 
         eq = Connection(name, description, connection_type, fast_expr)
 
-        eq._sweep_()
+        eq._sweepObjects()
 
         #Check if all objects used in the current equation were declared
 
@@ -342,7 +335,7 @@ class Model:
 
         """
 
-        par = Parameter.Parameter(name, units , description, value)
+        par = parameter.Parameter(name, units , description, value)
 
         self.parameters[par.name] = par
 

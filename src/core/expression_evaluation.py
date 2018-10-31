@@ -4,9 +4,8 @@
 Define EquationNode class, that holds the reference to variables in the equations
 """
 
-import error_definitions as errors
-from template_units import _ as dimless
-import sympy as sp
+from .error_definitions import UnexpectedValueError, DimensionalCoherenceError
+from .template_units import _ as dimless
 
 class EquationNode:
 
@@ -99,7 +98,7 @@ class EquationNode:
 
         else:
 
-            raise errors.UnexpectedValueError("(int, float, EquationNode)")
+            raise UnexpectedValueError("(int, float, EquationNode)")
 
     def __sub__(self, other_obj):
 
@@ -145,7 +144,7 @@ class EquationNode:
 
         else:
 
-            raise errors.UnexpectedValueError("(int, float, EquationNode)")
+            raise UnexpectedValueError("(int, float, EquationNode)")
 
     def __mul__(self, other_obj):
 
@@ -190,7 +189,7 @@ class EquationNode:
 
         else:
 
-            raise errors.UnexpectedValueError("(int, float, EquationNode)")
+            raise UnexpectedValueError("(int, float, EquationNode)")
 
 
     def __div__(self, other_obj):
@@ -236,7 +235,7 @@ class EquationNode:
 
         else:
 
-            raise errors.UnexpectedValueError("(int, float, EquationNode)")
+            raise UnexpectedValueError("(int, float, EquationNode)")
 
 
     def __truediv__(self, other_obj):
@@ -283,7 +282,7 @@ class EquationNode:
 
         else:
 
-            raise errors.UnexpectedValueError("(int, float, EquationNode)")
+            raise UnexpectedValueError("(int, float, EquationNode)")
 
 
     def __pow__(self, other_obj):
@@ -323,7 +322,7 @@ class EquationNode:
 
             else:
 
-                raise errors.DimensionalCoherenceError(other_obj.unit_object, None)
+                raise DimensionalCoherenceError(other_obj.unit_object, None)
         
         elif isinstance(other_obj, int) or isinstance(other_obj, float):
 
@@ -339,4 +338,4 @@ class EquationNode:
 
         else:
 
-            raise errors.UnexpectedValueError("(int, float, EquationNode)")
+            raise UnexpectedValueError("(int, float, EquationNode)")

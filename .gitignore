@@ -9,6 +9,9 @@
 *.pyc
 *.backup
 
+#Files used for testing purposes
+*.test
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

@@ -2,8 +2,8 @@
 Define constant class.
 """
 
-from quantity import Quantity
-from unit import null_dimension
+from .quantity import Quantity
+from .unit import null_dimension
 
 
 def convert_to_constant(num):

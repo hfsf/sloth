@@ -9,15 +9,44 @@ Define Problem class.
 class Problem(object):
 
     """
-
-    Problem class definitions. Holds capabilities for:
-    - Unite several Model objects into one single equation block for solving.
-    - Create domain for storage of Variable objects (eg: tim-dependent concentration profile)
-
+    Problem class definitions. Unite several Model objects into one single equation block for solving.
     """
 
-    def __init__(self):
+    def __init__(self, name, description=""):
 
-        pass
+        """
+        Instantiate Problem.
+
+        :ivar str name:
+            Name for the current problem
+
+        :ivar str description:
+            Description of the current problem
+        """
+
+        self.name = name
+
+        self.description = description
+
+        self.models = {}
+
+    def addModels(self, model_list):
+
+        """
+        Add models to current problem
+
+        :param list(Model) mod_list:
+            Model to be added to the current Problem.
+        """
         
+        if isinstance(model_list,list):
 
+            # A list of models were supplied
+
+            self.models = dict( (modx.name,modx) for modx in model_list )
+
+        else:
+
+            # A single model was supplied
+
+            self.models[model_list.name] = model_list

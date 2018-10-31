@@ -2,7 +2,7 @@
 Define parameter class.
 """
 
-from quantity import Quantity
+from .quantity import Quantity
 import numpy as np
 
 
