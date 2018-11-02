@@ -5,7 +5,6 @@ Define EquationNode class, that holds the reference to variables in the equation
 """
 
 from .error_definitions import UnexpectedValueError, DimensionalCoherenceError
-from .template_units import _ as dimless
 
 class EquationNode:
 
@@ -19,7 +18,7 @@ class EquationNode:
           Eg: IfThen(CONDITION, [THEN_CLAUSE,ELSE_CAUSE]) 
     """
 
-    def __init__(self, name='', symbolic_object=None, symbolic_map=[], unit_object=dimless, args=[], latex_text=''):
+    def __init__(self, name='', symbolic_object=None, symbolic_map=[], unit_object=None, args=[], latex_text=''):
 
         """
         Instantiate EquationNode

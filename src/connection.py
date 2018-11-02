@@ -5,30 +5,37 @@ Define Connection class.
 
 """
 
-from core import Equation
-from .Equation import *
+from core.equation import *
 
 class Connection(Equation):
 
-    def __init__(self, name, description, connection_type = 'source', fast_expr = None):
+    def __init__(self, name, description, output_var_name = "", input_var_name = "", fast_expr = None):
 
         super().__init__(name, description, fast_expr)
 
         """
-        Inidial definitions.
+        Instantiate Connection
 
         :ivar str name:
-        Name for the current equation
+            Name for the current equation
 
         :ivar str description:
-        Description for the present equation. Defauls to ""
+            Description for the present equation. Defaults to ""
 
-        :ivar str connection_type:
-        Type of the connection. Options are 'source', when a source term is declared (eg: process inlet); 'sink', when a sink term is declared (eq: process outlet); 'input', when a input from the other model output is declared (thus, a source term coming from the sink term from another model); 'output', when a output the output of a model is declared (used as input by another model). Defaults to 'source'.
+        :ivar str output_var_name:
+            Name of the output Variable object linked to the input Variable object through the current Connection object. Defaults to ""
+
+        :ivar str input_var_name:
+            Name of the input Variable object linked to the output Variable object through the current Connection object. Defaults to ""
+
+        :ivar str description:
+            Description for the present equation. Defaults to ""
 
         :ivar EquationNode fast_expr:
-        EquationNode object to declare for the current Equation object.  If declared, the method '.setResidual' are executed as a shortcut. Defaults to None.
+            EquationNode object to declare for the current Equation object.  If declared, the method '.setResidual' are executed as a shortcut. Defaults to None.
         
         """
 
-        self.connection_type = connection_type
+        self.input_var_name = input_var_name
+
+        self.output_var_name = output_var_name

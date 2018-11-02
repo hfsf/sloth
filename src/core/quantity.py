@@ -5,7 +5,7 @@ Define the Quantity (QTY), base-class for all unit-containg objects (Variables, 
 """
 
 import copy
-from .error_definitions import DimensionalCoherenceError
+from .error_definitions import DimensionalCoherenceError, UnexpectedValueError
 import sympy as sp
 from .expression_evaluation import EquationNode
 
@@ -60,6 +60,35 @@ class Quantity:  # New-style class syntax
         self.value = value
 
         self.latex_text = latex_text
+
+
+    def setValue(self, quantity_value, quantity_unit=None):
+
+        """
+        Set the current value for the Quantity object given a value and optionally an Unit object
+        """
+        if isinstance(quantity_value, self.__class__):
+
+
+            if quantity_unit == None and  quantity_value.units._check_dimensional_coherence(self.units) == True:
+
+                self.value = quantity_value.value
+
+            else:
+
+                raise DimensionalCoherenceError(self.units,quantity_value.units)
+
+        elif isinstance(quantity_value, float) or isinstance(quantity_value, int) and quantity_unit==None:
+
+            self.value = quantity_value
+
+        elif isinstance(quantity_value, float) or isinstance(quantity_value, int) and quantity_unit!=None and quantity_unit._check_dimensional_coherence(self.units):
+
+            self.value = quantity_value
+
+        else:
+
+            raise UnexpectedValueError("(Quantity, float, int)")
 
     def _return_proto_object(self, name="", units={""}, description="", value=0):
         """

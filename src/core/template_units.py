@@ -7,7 +7,7 @@ from .unit import Unit, null_dimension
 
 # Primary units
 
-_       = Unit("None",      null_dimension,        "adimensional")
+dimless = Unit("None",      null_dimension,        "adimensional")
 m       = Unit("m",         {'m':1},               "meter")
 kg      = Unit("kg",        {'kg':1},              "kilogram")
 s       = Unit("s",         {'s':1},               "second")

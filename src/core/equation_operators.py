@@ -4,7 +4,8 @@ All those functions return EquationNode objects.
 """
 import sympy as sp
 import numpy as np
-from expression_evaluation import EquationNode
+from .expression_evaluation import EquationNode
+from .template_units import dimless
 #import error_definitions as errors
 
 
@@ -33,6 +34,7 @@ def wrapper(own_func, obj, base_func, latex_func_name=None):
             enode_ = EquationNode(name=f_name(own_func.__name__, str(obj)), \
                                   symbolic_object=base_func(obj), \
                                   symbolic_map={}, \
+                                  unit_object=dimless, \
                                   latex_text=f_name(latex_func_name, str(obj))
                                 )
 
@@ -47,6 +49,7 @@ def wrapper(own_func, obj, base_func, latex_func_name=None):
                 enode_ = EquationNode(name=f_name(own_func.__name__, obj.name), \
                                 symbolic_object=base_func(obj.symbolic_object), \
                                 symbolic_map={**obj.symbolic_map}, \
+                                unit_object=dimless, \
                                 latex_text=f_name(latex_func_name, obj.latex_text)
                                     )
 

@@ -2,6 +2,28 @@
 Defines overloaded operators for basic mathematical operations over unit-containing members (Constant, Parameter, Variables)
 """
 
+class ExposedVariableError(Exception):
+
+    """
+    Error raised by the utilization of non-exposed variables for connection of two Model objects.
+    """
+
+    def __init__(self, model_1_exposed_vars, model_2_exposed_vars, output_var, input_var):
+
+        self.m1_exposed_names = [var_i.name for var_i in model_1_exposed_vars]
+
+        self.m2_exposed_names = [var_i.name for var_i in model_2_exposed_vars]
+
+        self.input_var_name = input_var.name
+
+        self.output_var_name = output_var.name
+
+    def __str__(self):
+
+        msg = "Non-exposed variable declaration in the output model(1) \n %s \n and/or input model(2) \n %s. \n The declared output variable name is %s, and the input variable name is %s." % (self.m1_exposed_names, self.m2_exposed_names, self.output_var_name, self.input_var_name)
+
+        return(msg)
+
 class UnexpectedObjectDeclarationError(Exception):
 
     """
@@ -12,7 +34,7 @@ class UnexpectedObjectDeclarationError(Exception):
 
         self.objects = objects
 
-        self.declared_objects
+        self.declared_objects = declared_objects
 
     def __str__(self):
 

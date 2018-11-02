@@ -6,9 +6,11 @@ Define Model class, for storage of equations, distribution on domains and inform
 
 import core.error_definitions as errors  
 from core.equation import *
+from core.equation_operators import *
 import core.variable as variable
 import core.constant as constant
 import core.parameter as parameter
+import connection
 import beautifultable
 
 class Model:
@@ -69,7 +71,7 @@ class Model:
 
         if parent_model == None:
 
-            self.exposed_vars = {'input':[],'output':[], 'source':[], 'sink':[]}
+            self.exposed_vars = {'input':[], 'output':[]}
 
         self.parameters = {}
 
@@ -154,6 +156,28 @@ class Model:
 
         return(df_design, df_control, df_chemical)
 
+    def _checkEquation_(self, eq):
+
+        #Check if all objects used in the current equation were declared
+
+        all_objects_keys = list(self.variables.keys())  + \
+                           list(self.parameters.keys()) + \
+                           list(self.constants.keys())
+
+        is_declared = all( obj_i in all_objects_keys for obj_i in list(eq.objects_declared.keys()) )
+
+        if is_declared != True:
+
+            self._gatherObjectsInfo_()
+
+            raise (errors.UnexpectedObjectDeclarationError( list(eq.objects_declared.keys()), self.objects_info ))
+
+            return(False)
+        
+        else:
+
+            return(True)
+
     def __call__(self):
 
         """
@@ -168,8 +192,6 @@ class Model:
 
         self.DeclareEquations()
 
-        self.DeclareExposedVariables()
-
         self.DeclareConnections()
 
         if len(self.variables) == 0:
@@ -180,19 +202,58 @@ class Model:
 
             print("Warning: No equations were declared.")
 
-    def createExposedVariable(self, exposed_var, connection_type = 'source'):
+    def _createConnection(self, name, description, out_var, in_var, out_model, expr=None):
 
-        if any(exposed_var.name in exposed_var_i.name \
-               for exposed_var_i in self.exposed_vars[connection_type]
-              ) != True:
+        """
+        Function for creation of an Connection object, and inclusion of a connective equation in the current model. Typically called externally.
+        
+        :ivar str name:
+            Name for the current equation
 
-            raise ( errors.UnexpectedObjectDeclarationError( exposed_var.name, self.objects_info ) )
+        :ivar str description:
+            Description for the present equation. Defaults to ""
+
+        :param Variable out_var:
+            Variable object from which that supplies the input object
+
+        :param Variable in_var:
+            Variable object that is supplied by the output object
+
+        :param List(Variable) out_model_exposed_vars:
+            List of exposed variables of 'output' type in the output Model
+
+        :param EquationNode expr:
+            EquationNode object to declare for the current Equation object. Defaults to None
+        """
+
+        if isinstance(in_var, variable.Variable) and isinstance(out_var, variable.Variable):
+
+
+            if in_var in self.exposed_vars['input'] and \
+               out_var in out_model.exposed_vars['output']:
+
+                name = out_var.name+"--->"+in_var.name
+
+                description = "Connection from "+out_model.name+" ("+out_var.name+"--->"+in_var.name+")"
+
+                if expr == None:
+
+                    expr = in_var.__call__() - out_var.__call__()
+
+                conn = connection.Connection(name, description, in_var.name, out_var.name, expr)
+
+                self.equations[name] = conn
+
+                return(conn)
+
+            else:
+
+                raise errors.ExposedVariableError(out_model.exposed_vars['output'], self.exposed_vars['input'], out_var, in_var)
 
         else:
 
-            self.exposed_vars[exposed_var.name] = exposed_var
+            raise errors.UnexpectedValueError("Variable")
 
-            return(exposed_var)
 
     def createEquation(self, name, description="", expr=None):
 
@@ -215,67 +276,17 @@ class Model:
 
         #Check if all objects used in the current equation were declared
 
-        all_objects_keys = list(self.variables.keys())  + \
-                           list(self.parameters.keys()) + \
-                           list(self.constants.keys())
-
-        if all( obj_i in all_objects_keys for obj_i in eq.objects_declared.keys() ) != True:
-
-            self._gatherObjectsInfo_()
-
-            raise (errors.UnexpectedObjectDeclarationError( eq.objects_declared.keys(), self.objects_info ))
-        else:
-
+        if self._checkEquation_(eq) == True:
+            
             self.equations[eq.name] = eq
 
             return eq
 
-    def createConnection(self, name, description, connection_type = 'source', fast_expr = None):
-
-        """
-        Function for creation of an Connection object. Store an Connection object in '.connections' dict. Mandatory interface for model connection creation in the DeclareConnections() function.
-
-        :param str name:
-        Name for the current equation
-
-        :param str description:
-        Description for the present equation. Defauls to ""
-
-        :param str connection_type:
-        Type of the connection. Options are 'source', when a source term is declared (eg: process inlet); 'sink', when a sink term is declared (eq: process outlet); 'input', when a input from the other model output is declared (thus, a source term coming from the sink term from another model); 'output', when a output the output of a model is declared (used as input by another model). Defaults to 'source'.
-
-        :param ExpressionTree fast_expr:
-        ExpressionTree object to declare for the current Equation object.  If declared, the moethod '.setResidual' are executed as a shortcut. Defaults to None.
-
-        """
-
-        eq = Connection(name, description, connection_type, fast_expr)
-
-        eq._sweepObjects()
-
-        #Check if all objects used in the current equation were declared
-
-        all_objects_keys = self.variables.keys()  + \
-                           self.parameters.keys() + \
-                           self.constants.keys()
-
-        if all( obj_i in all_objects_keys for obj_i in eq.declared_objects.keys() ) != True:
-
-            self._gatherObjectsInfo_()
-
-            raise (errors.UnexpectedObjectDeclarationError( eq.declared_objects.keys(), \
-                                                            self.objects_info 
-                                                          )
-                  )
         else:
 
-            self.equations[eq.name] = eq
+            pass
 
-            self.connections[eq.name] = eq
-
-            return eq
-
-    def createVariable(self, name, units , description = "", isLowerBounded = False, isUpperBounded = False, lowerBound = None, upperBound = None, value = 0):
+    def createVariable(self, name, units , description = "", is_lower_bounded = False, is_upper_bounded = False, lower_bound = None, upper_bound = None, is_exposed = False, type = 'input', value = 0.):
 
         """
         
@@ -309,9 +320,13 @@ class Model:
 
         """
 
-        var = variable.Variable(name, units , description, isLowerBounded, isUpperBounded, lowerBound, upperBound, value)
+        var = variable.Variable(name, units , description, is_lower_bounded, is_upper_bounded, lower_bound, upper_bound, value)
 
         self.variables[var.name] = var
+
+        if is_exposed == True:
+
+            self.exposed_vars[type].append(var)
 
         return var
 
@@ -340,7 +355,6 @@ class Model:
         self.parameters[par.name] = par
 
         return par
-
 
     def createConstant(self, name, units , description = "", value = 0):
 
@@ -383,10 +397,6 @@ class Model:
         pass
 
     def DeclareEquations(self):
-
-        pass
-
-    def DeclareExposedVariables(self):
 
         pass
 

@@ -6,7 +6,7 @@ Define Unit class, for ulterior utilization (eg:Variable,Parameter)
 
 import copy
 from .error_definitions import DimensionalCoherenceError, UnexpectedValueError
-
+from .quantity import Quantity
 # Null dimension dict
 null_dimension = {'m':0.0,'kg':0.0,'s':0.0,'A':0.0,'K':0.0,'mol':0.0,'cd':0.0}
 
@@ -178,21 +178,35 @@ class Unit:  # New-style class syntax
         :rtype Unit new_unit:
         """
 
-        new_dimension = copy.copy(other_unit.dimension)
+        if isinstance(other_unit, self.__class__):
 
-        for (dim_i, idx_i) in zip(self.dimension.keys(), self.dimension.values()):
+            # other_unit is an Unit object
 
-            try:
+            new_dimension = copy.copy(other_unit.dimension)
 
-                new_dimension[dim_i] = new_dimension[dim_i] + idx_i
+            for (dim_i, idx_i) in zip(self.dimension.keys(), self.dimension.values()):
 
-            except KeyError:  # Second unit (other_unit) has no dimension 'dim_i' defined
+                try:
 
-                new_dimension[dim_i] = idx_i
+                    new_dimension[dim_i] = new_dimension[dim_i] + idx_i
 
-        new_unit = self._return_proto_unit(dimension_dict=new_dimension)
+                except KeyError:  # Second unit (other_unit) has no dimension 'dim_i' defined
 
-        return new_unit
+                    new_dimension[dim_i] = idx_i
+
+            new_unit = self._return_proto_unit(dimension_dict=new_dimension)
+
+            return new_unit
+
+        elif isinstance(other_unit, float) or isinstance(other_unit, int):
+
+            # other_unit is an numerical value
+
+            return Quantity("", self.__class__("", self.dimension), value=other_unit, latex_text=str(other_unit))
+
+        else:
+
+            raise UnexpectedValueError("(Unit, float, int)")
 
 
     def __div__(self, other_unit):
@@ -210,22 +224,35 @@ class Unit:  # New-style class syntax
             with corresponding dimension.
         :rtype Unit new_unit:
         """
+        if isinstance(other_unit, self.__class__):
 
-        new_dimension = copy.copy(other_unit.dimension)
+            # other_unit is an Unit object
 
-        for (dim_i, idx_i) in zip(new_dimension.keys(), new_dimension.values()):
+            new_dimension = copy.copy(other_unit.dimension)
 
-            try:
+            for (dim_i, idx_i) in zip(new_dimension.keys(), new_dimension.values()):
 
-                new_dimension[dim_i] = self.dimension[dim_i] - idx_i
+                try:
 
-            except KeyError:  # First unit (self) has no dimension 'dim_i' defined
+                    new_dimension[dim_i] = self.dimension[dim_i] - idx_i
 
-                new_dimension[dim_i] = -idx_i
+                except KeyError:  # First unit (self) has no dimension 'dim_i' defined
 
-        new_unit = self._return_proto_unit(dimension_dict=new_dimension)
+                    new_dimension[dim_i] = -idx_i
 
-        return new_unit
+            new_unit = self._return_proto_unit(dimension_dict=new_dimension)
+
+            return new_unit
+
+        elif isinstance(other_unit, float) or isinstance(other_unit, int):
+
+            # other_unit is an numerical value
+
+            return Quantity("", self.__class__("", self.dimension), value=1./other_unit, latex_text=str(other_unit))
+
+        else:
+
+            raise UnexpectedValueError("(Unit, float, int)")        
 
 
     def __truediv__(self, other_unit):
@@ -244,21 +271,35 @@ class Unit:  # New-style class syntax
         :rtype Unit new_unit:
         """
 
-        new_dimension = copy.copy(other_unit.dimension)
+        if isinstance(other_unit, self.__class__):
 
-        for (dim_i, idx_i) in zip(new_dimension.keys(), new_dimension.values()):
+            # other_unit is an Unit object
 
-            try:
+            new_dimension = copy.copy(other_unit.dimension)
 
-                new_dimension[dim_i] = self.dimension[dim_i] - idx_i
+            for (dim_i, idx_i) in zip(new_dimension.keys(), new_dimension.values()):
 
-            except KeyError:  # First unit (self) has no dimension 'dim_i' defined
+                try:
 
-                new_dimension[dim_i] = -idx_i
+                    new_dimension[dim_i] = self.dimension[dim_i] - idx_i
 
-        new_unit = self._return_proto_unit(dimension_dict=new_dimension)
+                except KeyError:  # First unit (self) has no dimension 'dim_i' defined
 
-        return new_unit
+                    new_dimension[dim_i] = -idx_i
+
+            new_unit = self._return_proto_unit(dimension_dict=new_dimension)
+
+            return new_unit
+
+        elif isinstance(other_unit, float) or isinstance(other_unit, int):
+
+            # other_unit is an numerical value
+
+            return Quantity("", self.__class__("", self.dimension), value=1./other_unit, latex_text=str(other_unit))
+
+        else:
+
+            raise UnexpectedValueError("(Unit, float, int)")
 
     def __pow__(self, power):
         """
