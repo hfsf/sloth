@@ -5,7 +5,7 @@ Define Problem class. Unite several Model classes through Connections, forming o
 """
 
 from core.error_definitions import ExposedVariableError
-
+from collections import OrderedDict
 
 class Problem(object):
 
@@ -29,9 +29,9 @@ class Problem(object):
 
         self.description = description
 
-        self.models = {}
+        self.models = OrderedDict({})
 
-        self.connections = {}
+        self.connections = OrderedDict({})
 
     def createConnection(self, model_1, model_2, output_var, input_var, expr=None):
 
@@ -69,7 +69,7 @@ class Problem(object):
 
             # A list of models were supplied
 
-            self.models = dict( (modx.name,modx) for modx in model_list )
+            self.models = OrderedDict( (modx.name,modx) for modx in model_list )
 
         else:
 

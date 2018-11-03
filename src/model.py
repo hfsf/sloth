@@ -286,7 +286,7 @@ class Model:
 
             pass
 
-    def createVariable(self, name, units , description = "", is_lower_bounded = False, is_upper_bounded = False, lower_bound = None, upper_bound = None, is_exposed = False, type = 'input', value = 0.):
+    def createVariable(self, name, units , description = "", is_lower_bounded = False, is_upper_bounded = False, lower_bound = None, upper_bound = None, is_exposed = False, type = '', value = 0.):
 
         """
         

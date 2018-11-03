@@ -54,6 +54,18 @@ class EquationNode:
 
         self.latex_text = latex_text
 
+    def __str__(self):
+
+        """
+        Overloaded representation of the ENODE object. Returns a symbolic representation of the equation decribed by the object.
+
+        :return:
+            Return a string representing the symbolic object that represents the equation described by the current ENODE
+        :rtype str:
+        """
+
+        return str(self.symbolic_object)
+
     def __add__(self, other_obj):
 
         """
