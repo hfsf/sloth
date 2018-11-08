@@ -13,12 +13,11 @@ class EquationNode:
 
     * TODO:
         - Include comparison operators for EquationNode objects (<,>,<=,>=,etc) as unary operation that compares values directly.
-        - Include overloading of power operators for EquationNode objects
         - Include Conditional evaluation operator (IfThen) as binary operations
           Eg: IfThen(CONDITION, [THEN_CLAUSE,ELSE_CAUSE]) 
     """
 
-    def __init__(self, name='', symbolic_object=None, symbolic_map=[], unit_object=None, args=[], latex_text=''):
+    def __init__(self, name='', symbolic_object=None, symbolic_map=[], is_linear=True, is_nonlinear=False, is_differential=False, unit_object=None, args=[], latex_text=''):
 
         """
         Instantiate EquationNode
@@ -31,6 +30,15 @@ class EquationNode:
 
         :ivar list symbolic_map:
             Dictionary containing the mapping beetween the symbolic objects and their corresponding Quantity objects for ENODE re-evaluation.
+
+        : ivar bool is_linear:
+            If the current ENODE contains a linear expression
+
+        : ivar bool is_nonlinear:
+            If the current ENODE contains a nonlinear expression
+
+        : ivar bool is_differential:
+            If the current ENODE contains a differential expression
 
         :ivar Unit unit_object:
             Unit object corresponding to the dimension of ENODE.
@@ -48,11 +56,40 @@ class EquationNode:
 
         self.symbolic_map = symbolic_map
 
+        self.equation_type = {'is_linear':is_linear, \
+                              'is_nonlinear':is_nonlinear, \
+                              'is_differential':is_differential
+                             }
+
         self.unit_object = unit_object
 
         self.args = args
 
         self.latex_text = latex_text
+
+    def _checkEquationTypePrecedence(self, eq_type_1, eq_type_2):
+
+        res = {'is_linear':False, 'is_nonlinear':False, 'is_differential':False}
+
+        if eq_type_1['is_differential'] == True or \
+           eq_type_2['is_differential'] == True:
+
+            res['is_differential'] = True
+
+            return res
+        
+        elif eq_type_1['is_nonlinear'] == True or \
+             eq_type_2['is_nonlinear'] == True:
+
+            res['is_nonlinear'] = True
+
+            return res
+
+        else:
+
+            res['is_linear'] = True
+
+            return res
 
     def __str__(self):
 
@@ -93,6 +130,8 @@ class EquationNode:
                                 latex_text=self.latex_text+"+"+other_obj.latex_text
                                 )
 
+            enode_.equation_type = self._checkEquationTypePrecedence(self.equation_type, other_obj.equation_type)
+
             return(enode_)
 
         elif isinstance(other_obj, int) or isinstance(other_obj, float):
@@ -104,6 +143,8 @@ class EquationNode:
                             unit_object=self.unit_object, \
                             latex_text=self.latex_text+"+"+str(other_obj)
                                 )
+
+            enode_.equation_type = {**self.equation_type}
 
             return(enode_)
 
@@ -139,6 +180,8 @@ class EquationNode:
                                 latex_text=self.latex_text+"-"+other_obj.latex_text
                                 )
 
+            enode_.equation_type = self._checkEquationTypePrecedence(self.equation_type, other_obj.equation_type)
+
             return(enode_)
 
         elif isinstance(other_obj, int) or isinstance(other_obj, float):
@@ -150,6 +193,8 @@ class EquationNode:
                             unit_object=self.unit_object, \
                             latex_text=self.latex_text+"-"+str(other_obj)
                                 )
+
+            enode_.equation_type = {**self.equation_type}
 
             return(enode_)
 
@@ -184,6 +229,8 @@ class EquationNode:
                                 latex_text=self.latex_text+"*"+other_obj.latex_text
                                 )
 
+            enode_.equation_type = self._checkEquationTypePrecedence(self.equation_type, other_obj.equation_type)
+
             return(enode_)
 
         elif isinstance(other_obj, int) or isinstance(other_obj, float):
@@ -195,6 +242,8 @@ class EquationNode:
                             unit_object=self.unit_object, \
                             latex_text=self.latex_text+"*"+str(other_obj)
                                 )
+
+            enode_.equation_type = {**self.equation_type}
 
             return(enode_)
 
@@ -230,6 +279,8 @@ class EquationNode:
                                 latex_text="\\frac{"+self.latex_text+"}{"+other_obj.latex_text+"}"
                                 )
 
+            enode_.equation_type = self._checkEquationTypePrecedence(self.equation_type, other_obj.equation_type)
+
             return(enode_)
 
         elif isinstance(other_obj, int) or isinstance(other_obj, float):
@@ -241,6 +292,8 @@ class EquationNode:
                         unit_object=self.unit_object, \
                         latex_text="\\frac{"+self.latex_text+"}{"+str(other_obj)+"}"
                                 )
+
+            enode_.equation_type = {**self.equation_type}
 
             return(enode_)
 
@@ -277,6 +330,8 @@ class EquationNode:
                                 latex_text="\\frac{"+self.latex_text+"}{"+other_obj.latex_text+"}"
                                 )
 
+            enode_.equation_type = self._checkEquationTypePrecedence(self.equation_type, other_obj.equation_type)
+
             return(enode_)
 
         elif isinstance(other_obj, int) or isinstance(other_obj, float):
@@ -288,6 +343,8 @@ class EquationNode:
                         unit_object=self.unit_object, \
                         latex_text="\\frac{"+self.latex_text+"}{"+str(other_obj)+"}"
                                 )
+
+            enode_.equation_type = {**self.equation_type}
 
             return(enode_)
 
@@ -329,6 +386,8 @@ class EquationNode:
                                     latex_text=self.latex_text+"^"+other_obj.latex_text
                                     )
 
+                enode_.equation_type = self._checkEquationTypePrecedence(self.equation_type, {'is_linear':False, 'is_nonlinear':True, 'is_differential':False})
+
                 return(enode_)
 
             else:
@@ -337,15 +396,17 @@ class EquationNode:
         
         elif isinstance(other_obj, int) or isinstance(other_obj, float):
 
-                enode_ = self.__class__(
-                                name="**".join([self.name, str(other_obj)]), \
-                                symbolic_object=self.symbolic_object**other_obj,
-                                symbolic_map={**self.symbolic_map}, \
-                                unit_object=self.unit_object**other_obj, \
-                                latex_text=self.latex_text+"^"+str(other_obj)
+            enode_ = self.__class__(
+                            name="**".join([self.name, str(other_obj)]), \
+                            symbolic_object=self.symbolic_object**other_obj,
+                            symbolic_map={**self.symbolic_map}, \
+                            unit_object=self.unit_object**other_obj, \
+                            latex_text=self.latex_text+"^"+str(other_obj)
                                     )
 
-                return(enode_)
+            enode_.equation_type = self._checkEquationTypePrecedence(self.equation_type, {'is_linear':False, 'is_nonlinear':True, 'is_differential':False})
+
+            return(enode_)
 
         else:
 

@@ -5,7 +5,9 @@ Define Problem class. Unite several Model classes through Connections, forming o
 """
 
 from core.error_definitions import ExposedVariableError
+#from core.equation_block import EquationBlock
 from collections import OrderedDict
+import numpy as np
 
 class Problem(object):
 
@@ -33,6 +35,10 @@ class Problem(object):
 
         self.connections = OrderedDict({})
 
+        self._equation_list = None
+
+        self.equation_block = None
+
     def createConnection(self, model_1, model_2, output_var, input_var, expr=None):
 
         """
@@ -55,7 +61,6 @@ class Problem(object):
 
             raise ExposedVariableError(model_1.exposed_vars['output'], model_2.exposed_vars['input'], output_var, input_var) 
 
-
     def addModels(self, model_list):
 
         """
@@ -76,3 +81,17 @@ class Problem(object):
             # A single model was supplied
 
             self.models[model_list.name] = model_list
+
+    def buildEquationBlock(self):
+
+        """
+        Return the EquationBlock object for the models defined for the current problem.
+        """
+
+        eqs_ = [list(self.models[i].equations.values()) for i in self.models]
+
+        # Use ravel to compress the equations for each model into one single list. Then convert back to standard list
+
+        self._equation_list = (np.array(eqs_).ravel()).tolist()
+
+        self.equation_block = EquationBlock(equations=self._equation_list)

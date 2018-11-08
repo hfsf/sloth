@@ -35,11 +35,29 @@ class Equation:
 
         self.equation_expression = None
 
+        self.is_linear = True 
+
+        self.is_nonlinear = False
+
+        self.is_differential = False
+
         self.objects_declared = {}
 
         if fast_expr != None:
 
             self.setResidual( fast_expr )
+
+    def _getTypeFromExpression(self):
+
+        """
+        Get the information about the current equation is algebraic linear, algebraic nonlinear or differential, determined from the equation expression (EquationNode) and set the attributes accordingly.
+        """
+
+        self.is_linear = self.equation_expression.equation_type['is_linear']
+
+        self.is_nonlinear = self.equation_expression.equation_type['is_nonlinear']
+
+        self.is_differential = self.equation_expression.equation_type['is_differential']
 
     def _sweepObjects(self):
 
@@ -66,6 +84,7 @@ class Equation:
 
         self.objects_declared = self._sweepObjects()
 
+        self._getTypeFromExpression()
 
     def evalResidual(self):
 

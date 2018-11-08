@@ -87,7 +87,7 @@ class Analysis:
 
         #tab.column_widths = [20,30,20,15,15]
 
-        tab.column_headers = ["Equation name","Description","Representation",  "Variables", "Parameters"]
+        tab.column_headers = ["Equation name","Description","Representation",  "Variables", "Parameters", "Equation type"]
 
         for eq_i in model.equations:
 
@@ -100,6 +100,14 @@ class Analysis:
 
             eq_vars, eq_params = self._inspectForVariablesAndParameters(model.equations[eq_i].equation_expression.symbolic_map)
 
-            tab.append_row([eq_name, eq_description, eq_repr, eq_vars, eq_params])
+            # For a more readable output in the output table
+
+            eq_type_pretty = {'is_linear':'linear', 'is_nonlinear':'nonlinear', 'is_differential':'differential'}
+
+            # Search which atribute from .equation_expression.equation_type dict is True (convert set to list)
+
+            eq_type = eq_type_pretty[ list({k for k,v in model.equations[eq_i].equation_expression.equation_type.items() if v==True})[0] ]
+
+            tab.append_row([eq_name, eq_description, eq_repr, eq_vars, eq_params, eq_type])
 
         return(tab)

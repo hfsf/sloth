@@ -3,7 +3,7 @@
 """
 Define Model class, for storage of equations, distribution on domains and information about input and output variables (exposed variables).
 """
-
+import collections
 import core.error_definitions as errors  
 from core.equation import *
 from core.equation_operators import *
@@ -73,15 +73,15 @@ class Model:
 
             self.exposed_vars = {'input':[], 'output':[]}
 
-        self.parameters = {}
+        self.parameters = collections.OrderedDict({})
 
-        self.variables = {}
+        self.variables = collections.OrderedDict({})
 
-        self.constants = {}
+        self.constants = collections.OrderedDict({})
 
-        self.equations = {}
+        self.equations = collections.OrderedDict({})
 
-        self.connections = {}
+        self.connections = collections.OrderedDict({})
 
         self.objects_info = {}
 

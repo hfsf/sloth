@@ -1,6 +1,7 @@
 import model
 import problem
 import analysis
+from core.equation_operators import *
 from core.template_units import *
 
 class modelTest1(model.Model):
@@ -12,14 +13,14 @@ class modelTest1(model.Model):
         self.F1 =  self.createVariable("F1", kg/s, "Mass flux")
         self.F2 =  self.createVariable("F2", kg/s, "Mass flux")
         self.F3 =  self.createVariable("F3", kg/s, "Mass flux", is_exposed=True, type="output")
-        self.k1 = self.createParameter("K1", kg/s, "Spec. parameter")
+        self.k1 = self.createParameter("K1", (kg/s)**0.5, "Spec. parameter")
         self.k2 = self.createParameter("K2", kg/s, "Unespec. parameter")
 
         self.k1.setValue(10.)
 
     def DeclareEquations(self):
 
-        expr = self.F1()-self.F3()+self.k1()
+        expr = self.F1()-self.F3()+self.k1()**2
 
         self.eq = self.createEquation("eq1", "Mass continuity", expr)
 
@@ -35,7 +36,7 @@ class modelTest2(model.Model):
 
     def DeclareEquations(self):
 
-        expr = self.F4()+self.F5()-self.F6()
+        expr = Log10(self.F5()/self.F6())
 
         self.eq = self.createEquation("eq2", "Mass continuity", expr)
 
@@ -84,9 +85,10 @@ def xec():
     #mod1._infoDegreesOfFreedom_()
     #mod2._infoDegreesOfFreedom_()
 
-    prob.addModels([mod1,mod2,mod3])
+    prob.addModels([ mod1,mod2,mod3 ])
     prob.createConnection(mod1, mod2, mod1.F3, mod2.F4)
 
+    
     print("\nProblem models: %s"%(prob.models))
 
     print("\nProblem connections: %s"%(prob.connections))
@@ -94,3 +96,11 @@ def xec():
     print("\nPerforming model analysis: \n")
 
     print( analist.problemReport(prob) )
+    
+
+    print("\n %s \n %s \n %s" % 
+            ([mod1.equations[eq_i].equation_expression.equation_type for eq_i in mod1.equations], \
+             [mod2.equations[eq_i].equation_expression.equation_type for eq_i in mod2.equations], \
+             [mod3.equations[eq_i].equation_expression.equation_type for eq_i in mod3.equations]
+            )
+        )

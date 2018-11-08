@@ -4,10 +4,12 @@
 Define Domain class, which distributes one equation among a domain of variables.  
 """
 
+import pandas
+
 class Domain:
 
     """
-    Domain class definition. Distributes equations, parameters or variables within a domain of variables (currently, only unidmensional domains are supported).
+    Domain class definition. Distributes equations, parameters or variables within a domain of variables (currently, only unidmensional domains are supported), storing information.
     """
 
     def __init__(self, name, units, independent_vars={}, description="", lower_bound={'all':None}, upper_bound={'all':None}):
@@ -48,10 +50,16 @@ class Domain:
 
         self.upper_bound = upper_bound
 
+    def __call__(self, independent_vars=None):
+
+        """
+        """
+
+        pass
+
     def __getitem__(self, idx):
 
         """
-        
         """
 
         pass
@@ -65,8 +73,9 @@ class Domain:
             Independent vars on which the current domain rely on. Currently only unidimensional domains are suported.
         """
 
-        pass
+        self.values = dict(var_i.name,_createDataFramePrototype(var_i) for var_i in independent_vars)
 
+        self.independent_vars = independent_vars
 
     def distributeOnDomain(self, dependent_obj):
 
@@ -78,3 +87,35 @@ class Domain:
         """
 
         pass
+
+    def _register(self, var, values):
+
+        """
+        Register values in the respective DataFrame
+
+        :param Variable var:
+            Variable (independent) for which the values should be registered
+
+        :param array-like values:
+            Values to register
+        """
+
+        if np.array(values).ndim == 1:
+
+            self.values[var] = self.values[var].append(values)
+
+    def _createDataFramePrototype(self, var):
+
+        """
+        Create the prototype of DataFrame for the current independent variable, storing all the dependent objects
+        
+        :param Variable var:
+            Variable for which the DataFrame are defined
+
+        """
+
+        objs_names_ = [var.name].append([obj_i.name for obj_in in self.dependent_objs])
+
+        data_frame_ = pandas.DataFrame(index=objs_names_)
+
+        return data_frame_
