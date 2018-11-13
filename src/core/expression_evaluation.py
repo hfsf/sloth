@@ -17,7 +17,7 @@ class EquationNode:
           Eg: IfThen(CONDITION, [THEN_CLAUSE,ELSE_CAUSE]) 
     """
 
-    def __init__(self, name='', symbolic_object=None, symbolic_map=[], is_linear=True, is_nonlinear=False, is_differential=False, unit_object=None, args=[], latex_text=''):
+    def __init__(self, name='', symbolic_object=None, symbolic_map=[], is_linear=True, is_nonlinear=False, is_differential=False, unit_object=None, args=[], latex_text='', repr_symbolic=None):
 
         """
         Instantiate EquationNode
@@ -48,6 +48,9 @@ class EquationNode:
 
         :ivar str latex_text:
             Latex text representing the current ENODE. Defaults to "".
+
+        :ivar str repr_symbolic:
+            Symbolic representation of the symbolic object for which arithmetical operations are evaluated, used for ENODE conversion to string. Defaults to None.
         """
         
         self.name = name
@@ -66,6 +69,8 @@ class EquationNode:
         self.args = args
 
         self.latex_text = latex_text
+
+        self.repr_symbolic = repr_symbolic
 
     def _checkEquationTypePrecedence(self, eq_type_1, eq_type_2):
 
@@ -103,6 +108,18 @@ class EquationNode:
 
         return str(self.symbolic_object)
 
+    def __repr__(self):
+
+        """
+        Overloaded representation of the ENODE object. Returns a fully symbolic representation of the equation decribed by the object.
+
+        :return:
+            Return a string representing the symbolic object that represents the equation described by the current ENODE (fully symbolic)
+        :rtype str:
+        """
+
+        return str(self.repr_symbolic)
+
     def __add__(self, other_obj):
 
         """
@@ -127,7 +144,8 @@ class EquationNode:
                                 symbolic_object=self.symbolic_object+other_obj.symbolic_object, \
                                 symbolic_map={**self.symbolic_map, **other_obj.symbolic_map}, \
                                 unit_object=self.unit_object+other_obj.unit_object,
-                                latex_text=self.latex_text+"+"+other_obj.latex_text
+                                latex_text="+".join([self.latex_text,other_obj.latex_text]),
+                                repr_symbolic=self.repr_symbolic+other_obj.repr_symbolic
                                 )
 
             enode_.equation_type = self._checkEquationTypePrecedence(self.equation_type, other_obj.equation_type)
@@ -136,12 +154,15 @@ class EquationNode:
 
         elif isinstance(other_obj, int) or isinstance(other_obj, float):
 
+            # other_obj is a numerical value
+
             enode_ = self.__class__(
-                            name="+".join([self.name, str(other_obj)]), \
+                            name="+".join([self.name, str(other_obj)]), 
                             symbolic_object=self.symbolic_object+other_obj,
-                            symbolic_map={**self.symbolic_map}, \
-                            unit_object=self.unit_object, \
-                            latex_text=self.latex_text+"+"+str(other_obj)
+                            symbolic_map={**self.symbolic_map}, 
+                            unit_object=self.unit_object, 
+                            latex_text=self.latex_text+"+"+str(other_obj),
+                            repr_symbolic=self.repr_symbolic+other_obj
                                 )
 
             enode_.equation_type = {**self.equation_type}
@@ -173,11 +194,12 @@ class EquationNode:
             # other_obj is another ENODE.
 
             enode_ = self.__class__(
-                                name="-".join([self.name, other_obj.name]), \
-                                symbolic_object=self.symbolic_object-other_obj.symbolic_object, \
-                                symbolic_map={**self.symbolic_map, **other_obj.symbolic_map}, \
+                                name="-".join([self.name, other_obj.name]), 
+                                symbolic_object=self.symbolic_object-other_obj.symbolic_object, 
+                                symbolic_map={**self.symbolic_map, **other_obj.symbolic_map}, 
                                 unit_object=self.unit_object-other_obj.unit_object,
-                                latex_text=self.latex_text+"-"+other_obj.latex_text
+                                latex_text="-".join([self.latex_text,other_obj.latex_text]),                  
+                                repr_symbolic=self.repr_symbolic-other_obj.repr_symbolic
                                 )
 
             enode_.equation_type = self._checkEquationTypePrecedence(self.equation_type, other_obj.equation_type)
@@ -187,11 +209,12 @@ class EquationNode:
         elif isinstance(other_obj, int) or isinstance(other_obj, float):
 
             enode_ = self.__class__(
-                            name="-".join([self.name, str(other_obj)]), \
+                            name="-".join([self.name, str(other_obj)]), 
                             symbolic_object=self.symbolic_object-other_obj,
-                            symbolic_map={**self.symbolic_map}, \
-                            unit_object=self.unit_object, \
-                            latex_text=self.latex_text+"-"+str(other_obj)
+                            symbolic_map={**self.symbolic_map}, 
+                            unit_object=self.unit_object, 
+                            latex_text=self.latex_text+"-"+str(other_obj),
+                            repr_symbolic=self.repr_symbolic-other_obj
                                 )
 
             enode_.equation_type = {**self.equation_type}
@@ -222,11 +245,12 @@ class EquationNode:
             # other_obj is another ENODE.
 
             enode_ = self.__class__(
-                                name="*".join([self.name, other_obj.name]), \
-                                symbolic_object=self.symbolic_object*other_obj.symbolic_object, \
-                                symbolic_map={**self.symbolic_map, **other_obj.symbolic_map}, \
+                                name="*".join([self.name, other_obj.name]), 
+                                symbolic_object=self.symbolic_object*other_obj.symbolic_object, 
+                                symbolic_map={**self.symbolic_map, **other_obj.symbolic_map}, 
                                 unit_object=self.unit_object*other_obj.unit_object,
-                                latex_text=self.latex_text+"*"+other_obj.latex_text
+                                latex_text="*".join([self.latex_text,other_obj.latex_text]),                  
+                                repr_symbolic=self.repr_symbolic*other_obj.repr_symbolic                                
                                 )
 
             enode_.equation_type = self._checkEquationTypePrecedence(self.equation_type, other_obj.equation_type)
@@ -236,11 +260,12 @@ class EquationNode:
         elif isinstance(other_obj, int) or isinstance(other_obj, float):
 
             enode_ = self.__class__(
-                            name="*".join([self.name, str(other_obj)]), \
+                            name="*".join([self.name, str(other_obj)]), 
                             symbolic_object=self.symbolic_object*other_obj,
-                            symbolic_map={**self.symbolic_map}, \
-                            unit_object=self.unit_object, \
-                            latex_text=self.latex_text+"*"+str(other_obj)
+                            symbolic_map={**self.symbolic_map}, 
+                            unit_object=self.unit_object, 
+                            latex_text=self.latex_text+"*"+str(other_obj),
+                            repr_symbolic=self.repr_symbolic*other_obj
                                 )
 
             enode_.equation_type = {**self.equation_type}
@@ -272,11 +297,12 @@ class EquationNode:
             # other_obj is another ENODE.
 
             enode_ = self.__class__(
-                                name="/".join([self.name, other_obj.name]), \
-                                symbolic_object=self.symbolic_object/other_obj.symbolic_object, \
-                                symbolic_map={**self.symbolic_map, **other_obj.symbolic_map}, \
+                                name="/".join([self.name, other_obj.name]), 
+                                symbolic_object=self.symbolic_object/other_obj.symbolic_object, 
+                                symbolic_map={**self.symbolic_map, **other_obj.symbolic_map}, 
                                 unit_object=self.unit_object/other_obj.unit_object,
-                                latex_text="\\frac{"+self.latex_text+"}{"+other_obj.latex_text+"}"
+                                latex_text="\\frac{"+self.latex_text+"}{"+other_obj.latex_text+"}",             
+                                repr_symbolic=self.repr_symbolic/other_obj.repr_symbolic       
                                 )
 
             enode_.equation_type = self._checkEquationTypePrecedence(self.equation_type, other_obj.equation_type)
@@ -290,8 +316,9 @@ class EquationNode:
                         symbolic_object=self.symbolic_object/other_obj,
                         symbolic_map={**self.symbolic_map}, \
                         unit_object=self.unit_object, \
-                        latex_text="\\frac{"+self.latex_text+"}{"+str(other_obj)+"}"
-                                )
+                        latex_text="\\frac{"+self.latex_text+"}{"+str(other_obj)+"}",
+                        repr_symbolic=self.repr_symbolic/other_obj
+                        )
 
             enode_.equation_type = {**self.equation_type}
 
@@ -327,7 +354,8 @@ class EquationNode:
                                 symbolic_map={**self.symbolic_map, 
                                                 **other_obj.symbolic_map}, \
                                 unit_object=self.unit_object/other_obj.unit_object,
-                                latex_text="\\frac{"+self.latex_text+"}{"+other_obj.latex_text+"}"
+                                latex_text="\\frac{"+self.latex_text+"}{"+other_obj.latex_text+"}",             
+                                repr_symbolic=self.repr_symbolic/other_obj.repr_symbolic   
                                 )
 
             enode_.equation_type = self._checkEquationTypePrecedence(self.equation_type, other_obj.equation_type)
@@ -341,7 +369,8 @@ class EquationNode:
                         symbolic_object=self.symbolic_object/other_obj,
                         symbolic_map={**self.symbolic_map}, \
                         unit_object=self.unit_object, \
-                        latex_text="\\frac{"+self.latex_text+"}{"+str(other_obj)+"}"
+                        latex_text="\\frac{"+self.latex_text+"}{"+str(other_obj)+"}",
+                        repr_symbolic=self.repr_symbolic/other_obj
                                 )
 
             enode_.equation_type = {**self.equation_type}
@@ -383,7 +412,8 @@ class EquationNode:
                                                     **other_obj.symbolic_map
                                                   }, \
                                     unit_object=self.unit_object**other_obj.unit_object,
-                                    latex_text=self.latex_text+"^"+other_obj.latex_text
+                                    latex_text=self.latex_text+"^"+other_obj.latex_text,             
+                                    repr_symbolic=self.repr_symbolic**other_obj.repr_symbolic   
                                     )
 
                 enode_.equation_type = self._checkEquationTypePrecedence(self.equation_type, {'is_linear':False, 'is_nonlinear':True, 'is_differential':False})
@@ -401,8 +431,9 @@ class EquationNode:
                             symbolic_object=self.symbolic_object**other_obj,
                             symbolic_map={**self.symbolic_map}, \
                             unit_object=self.unit_object**other_obj, \
-                            latex_text=self.latex_text+"^"+str(other_obj)
-                                    )
+                            latex_text=self.latex_text+"^"+str(other_obj),
+                            repr_symbolic=self.repr_symbolic**other_obj
+                            )
 
             enode_.equation_type = self._checkEquationTypePrecedence(self.equation_type, {'is_linear':False, 'is_nonlinear':True, 'is_differential':False})
 

@@ -40,11 +40,12 @@ def wrapper(own_func, obj, base_func, latex_func_name=None, equation_type=None):
 
             # obj is a number
 
-            enode_ = EquationNode(name=f_name(own_func.__name__, str(obj)), \
-                                  symbolic_object=base_func(obj, evaluate=False), \
-                                  symbolic_map={}, \
-                                  unit_object=dimless, \
-                                  latex_text=f_name(latex_func_name, str(obj))
+            enode_ = EquationNode(name=f_name(own_func.__name__, str(obj)), 
+                                  symbolic_object=base_func(obj, evaluate=False), 
+                                  symbolic_map={}, 
+                                  unit_object=dimless, 
+                                  latex_text=f_name(latex_func_name, str(obj)),
+                                  repr_symbolic=base_func(obj, evaluate=False)
                                 )
 
             return enode_
@@ -55,12 +56,13 @@ def wrapper(own_func, obj, base_func, latex_func_name=None, equation_type=None):
 
                 # obj is an EquationNode
 
-                enode_ = EquationNode(name=f_name(own_func.__name__, obj.name), \
-                                symbolic_object=base_func(obj.symbolic_object, evaluate=False), \
-                                symbolic_map={**obj.symbolic_map}, \
-                                unit_object=dimless, \
-                                latex_text=f_name(latex_func_name, obj.latex_text)
-                                    )
+                enode_ = EquationNode(name=f_name(own_func.__name__, obj.name), 
+                                symbolic_object=base_func(obj.symbolic_object, evaluate=False), 
+                                symbolic_map={**obj.symbolic_map}, 
+                                unit_object=dimless, 
+                                latex_text=f_name(latex_func_name, obj.latex_text),
+                                repr_symbolic=base_func(obj.repr_symbolic, evaluate=False)
+                                )
 
                 enode_.equation_type = equation_type_
 

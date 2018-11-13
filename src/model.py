@@ -242,6 +242,8 @@ class Model:
 
                 conn = connection.Connection(name, description, in_var.name, out_var.name, expr)
 
+                conn._sweepObjects()
+
                 self.equations[name] = conn
 
                 return(conn)

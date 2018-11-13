@@ -61,6 +61,8 @@ class Quantity:  # New-style class syntax
 
         self.latex_text = latex_text
 
+        self.is_specified = False
+
 
     def setValue(self, quantity_value, quantity_unit=None):
 
@@ -74,6 +76,8 @@ class Quantity:  # New-style class syntax
 
                 self.value = quantity_value.value
 
+                self.is_specified = True
+
             else:
 
                 raise DimensionalCoherenceError(self.units,quantity_value.units)
@@ -82,9 +86,13 @@ class Quantity:  # New-style class syntax
 
             self.value = quantity_value
 
+            self.is_specified = True
+
         elif isinstance(quantity_value, float) or isinstance(quantity_value, int) and quantity_unit!=None and quantity_unit._check_dimensional_coherence(self.units):
 
             self.value = quantity_value
+
+            self.is_specified = True
 
         else:
 
@@ -124,8 +132,29 @@ class Quantity:  # New-style class syntax
         :rtype EquationNode:
         """
 
-        return EquationNode(name=self.name, symbolic_object=sp.symbols(self.name), symbolic_map={self.name:self}, unit_object=self.units, \
-            latex_text=self.latex_text)
+        # If the object is not specified (eg:var)
+
+        if self.is_specified == False:
+
+            return EquationNode(name=self.name, 
+                                symbolic_object=sp.symbols(self.name), 
+                                symbolic_map={self.name:self}, 
+                                unit_object=self.units,
+                                latex_text=self.latex_text,
+                                repr_symbolic=sp.symbols(self.name)
+                                )
+
+        # If the object is specified (eg:specified param)
+
+        if self.is_specified == True:
+
+            return EquationNode(name=self.name, 
+                                symbolic_object=self.value, 
+                                symbolic_map={self.name:self}, 
+                                unit_object=self.units,
+                                latex_text=self.latex_text,
+                                repr_symbolic=sp.symbols(self.name)
+                                )
 
     def __add__(self, other_obj):
         """

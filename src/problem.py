@@ -5,7 +5,7 @@ Define Problem class. Unite several Model classes through Connections, forming o
 """
 
 from core.error_definitions import ExposedVariableError
-#from core.equation_block import EquationBlock
+from core.equation_block import EquationBlock
 from collections import OrderedDict
 import numpy as np
 
@@ -38,6 +38,30 @@ class Problem(object):
         self._equation_list = None
 
         self.equation_block = None
+
+    def _buildEquationBlock(self):
+
+        """
+        Return the EquationBlock object for the models defined for the current problem.
+        """
+
+        #eqs_ = [ list(model_i.equations.values()) for model_i in self.models.values() ]
+
+        #self._equation_list = (np.array(eqs_).ravel()).tolist()
+
+        #================== OPTIMIZE THIS CODE SNIPPET ===================
+
+        self._equation_list = []
+
+        for model_i in list(self.models.values()):
+
+            for eq_i in list(model_i.equations.values()):
+
+                self._equation_list.append(eq_i)
+
+        #=================================================================
+
+        self.equation_block = EquationBlock(equations=self._equation_list)
 
     def createConnection(self, model_1, model_2, output_var, input_var, expr=None):
 
@@ -82,16 +106,12 @@ class Problem(object):
 
             self.models[model_list.name] = model_list
 
-    def buildEquationBlock(self):
+    def resolve(self):
 
         """
-        Return the EquationBlock object for the models defined for the current problem.
-        """
+        Resolve current Problem object, builing its EquationBlock object and resolving it
+        """ 
+    
+        self._buildEquationBlock()
 
-        eqs_ = [list(self.models[i].equations.values()) for i in self.models]
-
-        # Use ravel to compress the equations for each model into one single list. Then convert back to standard list
-
-        self._equation_list = (np.array(eqs_).ravel()).tolist()
-
-        self.equation_block = EquationBlock(equations=self._equation_list)
+        self.equation_block()

@@ -35,11 +35,7 @@ class Equation:
 
         self.equation_expression = None
 
-        self.is_linear = True 
-
-        self.is_nonlinear = False
-
-        self.is_differential = False
+        self.type = None
 
         self.objects_declared = {}
 
@@ -53,11 +49,27 @@ class Equation:
         Get the information about the current equation is algebraic linear, algebraic nonlinear or differential, determined from the equation expression (EquationNode) and set the attributes accordingly.
         """
 
-        self.is_linear = self.equation_expression.equation_type['is_linear']
+        is_linear = self.equation_expression.equation_type['is_linear']
 
-        self.is_nonlinear = self.equation_expression.equation_type['is_nonlinear']
+        is_nonlinear = self.equation_expression.equation_type['is_nonlinear']
 
-        self.is_differential = self.equation_expression.equation_type['is_differential']
+        is_differential = self.equation_expression.equation_type['is_differential']
+
+        if is_linear == True:
+
+            self.type = 'linear'
+
+        elif is_nonlinear == True:
+
+            self.type = 'nonlinear'
+
+        elif is_differential == True:
+
+            self.type = 'differential'
+
+        else:
+
+            self.type = None
 
     def _sweepObjects(self):
 

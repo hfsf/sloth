@@ -27,7 +27,8 @@ mol_s   = Unit("mol/s",     mol/s,                 "molar flux")
 
 Force   = Unit("Force",     kg*m_s2,               "Force")
 Pa      = Unit("Pa",        Force/(m**2),          "Pascal")
-J       = Unit("Joule",     kg*(m_s**2),            "Joule")
+atm     = Unit("atm",        Force/(m**2),         "Atmospheres")
+J       = Unit("Joule",     kg*(m_s**2),           "Joule")
 #Convenience units
 
 UniversalIdealGasConstant = Unit("R", J*(K**-1)*(mol**-1), "Universal ideal gas constant")

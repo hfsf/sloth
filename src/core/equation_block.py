@@ -15,11 +15,11 @@ class EquationBlock:
         """
         Instantiate EquationBlock
 
-        :ivar Model owner_model:
-            Model for which the EquationBlock is defined
+        :ivar list(Equations) equations:
+            List containing the Equation objects for the EquationBlock. Defaults to the whole set of equations from the owner model.
 
-        :ivar dict(Equations) equations:
-            Dictionary containing the Equation objects for the EquationBlock. Defaults to the whole set of equations from the owner model.
+        :ivar Model owner_model:
+            Model for which the EquationBlock is defined. Defaults to None.
         """
 
         self.owner_model = owner_model
@@ -30,9 +30,29 @@ class EquationBlock:
 
         self._equations_list = []
 
-        self._matrix_A = None
+        self._equation_groups = {'linear':[], 'nonlinear':[], 'differential':[]}
 
-        self._matrix_b = None
+        self._assignEquationGroups()
+
+    def _assignEquationGroups(self):
+
+        """
+        Get the type of each of the equations and assign them accordingly to the ._equation_groups atribute of the current EquationBlock object.
+        """
+
+        #print("\nEquation list: %s" %(self._equations_list))
+
+        eq_lin = [i for i in self.equations if i.type == 'linear']
+
+        eq_nlin = [i for i in self.equations if i.type == 'nonlinear']
+
+        eq_diff = [i for i in self.equations if i.type == 'differential']
+
+        self._equation_groups['linear'] = eq_lin
+
+        self._equation_groups['nonlinear'] = eq_nlin
+
+        self._equation_groups['differential'] = eq_diff
 
     def _getVarList(self):
 
@@ -47,21 +67,25 @@ class EquationBlock:
             * Optimize code snippet marked below
         """
 
-        var_list = []
-
         # ========== NEEDS TO BE OPTIMIZED ==========
+
+        var_name_list = []
+
+        var_list = []
 
         for  eq_i in self.equations:
 
             for var_i in list(eq_i.objects_declared.values()):
 
-                if var_i not in self._var_list:
+                if var_i not in var_list:
 
                     var_list.append(var_i)
 
+                    var_name_list.append(var_i.name)
+
         # ===========================================
 
-        return var_list
+        return var_name_list
 
     def _getEquationList(self):
 
@@ -74,26 +98,7 @@ class EquationBlock:
         :rtype list(sympy expresion):
         """
 
-        return [eq_i.symbolic_object for eq_i in self.equations]
-
-    def _getCoeffsFromEquations(self, eq_list, declared_objs):
-
-        """
-        Return two Matrix objects corresponding to A and b (Ax - b = 0) from the list of equations
-
-        :param list(Equations) eq_list:
-            List of Equation objects from which the coefficients will be extracted
-
-        :param list(sympy.symbol) declared_objs:
-            List of symbolic objects from which the coefficient matrix should be determined
-
-        :return:
-            Coefficient matrix (A) and array (b) representing the equations
-
-        :rtype tuple(Matrix, Matrix): 
-        """
-
-        return sp.linear_eq_to_matrix(eq_list, declared_objs)
+        return [eq_i.equation_expression.symbolic_object for eq_i in self.equations]
 
     def __call__(self):
 
@@ -107,10 +112,8 @@ class EquationBlock:
 
         self._equations_list = self._getEquationList()
 
-        self._matrix_A, \
-        self._matrix_b = self._getCoeffsFromEquations(self._equations_list, \
-                                                      self._var_list
-                                                      )
+        self._assignEquationGroups()
+
     def solve(self):
 
         """
