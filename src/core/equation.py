@@ -6,6 +6,9 @@ Define Equation class.Creates objects that holds equations and re-evaluates its 
 Define Connection class. Special type of Equation that are used as source or sink terms (process inlet or outlet, respectively) or to connect two different Model objects.
 """
 
+from .expression_evaluation import EquationNode
+from .error_definitions import UnexpectedValueError, AbsentRequiredObjectError
+
 class Equation:
 
     """
@@ -35,6 +38,10 @@ class Equation:
 
         self.equation_expression = None
 
+        self.elementary_equation_expression = None
+
+        self.equation_form = 'residual'
+
         self.type = None
 
         self.objects_declared = {}
@@ -42,6 +49,34 @@ class Equation:
         if fast_expr != None:
 
             self.setResidual( fast_expr )
+
+    def __call__(self, i=1):
+
+        """
+        Return the EquationNode object represented by current Equation object.
+
+        :param int i:
+             The side of the equation to be returned, if the current Equation is defined in elementary form (0=left, 1 = right). Defaults to right hand side.
+
+        :return enode_:
+            EquationNode object represented by the current Equation
+        :rtype EquationNode:
+        """
+
+        if self.equation_form == 'residual':
+
+            return self.equation_expression
+
+        if self.equation_form == 'elementary':
+
+            try:
+
+                return self.elementary_equation_expression[i]
+
+            except:
+
+                raise UnexpectedValueError("int")
+
 
     def _getTypeFromExpression(self):
 
@@ -87,32 +122,90 @@ class Equation:
         """
         Creates the equation using the 'equation_expression', storing it for posterior utilization.
 
-        :ivar EquationNode equation_str:
-        EquationNode containing the equation definition (eg: 'self.a() + self.b()*Log10(self.c()*self.R())').
+        :ivar EquationNode, tuple(EquationNode,EquationNode) equation_expression:
+        EquationNode containing the equation definition in the residual form (eg: self.a() + self.b() -self.c() = 0) or in the elementar form (self.a()+self.b() == self.c()).
 
         """
 
-        self.equation_expression = equation_expression
+        if isinstance(equation_expression, tuple) and \
+           isinstance(equation_expression[0],EquationNode) and \
+           isinstance(equation_expression[1], EquationNode):
 
-        self.objects_declared = self._sweepObjects()
+            # The equation expression is in the elementary form
 
-        self._getTypeFromExpression()
+            self.elementary_equation_expression = tuple([equation_expression[0], equation_expression[1]])
 
-    def evalResidual(self):
+            self.equation_expression = equation_expression[0] - equation_expression[1]
+
+            self.equation_form = 'elementary'
+
+            self.objects_declared = self._sweepObjects()
+
+            self._getTypeFromExpression()
+
+        elif isinstance(equation_expression, EquationNode):
+
+            # The expression is in the residual form
+
+            self.equation_expression = equation_expression
+
+            self.objects_declared = self._sweepObjects()
+
+            self._getTypeFromExpression()
+
+        else:
+
+            raise UnexpectedValueError("[EquationNode, tuple(EquationNode, EquationNode) ]")
+
+    def eval(self, symbolic_map=None, side=None):
 
         """
         Map the symbolic objects defined into the equation_expression atribute in a numerical result, using the current value of the related quantity objects.
+
+        :param dict symbolic_map:
+            Symbolic map for value reference to the variables. Defaults to the symbolic map currently defined for the Equation object.
+
+        :param str side:
+            Which side of the equality should be evaluated (for Equation objects defined in the elementary form). 'lhs' for left hand side, 'rhs' for right hand side. Defaults to None.
+
+        :return res:
+            Returns the calculated value for the expression residual, given the symbolic mapping provided.
+        :rtype float:
         """
+
+        if side == None:
         
-        eq_keys=self.equation_expression.symbolic_map.keys()
+            equation_expression_ = self.equation_expression
 
-        eq_values=self.equation_expression.symbolic_map.values()
+        elif side == 'lhs' and self.elementary_equation_expression != None:
 
-        eval_map = dict( ( (i,j.value) for i, j in zip(eq_keys,eq_values) ) )
+            equation_expression_ = self.elementary_equation_expression[0]
 
-        res = self.equation_expression.symbolic_object.evalf(subs=eval_map)
+        elif side == 'rhs' and self.elementary_equation_expression != None:
 
-        self.residual = res
+            equation_expression_ = self.elementary_equation_expression[1]
+
+        else:
+
+            raise AbsentRequiredObjectError("Equation in elementary form")
+
+        if symbolic_map == None:
+
+            symbolic_map = self.equation_expression.symbolic_map
+
+        else:
+
+            symbolic_map_ = symbolic_map
+
+        eq_keys=symbolic_map_.keys()
+
+        eq_values=symbolic_map_.values()
+
+        eval_map = dict( ( (i,j) for i, j in zip(eq_keys,eq_values) ) )
+
+        res = equation_expression_.symbolic_object.evalf(subs=eval_map)
+
+        return res
 
     def getResidual(self):
 
@@ -124,9 +217,7 @@ class Equation:
         :rtype float:
         """
 
-        self.evalResidual()
-
-        return(self.residual)
+        return self.eval()
 
 class Connection(Equation):
 

@@ -39,6 +39,19 @@ class Problem(object):
 
         self.equation_block = None
 
+        self.initial_conditions = {}
+
+    def setInitialConditions(self, condition):
+
+        """
+        Set initial condition for ODE and DAE systems.
+
+        :param dict condition:
+            Dictionary containing the initial condition for each Variable object that is differentiated
+        """
+
+        self.initial_conditions.update(condition)
+
     def _buildEquationBlock(self):
 
         """

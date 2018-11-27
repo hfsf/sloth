@@ -27,7 +27,7 @@ class ExposedVariableError(Exception):
 class UnexpectedObjectDeclarationError(Exception):
 
     """
-    Error raised by the utilization of a non-registered Varaible, Parameter or Constant for the current Model.
+    Error raised by the utilization of a non-registered Variable, Parameter or Constant for the current Model.
     """
 
     def __init__(self, objects, declared_objects):
@@ -42,10 +42,28 @@ class UnexpectedObjectDeclarationError(Exception):
 
         return(msg)
 
+
+class AbsentRequiredObjectError(Exception):
+
+    """
+    Error raised by the absence of an required object.
+    """
+
+    def __init__(self, expected_type):
+
+        self.expected_type = expected_type
+
+    def __str__(self):
+
+        msg = "Absent required object error. A %s was expected, but no one was supplied." % (self.expected_type)
+
+        return(msg)
+
+
 class UnexpectedValueError(Exception):
 
     """
-    Error raised by input of an unexpected value. Typically, when the user should input a string an insert a numerical value.
+    Error raised by input of an unexpected value.
     """
 
     def __init__(self, expected_type):
@@ -114,7 +132,7 @@ class DimensionalCoherenceError(Exception):
 
     def __str__(self):
 
-        msg = "Dimensions are incohent \n(" + \
+        msg = "Dimensions are incoherent \n(" + \
                str(self.unit_1.dimension)   + \
                "\n != \n"                       + \
                str(self.unit_2.dimension)   + \

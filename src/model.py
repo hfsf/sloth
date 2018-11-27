@@ -11,7 +11,7 @@ import core.variable as variable
 import core.constant as constant
 import core.parameter as parameter
 import connection
-import beautifultable
+import prettytable
 
 class Model:
 
@@ -116,27 +116,27 @@ class Model:
             tuple (int,int,int)
         """
 
-        rtrn_tab = beautifultable.BeautifulTable()
+        rtrn_tab = prettytable.PrettyTable()
 
-        rtrn_tab.column_headers = ['Nb. Equations','Nb. Variables', 'Nb. Parameters']
-        rtrn_tab.append_row([ str(len(self.equations)), \
+        rtrn_tab.field_names = ['Nb. Equations','Nb. Variables', 'Nb. Parameters']
+        rtrn_tab.add_row([ str(len(self.equations)), \
                               str(len(self.variables)) , \
                               str(len(self.parameters))
                             ])
         print(rtrn_tab)
 
-        rtrn_tab = beautifultable.BeautifulTable()
+        rtrn_tab = prettytable.PrettyTable()
 
         rtrn_tab.column_headers = ['Nb. Components','Nb. Phases']
-        rtrn_tab.append_row([ str(0), str(0) ])
+        rtrn_tab.add_row([ str(0), str(0) ])
 
         print(rtrn_tab)
 
 
-        rtrn_tab = beautifultable.BeautifulTable()
+        rtrn_tab = prettytable.PrettyTable()
 
         rtrn_tab.column_headers = ['Nb. M.V.']
-        rtrn_tab.append_row([ str(0)])
+        rtrn_tab.addend_row([ str(0)])
 
         print(rtrn_tab)
 
@@ -146,10 +146,10 @@ class Model:
 
         df_chemical = 0
 
-        rtrn_tab = beautifultable.BeautifulTable()
+        rtrn_tab = prettytable.PrettyTable()
 
         rtrn_tab.column_headers = ['Nb. DF. Design','Nb. DF. Control', 'Nb. DF. Chemical']
-        rtrn_tab.append_row([ str(df_design), str(df_control), str(df_chemical) ])
+        rtrn_tab.add_row([ str(df_design), str(df_control), str(df_chemical) ])
 
         print(rtrn_tab)
 

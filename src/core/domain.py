@@ -5,6 +5,9 @@ Define Domain class, which distributes one equation among a domain of variables.
 """
 
 import pandas
+from .error_definitions import UnexpectedValueError
+import numpy as np
+from collections import OrderedDict
 
 class Domain:
 
@@ -12,7 +15,7 @@ class Domain:
     Domain class definition. Distributes equations, parameters or variables within a domain of variables (currently, only unidmensional domains are supported), storing information.
     """
 
-    def __init__(self, name, units, independent_vars={}, description="", lower_bound={'all':None}, upper_bound={'all':None}):
+    def __init__(self, name, units, independent_vars=None, description="", lower_bound={'all':None}, upper_bound={'all':None}):
 
         """
         Instantiate Domain.
@@ -40,15 +43,27 @@ class Domain:
 
         self.units = units
 
-        self.independent_vars = independent_vars
+        if isinstance(independent_vars, list):
 
-        self.dependent_obj = {}
+            self.independent_vars = {var.name:var for var in independent_vars}
+
+        else:
+
+            self.independent_vars = {}
+
+            self.independent_vars[independent_vars.name] = independent_vars
+
+        self.dependent_objs = OrderedDict({})
 
         self.description = description
 
         self.lower_bound = lower_bound
 
         self.upper_bound = upper_bound
+
+        self.values = None
+
+        self.is_set = False
 
     def __call__(self, independent_vars=None):
 
@@ -64,57 +79,80 @@ class Domain:
 
         pass
 
-    def setDomain(self, independent_vars):
+    def _setDomain(self, independent_vars=None):
 
         """
         Set the independent variables on which the current domain rely on. Currently only unidimensional domains are suported.
 
-        :ivar independent_vars:
+        :ivar list(Variable) independent_vars:
             Independent vars on which the current domain rely on. Currently only unidimensional domains are suported.
         """
 
-        self.values = dict(var_i.name,_createDataFramePrototype(var_i) for var_i in independent_vars)
+        if self.is_set == False:
 
-        self.independent_vars = independent_vars
+            if independent_vars == None and self.independent_vars != None:
 
-    def distributeOnDomain(self, dependent_obj):
+                independent_vars = list(self.independent_vars.values())
+
+            try:
+
+                self.values = {var_i.name: self._createDataFramePrototype() for var_i in independent_vars}
+
+            except:
+
+                raise UnexpectedValueError("list(Variables)")
+
+            self.independent_vars = independent_vars
+
+            self.is_set = True
+
+    def _distributeOnDomain(self, dependent_obj):
 
         """
         Distribute one dependent object into the current domain.
 
-        :ivar Equation, Quantity dependent_obj:
+        :param Equation, Quantity dependent_obj:
             Dependent objects (Euquation, Variable, Parameter, Constant) that are distributed along the current domain.
         """
 
-        pass
+        self.dependent_objs[dependent_obj.name] = dependent_obj
 
-    def _register(self, var, values):
+    def _register(self, values, var=None):
 
         """
         Register values in the respective DataFrame
 
-        :param Variable var:
-            Variable (independent) for which the values should be registered
-
         :param array-like values:
             Values to register
+
+        :param Variable var:
+            Variable (independent) for which the values should be registered. Defaults to None, for which the last independent var is assumed.
+
         """
+
+        if var==None:
+
+            var = self.independent_vars
 
         if np.array(values).ndim == 1:
 
             self.values[var] = self.values[var].append(values)
 
-    def _createDataFramePrototype(self, var):
+    def _createDataFramePrototype(self):
 
         """
-        Create the prototype of DataFrame for the current independent variable, storing all the dependent objects
-        
-        :param Variable var:
-            Variable for which the DataFrame are defined
+        Create the prototype of DataFrame for the independent variables and dependent ones
 
+        :return data_frame_:
+            Prototype of DataFrame including all the independent variables and the dependent ones. Typically each DataFrame is univariate in respect to a corresponding indenpendent variable.
+        :rtype pandas.DataFrame:
         """
 
-        objs_names_ = [var.name].append([obj_i.name for obj_in in self.dependent_objs])
+        keys_from_dependent_objs_ = list(self.dependent_objs.keys())
+
+        kys_from_independent_vars = list(self.independent_vars.keys())
+
+        objs_names_ = kys_from_independent_vars+keys_from_dependent_objs_
 
         data_frame_ = pandas.DataFrame(index=objs_names_)
 

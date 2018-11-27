@@ -1,8 +1,9 @@
-
+ 
 # *coding:utf-8*
 
 import sympy as sp
 from scipy.linalg import solve
+from collections import OrderedDict
 
 class EquationBlock:
 
@@ -30,7 +31,7 @@ class EquationBlock:
 
         self._equations_list = []
 
-        self._equation_groups = {'linear':[], 'nonlinear':[], 'differential':[]}
+        self._equation_groups = OrderedDict({'linear':[], 'nonlinear':[], 'differential':[]})
 
         self._assignEquationGroups()
 

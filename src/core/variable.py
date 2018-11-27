@@ -3,6 +3,9 @@ Define variable class.
 """
 
 from .quantity import Quantity
+from .equation_operators import _Diff
+from .error_definitions import AbsentRequiredObjectError
+from .domain import Domain
 
 class Variable(Quantity):
 
@@ -14,7 +17,7 @@ class Variable(Quantity):
 
     """
 
-    def __init__(self, name, units , description = "", is_lower_bounded = False, is_upper_bounded = False, lower_bound = None, upper_bound = None,  value = 0, latex_text=""):
+    def __init__(self, name, units , description = "", is_lower_bounded = False, is_upper_bounded = False, lower_bound = None, upper_bound = None,  value = 0, latex_text="", domain=None):
 
         super().__init__(name, units, description, value, latex_text)
 
@@ -45,7 +48,11 @@ class Variable(Quantity):
         Minimum value for Variable object
 
         :param float value:
-        Value of the current variable. Defaults to 0.       
+        Value of the current variable. Defaults to 0.
+
+        :param str latex_text:
+
+        :param Domain domain:       
 
         === Coming from base class ===
 
@@ -66,4 +73,40 @@ class Variable(Quantity):
         self.lower_bound = lower_bound
 
         self.upper_bound = upper_bound
+
+        self.domain = domain
+
+    def distributeOnDomain(self, domain):
+
+        """
+        Function for registration of the current Variable object into one Domain object.
+
+        :param Domain domain:
+            Domain in which the current Variable object should be distributed
+        """
+
+        self.domain = domain
+
+        domain._distributeOnDomain(self)
+
+        domain._setDomain()
+
+    def Diff(self, ind_var=None):
+
+        """
+        Function for calculation of the time derivative of the Variable object. Require that the Variable object is distributed in a dynamic domain.
+        """
+
+        if self.domain != None:
+
+            return _Diff(self, ind_var)
+
+        else:
+
+            raise AbsentRequiredObjectError("Domain")
+
+
+
+
+
 

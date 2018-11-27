@@ -4,7 +4,7 @@
 Defines Analysis class. The class is responsible for degrees-of-freedom (DoF) analysis, printing general information about Problem and Models.
 """
 
-import beautifultable
+import prettytable
 import core.variable as variable
 import core.constant as constant
 import core.parameter as parameter
@@ -85,13 +85,13 @@ class Analysis:
         :rtype str tab:
         """
 
-        tab = beautifultable.BeautifulTable(max_width=120)
+        tab = prettytable.PrettyTable()
 
         tab.clear()
 
         # tab.column_widths = [20,30,20,15,15]
 
-        tab.column_headers = ["Equation name","Description",
+        tab.field_names = ["Equation name","Description",
                                 "Representation","Variables",
                                 "Parameters","Constants","Equation type"]
 
@@ -113,6 +113,6 @@ class Analysis:
 
             eq_type = eq_type_pretty[ list({k for k,v in model.equations[eq_i].equation_expression.equation_type.items() if v==True})[0] ]
 
-            tab.append_row([eq_name, eq_description, eq_repr, eq_vars, eq_params, eq_cons, eq_type])
+            tab.add_row([eq_name, eq_description, eq_repr, eq_vars, eq_params, eq_cons, eq_type])
 
         return(tab)

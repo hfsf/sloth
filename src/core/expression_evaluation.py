@@ -5,6 +5,7 @@ Define EquationNode class, that holds the reference to variables in the equation
 """
 
 from .error_definitions import UnexpectedValueError, DimensionalCoherenceError
+import sympy as sp
 
 class EquationNode:
 
@@ -119,6 +120,27 @@ class EquationNode:
         """
 
         return str(self.repr_symbolic)
+
+    def __eq__(self, other_obj):
+
+        """
+        Overloaded function for definition of the relation beetween ENODE objects. Tipically used for construction of equation expressions in the elementary form (a + b == c) instead of the residual form (a + b -c )
+
+        :param ENODE other_obj:
+            Second ENODE object for which mathematical operation will be performed.
+
+        :return:
+            Return a new tuple of ENODE corresponding to the result of mathematical operation in the elementary form.
+        :rtype tuple(EquationNode, EquationNode):
+        """
+
+        if isinstance(other_obj, self.__class__):
+
+            return tuple([self, other_obj])
+
+        else:
+
+            return UnexpectedValueError("EquationNode")
 
     def __add__(self, other_obj):
 
