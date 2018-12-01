@@ -138,7 +138,8 @@ class Quantity:  # New-style class syntax
 
             return EquationNode(name=self.name, 
                                 symbolic_object=sp.symbols(self.name), 
-                                symbolic_map={self.name:self}, 
+                                symbolic_map={self.name:self},
+                                variable_map={self.name:self}, 
                                 unit_object=self.units,
                                 latex_text=self.latex_text,
                                 repr_symbolic=sp.symbols(self.name)
@@ -150,7 +151,8 @@ class Quantity:  # New-style class syntax
 
             return EquationNode(name=self.name, 
                                 symbolic_object=self.value, 
-                                symbolic_map={self.name:self}, 
+                                symbolic_map={self.name:self},
+                                variable_map={}, 
                                 unit_object=self.units,
                                 latex_text=self.latex_text,
                                 repr_symbolic=sp.symbols(self.name)

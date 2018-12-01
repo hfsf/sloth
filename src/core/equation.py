@@ -8,6 +8,7 @@ Define Connection class. Special type of Equation that are used as source or sin
 
 from .expression_evaluation import EquationNode
 from .error_definitions import UnexpectedValueError, AbsentRequiredObjectError
+import sympy as sp
 
 class Equation:
 
@@ -116,6 +117,55 @@ class Equation:
         # This code snippet work only on Python 3.5+
 
         self.objects_declared = { **self.equation_expression.symbolic_map }
+
+    def _convertToFunction(self, symbolic_map=None, side=None, compilation_mechanism='numpy'):
+
+        """
+        Convert the current equation expression into a function.
+        
+        :param dict symbolic_map:
+            Symbolic map for value reference to the variables. Defaults to the symbolic map currently defined for the Equation object.
+
+        :param str side:
+            Which side of the equality should be evaluated (for Equation objects defined in the elementary form). 'lhs' for left hand side, 'rhs' for right hand side. Defaults to None, in which case an elementary formed Equation object is assumed.
+
+        :param str compilation_mechanism:
+            Which library are used in the compilation of the equations into functions. Include 'numexpr', 'mpmath', 'numpy'. Defaults to 'numpy'
+
+        :return func:
+            Returns the function corresponding to the expression of the current Equation object.
+        :rtype function:
+        """
+
+        if side == None:
+        
+            equation_expression_ = self.equation_expression
+
+        elif side == 'lhs' and self.elementary_equation_expression != None:
+
+            equation_expression_ = self.elementary_equation_expression[0]
+
+        elif side == 'rhs' and self.elementary_equation_expression != None:
+
+            equation_expression_ = self.elementary_equation_expression[1]
+
+        else:
+
+            raise AbsentRequiredObjectError("Equation in elementary form")
+
+        if symbolic_map == None:
+
+            symbolic_map_ = self.equation_expression.symbolic_map
+
+        else:
+
+            symbolic_map_ = symbolic_map
+
+        eq_keys = list(symbolic_map_.keys())
+
+        func = sp.lambdify(eq_keys, equation_expression_.symbolic_object, compilation_mechanism)
+
+        return func
 
     def setResidual(self, equation_expression):
 

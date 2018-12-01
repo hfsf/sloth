@@ -118,4 +118,12 @@ def xec():
 
     s.integrate(end_time=15., number_of_time_steps=100)
 
-    print(mod0.dom.values['t'])
+    # print(mod0.dom.values['t'])
+
+    # maps = {'u':10.,'v':5.,'a':1.,'b':1.,'c':1.,'d':1.}# mod0.eq1.elementary_equation_expression[1].symbolic_map
+
+    # f = mod0.eq1._convertToFunction(maps,'rhs')
+
+    # print("\n=>%s"%f(10.,5.,1.,0.1,1.5,0.75))
+
+    # print("=>%s"%mod0.eq1.elementary_equation_expression[1].symbolic_object)

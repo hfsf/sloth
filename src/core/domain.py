@@ -13,6 +13,8 @@ class Domain:
 
     """
     Domain class definition. Distributes equations, parameters or variables within a domain of variables (currently, only unidmensional domains are supported), storing information.
+
+    * TODO: Solve domain working process
     """
 
     def __init__(self, name, units, independent_vars=None, description="", lower_bound={'all':None}, upper_bound={'all':None}):

@@ -2,6 +2,9 @@
 
 """
 Define solver mechanisms
+
+* TODO: 
+       - Complete differential algebraic solver 
 """
 
 import numpy as np
@@ -9,11 +12,11 @@ from scipy.linalg import solve as scp_solve
 import sympy as sp
 import scipy.integrate as integrate
 from collections import OrderedDict
-from core.error_definitions import AbsentRequiredObjectError
+from core.error_definitions import AbsentRequiredObjectError, UnexpectedValueError
 
 import prettytable
 
-def createSolver(problem, domain=None, is_dynamic=False, time_horizon=[None, None], LA_solver=None, NLA_solver=None, D_solver=None, DAE_solver=None, time_variable_name='t', args_names=[], initial_time = 0., end_time = None):
+def createSolver(problem, additional_configurations):
 
     """
     Create a solver object given the considerations for the problem, and return the object.
@@ -21,54 +24,44 @@ def createSolver(problem, domain=None, is_dynamic=False, time_horizon=[None, Non
     :param Problem problem:
         Problem in which the created solver will operate. Used to infer the system type formed by the equations in the Problem object.
 
-    :param bool is_dynamic:
-        Defines if the problem is dynamic(True) or steady(False). Defaults to steady problems.
-
-    :param [float, float] time_horizon:
-        Defines the initial and end time for the current dyanamic problem
-
-    :param bool LA_solver:
-
-    :param bool NLA_solver:
-
-    :param bool D_solver:
-
-    :param bool DAE_solver:
-
-    :return:
-        Solver object accordingly to the configurations provided and infered from the Problem.
-    :rtype:
-         Solver
+    :param dict additional_configurations:
+        Dictionary containing additional configurations for the solver definition
     """
 
-    is_linear = len(problem.equation_block._equation_groups['linear']) > 0
+    domain = additional_configurations['domain']
+    
+    time_variable_name = additional_configurations['time_variable_name']
 
-    is_nonlinear = len(problem.equation_block._equation_groups['nonlinear']) > 0
+    linear_solver = additional_configurations['linear_solver']
 
-    is_differential = len(problem.equation_block._equation_groups['differential']) > 0
+    nonlinear_solver = additional_configurations['nonlinear_solver']
 
-    # Check if the problem is D (strictly Differential), DAE (differential + linear or nonlinear), NLA (nonlinear) or LA (linear)
+    differential_solver = additional_configurations['differential_solver']
 
-    is_D = is_differential==True and (is_linear==False and is_nonlinear==False)
-    is_DAE = is_differential==True and (is_linear==True or is_nonlinear==True)
-    is_NLA = is_differential==False and (is_nonlinear==True)
-    is_LA = is_differential==False and (is_nonlinear==False and is_linear==True)
+    differential_algebraic_solver = additional_configurations['differential_algebraic_solver']
 
-    if is_LA:
+    problem_type = problem._getProblemType()
 
-        return LASolver(problem, LA_solver)
+    if problem_type == "linear":
 
-    elif is_NLA:
+        return LASolver(problem, linear_solver)
 
-        return NLASolver(problem, NLA_solver)
+    elif problem_type == "non-linear":
 
-    elif is_D:
+        return NLASolver(problem, nonlinear_solver)
 
-        return DSolver(problem, domain, time_variable_name=time_variable_name, solver=D_solver)
+    elif problem_type == "differential":
 
-    elif is_DAE:
+        return DSolver(problem, solver=differential_solver, additional_configurations)
+
+    elif problem_type == "differential-algebraic":
 
         pass
+
+    else:
+
+        raise UnexpectedValueError("EquationBlock")
+
 
 class Solver:
 
@@ -101,7 +94,7 @@ class LASolver(Solver):
     Defines Linear Algebraic Solver class
     """
 
-    def __init__(self, problem, solver=None):
+    def __init__(self, problem, solver=None, additional_configurations={}):
 
         super().__init__(problem, solver)
 
@@ -149,7 +142,7 @@ class LASolver(Solver):
 
         return A,b
 
-    def solve(self):
+    def solve(self, conf_args={}):
 
         X = self.solver_mechanism() 
 
@@ -161,7 +154,7 @@ class NLASolver(Solver):
     Defines Non-Linear Algebraic Solver class
     """
 
-    def __init__(self, problem, solver=None):
+    def __init__(self, problem, solver=None, additional_configurations={}):
 
         super().__init__(problem, solver)
 
@@ -189,7 +182,7 @@ class NLASolver(Solver):
 
         return list(x.values())
 
-    def solve(self):
+    def solve(self, conf_args={}):
 
         X = self.solver_mechanism() 
 
@@ -204,11 +197,15 @@ class DSolver(Solver):
     * TODO: Include terminate clause in integrate method by using terminate opitional argument provided for odespy solvers. The terminate should receive the data in odespy format (Y,t, args), thus, a convenience function should be provided to allow the user to express its conditional function using a dictionary approach (eg: vars['x'] > 0)
     """
 
-    def __init__(self, problem, domain, time_variable_name='t', solver=None, arg_names=[]):
+    def __init__(self, problem, solver=None, additional_configurations={}):
 
         super().__init__(problem, solver)
 
-        self.domain = domain
+        self.domain = additional_configurations['domain']
+
+        time_variable_name = additional_configurations['time_variable_name']
+
+        arg_names = additional_configurations['arg_names']
 
         if time_variable_name not in problem.initial_conditions:
 
@@ -228,6 +225,16 @@ class DSolver(Solver):
 
         self.solver_mechanism =  None
 
+        self.additional_configurations = additional_configurations
+
+        self.compiled_diff_equations = None
+
+        if self.additional_configurations['compile_diff_equations']==True:
+
+            self.compiled_diff_equations = self._compileDiffSystemIntoFunction()
+
+        self.compilation_mechanism = additional_configurations['compilation_mechanism']
+
     def lookUpForSolver(self):
 
         """
@@ -242,6 +249,32 @@ class DSolver(Solver):
 
             return self._scipySolveMechanism
 
+
+    def _compileDiffSystemIntoFunction(self):
+
+        """
+        Return the differential equations composing the differential system as an array of numpy functions
+
+        :return compiled_diff_equations_:
+            Array containing each of the differntial equations composing the differential system as numpy functions 
+        :rtype function:
+        """
+
+        # Concatenate all the variable symbolic maps from the differential equations
+
+        global_var_map = self.diffSystem[0].elementary_equation_expression[1].variable_map
+
+        # Using underscore to ignore list comprehension output
+
+        _ = [global_var_map.update(eq_i.elementary_equation_expression[1].variable_map) for eq_i in self.diffSystem]
+
+        # Convert each equation to corresponding numpy func using global symbolic map, and store it in the compiled_diff_equations atribute
+
+        compiled_diff_equations_ = [eq_i._convertToFunction(global_var_map, 'rhs', self.compilation_mechanism)
+                                    for eq_i in self.diffSystem
+                                   ]
+
+        return compiled_diff_equations_
 
     def _createMappingFromValues(self, var_names, var_vals):
 
@@ -259,7 +292,7 @@ class DSolver(Solver):
         :rtype dict:
         """
 
-        mapped_dict = {var_i_name:var_i_val for (var_i_name, var_i_val) in zip(var_names,var_vals)}
+        mapped_dict = OrderedDict({var_i_name:var_i_val for (var_i_name, var_i_val) in zip(var_names,var_vals)})
 
         return mapped_dict
 
@@ -359,8 +392,19 @@ class DSolver(Solver):
 
         return Y_
 
-    def integrate(self, args_={}, conf_args_={}, initial_time=0., end_time=None, number_of_time_steps = None):
+    def solve(self, conf_args={}): 
 
+    # args_={}, conf_args_={}, initial_time=0., end_time=None, number_of_time_steps = None):
+
+        initial_time = conf_args['initial_time']
+
+        end_time = conf_args['end_time']
+
+        args = conf_args['args']
+
+        number_of_time_steps = conf_args['number_of_time_steps']
+
+        conf_args_ = conf_args['configuration_args']
 
         def diffYinterfaceForSolver(Y, t, args=()):
 
@@ -371,7 +415,17 @@ class DSolver(Solver):
             else:
                 args_ = {}
 
-            res = self._evaluateDiffYfromEquations(Y_, args_)
+            if self.additional_configurations['compile_diff_equations'] == True:
+
+                global_dict = Y_.copy()
+
+                global_dict.update(args_)
+
+                res = [f_i(*list(global_dict.values())) for f_i in self.compiled_diff_equations]
+
+            else:
+
+                res = self._evaluateDiffYfromEquations(Y_, args_)
 
             return res
 
@@ -405,14 +459,16 @@ class DSolver(Solver):
 
         to_register_ = np.hstack((time_points.reshape(1,-1).T, Y))
 
-        tab = prettytable.PrettyTable()
+        if self.additional_configurations['print_output'] == True:
 
-        tab.field_names=["Time(t)","Preys(u)","Predators(v)"]
+            tab = prettytable.PrettyTable()
 
-        for i in range(len(time_points)):
+            tab.field_names = self.additional_configurations['printed_output_headers']
 
-            tab.add_row([time_points[i],Y[i,0],Y[i,1]])
+            for i in range(len(time_points)):
 
-        print(tab)
+                tab.add_row(np.concatenate((time_points[i], Y[i,:])))
+
+            print(tab)
 
         self.domain._register(to_register_)

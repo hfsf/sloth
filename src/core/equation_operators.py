@@ -42,7 +42,8 @@ def wrapper(own_func, obj, base_func, latex_func_name=None, equation_type=None, 
 
             enode_ = EquationNode(name=f_name(own_func.__name__, str(obj)), 
                                   symbolic_object=base_func(obj, evaluate=False), 
-                                  symbolic_map={}, 
+                                  symbolic_map={},
+                                  variable_map={}, 
                                   unit_object=dimless, 
                                   latex_text=f_name(latex_func_name, str(obj)),
                                   repr_symbolic=base_func(obj, evaluate=False)
@@ -58,7 +59,8 @@ def wrapper(own_func, obj, base_func, latex_func_name=None, equation_type=None, 
 
                 enode_ = EquationNode(name=f_name(own_func.__name__, obj.name), 
                                 symbolic_object=base_func(obj.symbolic_object, evaluate=False), 
-                                symbolic_map={**obj.symbolic_map}, 
+                                symbolic_map={**obj.symbolic_map},
+                                variable_map={**obj.variable_map}, 
                                 unit_object=obj.unit_object, 
                                 latex_text=f_name(latex_func_name, obj.latex_text),
                                 repr_symbolic=base_func(obj.repr_symbolic, evaluate=False)
@@ -123,7 +125,8 @@ def _Diff(obj, ind_var_):
 
         enode_ = EquationNode(name="Diff("+str(obj_)+")", 
                               symbolic_object=0,
-                              symbolic_map={}, 
+                              symbolic_map={},
+                              variable_map={}, 
                               unit_object=dimless, 
                               latex_text="Diff("+str(obj_)+")",
                               repr_symbolic=sp.diff(obj_, evaluate=False)
@@ -155,7 +158,8 @@ def _Diff(obj, ind_var_):
 
         enode_ = EquationNode(name="Diff("+str(obj_)+")",  
                               symbolic_object=symbolic_object_, 
-                              symbolic_map={**obj_.symbolic_map}, 
+                              symbolic_map={**obj_.symbolic_map},
+                              variable_map={**obj_.variable_map}, 
                               unit_object=unit_object_, 
                               latex_text="Diff("+str(obj_)+")",
                               repr_symbolic=repr_symbolic_

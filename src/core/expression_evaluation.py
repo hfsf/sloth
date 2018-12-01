@@ -18,7 +18,7 @@ class EquationNode:
           Eg: IfThen(CONDITION, [THEN_CLAUSE,ELSE_CAUSE]) 
     """
 
-    def __init__(self, name='', symbolic_object=None, symbolic_map=[], is_linear=True, is_nonlinear=False, is_differential=False, unit_object=None, args=[], latex_text='', repr_symbolic=None):
+    def __init__(self, name='', symbolic_object=None, symbolic_map={}, variable_map={}, is_linear=True, is_nonlinear=False, is_differential=False, unit_object=None, args=[], latex_text='', repr_symbolic=None):
 
         """
         Instantiate EquationNode
@@ -29,8 +29,11 @@ class EquationNode:
         :ivar sympy.symbols symbolic_object:
             Base symbolic object for which arithmetical operations are evaluated. Defaults to None.
 
-        :ivar list symbolic_map:
-            Dictionary containing the mapping beetween the symbolic objects and their corresponding Quantity objects for ENODE re-evaluation.
+        :ivar dict symbolic_map:
+            Dictionary containing the mapping beetween the symbolic objects and their corresponding Quantity objects
+
+        :ivar dict variable_map:
+            Dictionary containing only the mapping beetween the synmbolic objects and their corresponding Quantity objects that were not specified (eg:Variable, unespecified Parameter, etc)
 
         : ivar bool is_linear:
             If the current ENODE contains a linear expression
@@ -59,6 +62,8 @@ class EquationNode:
         self.symbolic_object = symbolic_object
 
         self.symbolic_map = symbolic_map
+
+        self.variable_map = variable_map
 
         self.equation_type = {'is_linear':is_linear, \
                               'is_nonlinear':is_nonlinear, \
@@ -162,9 +167,10 @@ class EquationNode:
             # other_obj is another ENODE.
 
             enode_ = self.__class__(
-                                name="+".join([self.name, other_obj.name]), \
-                                symbolic_object=self.symbolic_object+other_obj.symbolic_object, \
-                                symbolic_map={**self.symbolic_map, **other_obj.symbolic_map}, \
+                                name="+".join([self.name, other_obj.name]),
+                                symbolic_object=self.symbolic_object+other_obj.symbolic_object,
+                                symbolic_map={**self.symbolic_map, **other_obj.symbolic_map},
+                                variable_map={**self.variable_map, **other_obj.variable_map},
                                 unit_object=self.unit_object+other_obj.unit_object,
                                 latex_text="+".join([self.latex_text,other_obj.latex_text]),
                                 repr_symbolic=self.repr_symbolic+other_obj.repr_symbolic
@@ -182,6 +188,7 @@ class EquationNode:
                             name="+".join([self.name, str(other_obj)]), 
                             symbolic_object=self.symbolic_object+other_obj,
                             symbolic_map={**self.symbolic_map}, 
+                            variable_map={**self.variable_map},
                             unit_object=self.unit_object, 
                             latex_text=self.latex_text+"+"+str(other_obj),
                             repr_symbolic=self.repr_symbolic+other_obj
@@ -218,7 +225,8 @@ class EquationNode:
             enode_ = self.__class__(
                                 name="-".join([self.name, other_obj.name]), 
                                 symbolic_object=self.symbolic_object-other_obj.symbolic_object, 
-                                symbolic_map={**self.symbolic_map, **other_obj.symbolic_map}, 
+                                symbolic_map={**self.symbolic_map, **other_obj.symbolic_map},
+                                variable_map={**self.variable_map, **other_obj.variable_map}, 
                                 unit_object=self.unit_object-other_obj.unit_object,
                                 latex_text="-".join([self.latex_text,other_obj.latex_text]),                  
                                 repr_symbolic=self.repr_symbolic-other_obj.repr_symbolic
@@ -233,7 +241,8 @@ class EquationNode:
             enode_ = self.__class__(
                             name="-".join([self.name, str(other_obj)]), 
                             symbolic_object=self.symbolic_object-other_obj,
-                            symbolic_map={**self.symbolic_map}, 
+                            symbolic_map={**self.symbolic_map},
+                            variable_map={**self.variable_map}, 
                             unit_object=self.unit_object, 
                             latex_text=self.latex_text+"-"+str(other_obj),
                             repr_symbolic=self.repr_symbolic-other_obj
@@ -269,7 +278,8 @@ class EquationNode:
             enode_ = self.__class__(
                                 name="*".join([self.name, other_obj.name]), 
                                 symbolic_object=self.symbolic_object*other_obj.symbolic_object, 
-                                symbolic_map={**self.symbolic_map, **other_obj.symbolic_map}, 
+                                symbolic_map={**self.symbolic_map, **other_obj.symbolic_map},
+                                variable_map={**self.variable_map, **other_obj.variable_map}, 
                                 unit_object=self.unit_object*other_obj.unit_object,
                                 latex_text="*".join([self.latex_text,other_obj.latex_text]),                  
                                 repr_symbolic=self.repr_symbolic*other_obj.repr_symbolic                                
@@ -284,7 +294,8 @@ class EquationNode:
             enode_ = self.__class__(
                             name="*".join([self.name, str(other_obj)]), 
                             symbolic_object=self.symbolic_object*other_obj,
-                            symbolic_map={**self.symbolic_map}, 
+                            symbolic_map={**self.symbolic_map},
+                            variable_map={**self.variable_map}, 
                             unit_object=self.unit_object, 
                             latex_text=self.latex_text+"*"+str(other_obj),
                             repr_symbolic=self.repr_symbolic*other_obj
@@ -321,7 +332,8 @@ class EquationNode:
             enode_ = self.__class__(
                                 name="/".join([self.name, other_obj.name]), 
                                 symbolic_object=self.symbolic_object/other_obj.symbolic_object, 
-                                symbolic_map={**self.symbolic_map, **other_obj.symbolic_map}, 
+                                symbolic_map={**self.symbolic_map, **other_obj.symbolic_map},
+                                variable_map={**self.variable_map, **other_obj.variable_map}, 
                                 unit_object=self.unit_object/other_obj.unit_object,
                                 latex_text="\\frac{"+self.latex_text+"}{"+other_obj.latex_text+"}",             
                                 repr_symbolic=self.repr_symbolic/other_obj.repr_symbolic       
@@ -334,10 +346,11 @@ class EquationNode:
         elif isinstance(other_obj, int) or isinstance(other_obj, float):
 
             enode_ = self.__class__(
-                        name="/".join([self.name, str(other_obj)]), \
+                        name="/".join([self.name, str(other_obj)]),
                         symbolic_object=self.symbolic_object/other_obj,
-                        symbolic_map={**self.symbolic_map}, \
-                        unit_object=self.unit_object, \
+                        symbolic_map={**self.symbolic_map},
+                        variable_map={**self.variable_map},
+                        unit_object=self.unit_object,
                         latex_text="\\frac{"+self.latex_text+"}{"+str(other_obj)+"}",
                         repr_symbolic=self.repr_symbolic/other_obj
                         )
@@ -371,10 +384,10 @@ class EquationNode:
             # other_obj is another ENODE.
 
             enode_ = self.__class__(
-                                name="/".join([self.name, other_obj.name]), \
-                                symbolic_object=self.symbolic_object/other_obj.symbolic_object, \
-                                symbolic_map={**self.symbolic_map, 
-                                                **other_obj.symbolic_map}, \
+                                name="/".join([self.name, other_obj.name]),
+                                symbolic_object=self.symbolic_object/other_obj.symbolic_object,
+                                symbolic_map={**self.symbolic_map, **other_obj.symbolic_map},
+                                variable_map={**self.variable_map, **other_obj.variable_map},
                                 unit_object=self.unit_object/other_obj.unit_object,
                                 latex_text="\\frac{"+self.latex_text+"}{"+other_obj.latex_text+"}",             
                                 repr_symbolic=self.repr_symbolic/other_obj.repr_symbolic   
@@ -387,10 +400,11 @@ class EquationNode:
         elif isinstance(other_obj, int) or isinstance(other_obj, float):
 
             enode_ = self.__class__(
-                        name="/".join([self.name, str(other_obj)]), \
+                        name="/".join([self.name, str(other_obj)]),
                         symbolic_object=self.symbolic_object/other_obj,
-                        symbolic_map={**self.symbolic_map}, \
-                        unit_object=self.unit_object, \
+                        symbolic_map={**self.symbolic_map},
+                        variable_map={**self.variable_map},
+                        unit_object=self.unit_object,
                         latex_text="\\frac{"+self.latex_text+"}{"+str(other_obj)+"}",
                         repr_symbolic=self.repr_symbolic/other_obj
                                 )
@@ -428,11 +442,10 @@ class EquationNode:
                 #other_obj is dimensionless
 
                 enode_ = self.__class__(
-                                    name="**".join([self.name, other_obj.name]), \
-                                    symbolic_object=self.symbolic_object**other_obj.symbolic_object, \
-                                    symbolic_map={**self.symbolic_map, 
-                                                    **other_obj.symbolic_map
-                                                  }, \
+                                    name="**".join([self.name, other_obj.name]),
+                                    symbolic_object=self.symbolic_object**other_obj.symbolic_object,
+                                    symbolic_map={**self.symbolic_map, **other_obj.symbolic_map},
+                                    variable_map={**self.variable_map, **other_obj.variable_map},
                                     unit_object=self.unit_object**other_obj.unit_object,
                                     latex_text=self.latex_text+"^"+other_obj.latex_text,             
                                     repr_symbolic=self.repr_symbolic**other_obj.repr_symbolic   
@@ -449,10 +462,11 @@ class EquationNode:
         elif isinstance(other_obj, int) or isinstance(other_obj, float):
 
             enode_ = self.__class__(
-                            name="**".join([self.name, str(other_obj)]), \
+                            name="**".join([self.name, str(other_obj)]),
                             symbolic_object=self.symbolic_object**other_obj,
-                            symbolic_map={**self.symbolic_map}, \
-                            unit_object=self.unit_object**other_obj, \
+                            symbolic_map={**self.symbolic_map},
+                            variable_map={**self.variable_map},
+                            unit_object=self.unit_object**other_obj,
                             latex_text=self.latex_text+"^"+str(other_obj),
                             repr_symbolic=self.repr_symbolic**other_obj
                             )

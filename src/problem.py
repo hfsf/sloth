@@ -9,7 +9,7 @@ from core.equation_block import EquationBlock
 from collections import OrderedDict
 import numpy as np
 
-class Problem(object):
+class Problem:
 
     """
     Problem class definitions. Unite several Model objects into one single equation block for solving.
@@ -51,6 +51,41 @@ class Problem(object):
         """
 
         self.initial_conditions.update(condition)
+
+    def _getProblemType(self):
+
+        is_linear = len(self.equation_block._equation_groups['linear']) > 0
+
+        is_nonlinear = len(self.equation_block._equation_groups['nonlinear']) > 0
+
+        is_differential = len(self.equation_block._equation_groups['differential']) > 0
+
+        # Check if the problem is D (strictly Differential), DAE (differential + linear or nonlinear), NLA (nonlinear) or LA (linear)
+
+        is_D = is_differential==True and (is_linear==False and is_nonlinear==False)
+        is_DAE = is_differential==True and (is_linear==True or is_nonlinear==True)
+        is_NLA = is_differential==False and (is_nonlinear==True)
+        is_LA = is_differential==False and (is_nonlinear==False and is_linear==True)
+
+        if is_D:
+
+            return "differential"
+
+        elif is_DAE:
+
+            return "differential-algebraic"
+
+        elif is_NLA:
+
+            return "nonlinear"
+
+        elif is_LA:
+
+            return "linear"
+
+        else:
+
+            return None
 
     def _buildEquationBlock(self):
 
