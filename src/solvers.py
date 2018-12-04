@@ -52,7 +52,7 @@ def createSolver(problem, additional_configurations):
 
     elif problem_type == "differential":
 
-        return DSolver(problem, solver=differential_solver, additional_configurations)
+        return DSolver(problem, solver=differential_solver, additional_configurations=additional_configurations)
 
     elif problem_type == "differential-algebraic":
 
@@ -229,11 +229,11 @@ class DSolver(Solver):
 
         self.compiled_diff_equations = None
 
+        self.compilation_mechanism = additional_configurations['compilation_mechanism']
+
         if self.additional_configurations['compile_diff_equations']==True:
 
             self.compiled_diff_equations = self._compileDiffSystemIntoFunction()
-
-        self.compilation_mechanism = additional_configurations['compilation_mechanism']
 
     def lookUpForSolver(self):
 
@@ -463,11 +463,11 @@ class DSolver(Solver):
 
             tab = prettytable.PrettyTable()
 
-            tab.field_names = self.additional_configurations['printed_output_headers']
+            tab.field_names = self.additional_configurations['output_headers']
 
             for i in range(len(time_points)):
 
-                tab.add_row(np.concatenate((time_points[i], Y[i,:])))
+                tab.add_row(np.concatenate(([time_points[i]], Y[i,:])))
 
             print(tab)
 

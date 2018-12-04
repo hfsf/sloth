@@ -1,5 +1,6 @@
 import model
 import problem
+import simulation
 import analysis
 import solvers
 from core.equation_operators import *
@@ -39,7 +40,6 @@ class modelTest0(model.Model):
         self.eq1 = self.createEquation("eq1", "Equation 1", expr1)
         self.eq2 = self.createEquation("eq2", "Equation 2", expr2)
 
-
 class modelTest1(model.Model):
 
     def __init__(self, name, description):
@@ -78,13 +78,20 @@ class modelTest1(model.Model):
 
         self.eq3 = self.createEquation("eq3", "Molar conservation", expr)
 
-prob = problem.Problem("test_problem", "A problem for testing purposes")
+class simul(simulation.Simulation):
+
+    def __init__(self, name, description):
+
+        super().__init__(name, description)
+
 
 # mod1 = modelTest1("test_model1", "A model for testing purposes")
 
 mod0 = modelTest0("test_model0", "A model for testing purposes")
 
-analist = analysis.Analysis()
+prob = problem.Problem("test_problem", "A problem for testing purposes")
+
+sim = simul("test_simulation", "A simulation for testing purposes")
 
 def xec():
 
@@ -110,13 +117,21 @@ def xec():
 
     prob.resolve()
 
-    print(analist.problemReport(prob))
-
     prob.setInitialConditions({'t':0.,'u':10.,'v':5.})
     
-    s = solvers.createSolver(prob, domain=mod0.dom, D_solver='scipy')
+    sim.setProblem(prob)
 
-    s.integrate(end_time=15., number_of_time_steps=100)
+    sim.runSimulation(initial_time=0., 
+                      end_time=16.,
+                      is_dynamic=True,
+                      domain=mod0.dom,
+                      print_output=True,
+                      output_headers=["Time","Preys(u)","Predators(v)"] 
+                      )
+
+    # s = solvers.createSolver(prob, domain=mod0.dom, D_solver='scipy')
+
+    # s.integrate(end_time=15., number_of_time_steps=100)
 
     # print(mod0.dom.values['t'])
 
