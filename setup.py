@@ -12,17 +12,17 @@ from shutil import rmtree
 from setuptools import find_packages, setup, Command
 
 # Package meta-data.
-NAME = 'mypackage'
-DESCRIPTION = 'A short description'
-URL = 'https://github.com//me/myproject'
-EMAIL = 'your.email@somewhere.com'
-AUTHOR = 'Your name'
+NAME = 'sloth'
+DESCRIPTION = 'Humble and umpretentious equation oriented process simulation tool'
+URL = 'https://github.com/hfsf/sloth'
+EMAIL = 'freitas.hfs@gmail.com'
+AUTHOR = 'Hanniel Freitas'
 REQUIRES_PYTHON = '>=3.6.1'  # Put your required Python version
 VERSION = '0.1'  # Put the package version as a string (ex.: '1.0.0')
 
 # What packages are required for this module to be executed?
 REQUIRED = [
-    'numpy', 'pytest', 'numpydoc'
+    'numpy', 'pytest', 'numpydoc', 'sympy', 'prettytable','numexpr', 'mpmath', 'scipy'
 ]
 
 # What packages are optional?
@@ -125,4 +125,5 @@ setup(
     cmdclass={
         'upload': UploadCommand,
     },
+    test_suite='test'
 )

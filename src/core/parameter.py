@@ -4,7 +4,6 @@ Define parameter class.
 
 from .quantity import Quantity
 from .error_definitions import UnexpectedValueError, DimensionalCoherenceError
-import numpy as np
 
 
 class Parameter(Quantity):

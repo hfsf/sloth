@@ -54,7 +54,7 @@ class Model:
         Instantiate Model.
 
         :ivar str name:
-            Name for the current model
+            Name for the current model. Must be unanbigous to other models
 
         :ivar str description"
             Short description of the current model
@@ -234,13 +234,15 @@ class Model:
 
                 name = out_var.name+"--->"+in_var.name
 
-                description = "Connection from "+out_model.name+" ("+out_var.name+"--->"+in_var.name+")"
+                description = "["+out_var.name+"--->"+in_var.name+"]"
 
                 if expr == None:
 
                     expr = in_var.__call__() - out_var.__call__()
 
                 conn = connection.Connection(name, description, in_var.name, out_var.name, expr)
+
+                conn.setResidual(expr) # I DON'T UNDERSTAND WHY THIS NEED TO BE HERE! x)
 
                 conn._sweepObjects()
 
@@ -273,8 +275,16 @@ class Model:
         """
 
         eq = Equation(name, description, expr)
+        eq.setResidual(expr) # I DON'T UNDERSTAND WHY THIS NEED TO BE HERE! x)
+
+        eq.name=eq.name+'@'+self.name
+
+        # #\nCreating equation for expression: %s\n     And its symbolic map is: %s"%(eq.equation_expression, eq.equation_expression.repr_symbolic, eq.equation_expression.symbolic_map))
+
+        # print("\n==FOR EQUATION== \nEquation expression: %s"%(eq.equation_expression))
 
         eq._sweepObjects()
+
 
         #Check if all objects used in the current equation were declared
 
@@ -324,6 +334,8 @@ class Model:
 
         var = variable.Variable(name, units , description, is_lower_bounded, is_upper_bounded, lower_bound, upper_bound, value)
 
+        var.name=var.name+'@'+self.name
+
         self.variables[var.name] = var
 
         if is_exposed == True:
@@ -351,8 +363,9 @@ class Model:
         Value of the current Parameter. Defaults to 0.      
 
         """
-
         par = parameter.Parameter(name, units , description, value)
+
+        par.name=par.name+'@'+self.name
 
         self.parameters[par.name] = par
 
@@ -379,6 +392,8 @@ class Model:
         """
 
         con = constant.Constant(name, units , description, value)
+
+        con.name=con.name+'@'+self.name
 
         self.constants[con.name] = con
 

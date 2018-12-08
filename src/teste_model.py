@@ -14,31 +14,22 @@ class modelTest0(model.Model):
 
         super().__init__(name, description)
 
-        self.u =  self.createVariable("u", dimless, "Number of preys")
-        self.v =  self.createVariable("v", dimless, "Number of predators")
-        self.a =  self.createParameter("a", dimless, "Growth of rabbits")
-        self.b =  self.createParameter("b", dimless, "Growth of rabbits")
-        self.c =  self.createParameter("c", dimless, "Growth of rabbits")
-        self.d =  self.createParameter("d", dimless, "Growth of rabbits")
-        self.a.setValue(1.)
-        self.b.setValue(0.1)
-        self.c.setValue(1.5)
-        self.d.setValue(0.75)
-
-        self.t =  self.createVariable("t", dimless, "Time(s)")
-
-        self.dom = Domain("Time domain", dimless, self.t)
-
-        self.u.distributeOnDomain(self.dom)
-        self.v.distributeOnDomain(self.dom)
+        self.a =  self.createVariable("a", kg_s, "A", is_exposed=True, type='output')
+        self.b =  self.createVariable("b", kg_s, "B")
+        self.c =  self.createVariable("c", kg_s, "C")
+        self.d =  self.createVariable("d", kg_s, "D")
 
     def DeclareEquations(self):
 
-        expr1 = self.u.Diff(self.t) == self.a()*self.u() - self.b()*self.u()*self.v()
-        expr2 = self.v.Diff(self.t) == self.d()*self.b()*self.u()*self.v() - self.c()*self.v()
+        expr1 = self.a()*0.001 + self.b() - 1.
+
+        expr2 = self.a() + self.b() - 2
+
+        #expr3 = self.b() - self.a() - Log(3.5)
 
         self.eq1 = self.createEquation("eq1", "Equation 1", expr1)
         self.eq2 = self.createEquation("eq2", "Equation 2", expr2)
+        #self.eq3 = self.createEquation("eq3", "Equation 3", expr3)
 
 class modelTest1(model.Model):
 
@@ -46,37 +37,18 @@ class modelTest1(model.Model):
 
         super().__init__(name, description)
 
-        self.P1 =  self.createParameter("P1", atm, "Pressure-1")
-        self.V1 =  self.createParameter("V1", m**3, "Volume-1")
-        self.T1 =  self.createParameter("T1", K, "Temperature-1")
-        self.n1 =  self.createVariable("n1", mol, "Mol-1")
-        self.P1.setValue(1)
-        self.V1.setValue(0.2832)
-        self.T1.setValue(294.26)        
-
-        self.P2 =  self.createParameter("P2", atm, "Pressure-2")
-        self.V2 =  self.createVariable("V2", m**3, "Volume-2")
-        self.T2 =  self.createParameter("T2", K, "Temperature-2")
-        self.n2 =  self.createVariable("n2", mol, "Mol-2")
-        self.P2.setValue(2.5)
-        self.T2.setValue(594.26)
-
-        self.R =  self.createConstant("R", UniversalIdealGasConstant, "Universal Ideal Gas Constant")
-        self.R.setValue(8.20574587e-5)
-
+        self.a =  self.createVariable("a1", dimless, "A1")
+        self.b =  self.createVariable("b1", dimless, "B1")
+        self.c =  self.createVariable("c1", dimless, "C1", is_exposed=True, type='input')
     def DeclareEquations(self):
 
-        expr = self.P1()*self.V1() - self.n1()*self.R()*self.T1()
+        expr1 = self.a() + self.b() + 5.
 
-        self.eq1 = self.createEquation("eq1", "Equation 1", expr)
+        expr2 = self.a() - self.c() - 1.5
 
-        expr = self.P2()*self.V2() - self.n2()*self.R()*self.T2()
-
-        self.eq2 = self.createEquation("eq2", "Equation 2", expr)
-
-        expr = self.n2()-self.n1()
-
-        self.eq3 = self.createEquation("eq3", "Molar conservation", expr)
+        self.eq1 = self.createEquation("eq1", "Equation 1", expr1)
+        self.eq2 = self.createEquation("eq2", "Equation 2", expr2)
+        #self.eq3 = self.createEquation("eq3", "Equation 3", expr3)
 
 class simul(simulation.Simulation):
 
@@ -87,7 +59,9 @@ class simul(simulation.Simulation):
 
 # mod1 = modelTest1("test_model1", "A model for testing purposes")
 
-mod0 = modelTest0("test_model0", "A model for testing purposes")
+mod0 = modelTest0("M0", "A model for testing purposes")
+
+mod1 = modelTest1("M1", "A model for testing purposes")
 
 prob = problem.Problem("test_problem", "A problem for testing purposes")
 
@@ -113,21 +87,29 @@ def xec():
 
     mod0()
 
+    #mod1()
+
+    #prob.addModels([mod0, mod1])
     prob.addModels(mod0)
+
+    #prob.createConnection(mod0, mod1, mod0.a, mod1.c)
 
     prob.resolve()
 
-    prob.setInitialConditions({'t':0.,'u':10.,'v':5.})
-    
+    # prob.setInitialConditions({'t':0.,'u':10.,'v':5.})
+
     sim.setProblem(prob)
+
+    sim.report(prob)
 
     sim.runSimulation(initial_time=0., 
                       end_time=16.,
-                      is_dynamic=True,
-                      domain=mod0.dom,
+                      #is_dynamic=True,
+                      #domain=mod0.dom,
                       print_output=True,
                       output_headers=["Time","Preys(u)","Predators(v)"] 
                       )
+    sim.showResults()
 
     # s = solvers.createSolver(prob, domain=mod0.dom, D_solver='scipy')
 

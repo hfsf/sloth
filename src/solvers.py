@@ -16,7 +16,8 @@ from core.error_definitions import AbsentRequiredObjectError, UnexpectedValueErr
 
 import prettytable
 
-def createSolver(problem, additional_configurations):
+
+def _createSolver(problem, additional_configurations):
 
     """
     Create a solver object given the considerations for the problem, and return the object.
@@ -46,7 +47,7 @@ def createSolver(problem, additional_configurations):
 
         return LASolver(problem, linear_solver)
 
-    elif problem_type == "non-linear":
+    elif problem_type == "nonlinear":
 
         return NLASolver(problem, nonlinear_solver)
 
@@ -102,29 +103,31 @@ class LASolver(Solver):
 
     def lookUpForSolver(self):
 
+        print("\n Solving for LA")
+
         """
         Define the solver mechanism used for solution of the problem, given the name of desired mechanism in the instantiation of current Solver object 
         """
 
-        if self.solver==None or self.solver == 'sympySolve':
+        if self.solver==None or self.solver == 'sympy':
 
-            return self._usingSympySolve
+            return self._sympySolveMechanism
 
-        if self.solver=='scipySolve':
+        if self.solver=='scipy':
 
-            return self._usingScipySolve
+            return self._scipySolveMechanism
 
-        if self.solver=='scipyLU':
+        if self.solver=='scipy_LU':
 
             pass
 
-    def _usingSympySolve(self):
+    def _sympySolveMechanism(self):
 
-        x = sp.solve(self.problem.equation_block._equations_list, self.problem.equation_block._var_list)
+        X = sp.solve(self.problem.equation_block._equations_list, dict=True)
 
-        return list(x.values())
+        return X[0]
 
-    def _usingScipySolve(self):
+    def _scipySolveMechanism(self):
 
         A, b = self._getABfromEquations()
 
@@ -162,25 +165,34 @@ class NLASolver(Solver):
 
     def lookUpForSolver(self):
 
+        print("\n Solving for NLA")
+
         """
         Define the solver mechanism used for solution of the problem, given the name of desired mechanism in the instantiation of current Solver object 
         """
 
-        if self.solver==None or self.solver == 'sympySolve':
+        if self.solver==None or self.solver == 'sympy':
 
-            return self._usingSympySolve
+            return self._sympySolveMechanism
 
         if self.solver=='scipyLU':
 
             pass
 
-    def _usingSympySolve(self):
+        if self.solver=='scipyNewtonKrylov':
 
-        x = sp.solve(self.problem.equation_block._equations_list, self.problem.equation_block._var_list)
+            pass
 
-        print("\n\n->%s"%x)
+    def _sympySolveMechanism(self):
 
-        return list(x.values())
+        print("\n=> Equation list: %s"%self.problem.equation_block._equations_list)
+        for eqi in self.problem.equation_block._equations_list:
+
+            print("     %s"%repr(eqi))
+
+        X = sp.solve(self.problem.equation_block._equations_list, dict=True)
+
+        return X[0]
 
     def solve(self, conf_args={}):
 
@@ -472,3 +484,5 @@ class DSolver(Solver):
             print(tab)
 
         self.domain._register(to_register_)
+
+        return time_points,Y

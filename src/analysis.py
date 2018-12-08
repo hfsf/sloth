@@ -1,13 +1,64 @@
 # *coding:utf-8*
 
 """
-Defines Analysis class. The class is responsible for degrees-of-freedom (DoF) analysis, printing general information about Problem and Models.
+Defines Analysis class. The class is responsible for  printing general information about Problem and Models.
+
+Defines DOF_Analysis class. This class is responsible for degrees-of-freedom (DoF) analysisis, avoiding ill-conditioned systems to be executed.
 """
 
 import prettytable
 import core.variable as variable
 import core.constant as constant
 import core.parameter as parameter
+
+class DOF_Analysis:
+
+    """
+    Degrees of freedom analysis class.
+    """
+
+    def __init__(self, problem):
+
+        """
+        Instantiate DOF_Analysis
+
+        :ivar Problem problem:
+            Problem which need to be analyzed
+        """
+
+        self.problem = problem
+
+    def _makeSanityChecks(self):
+
+        assert self._dofTest(), "\n The system is ill-formed. Halt now. "
+
+    def _dofTest(self):
+
+        # DoF Check (Number of variables - number of equations)
+
+        n_vars = len(self.problem.equation_block._var_list)
+
+        n_eqs = len(self.problem.equation_block._equations_list)
+
+        n_dof = n_vars - n_eqs
+
+        if n_vars > n_eqs:
+
+            raise Exception("\nThe system is OVER-specified\n    Number of variables:{} Number of equations:{}".format(n_vars, n_eqs))
+
+            return False
+
+        elif n_vars < n_eqs:
+
+            raise Exception("\nThe system is UNDER-specified\n    Number of variables:{} Number of equations:{}".format(n_vars, n_eqs))
+
+            return False
+
+        else:
+
+            # DoF == 0
+
+            return True
 
 class Analysis:
 
@@ -67,6 +118,7 @@ class Analysis:
         tabs = ''
 
         for mod_i in problem.models:
+
 
             tabs += "Model: {}\n".format(mod_i) + str(self.modelReport(problem.models[mod_i]))+'\n'
 

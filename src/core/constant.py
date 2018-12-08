@@ -4,6 +4,8 @@ Define constant class.
 
 from .quantity import Quantity
 from .unit import null_dimension
+from .error_definitions import UnexpectedValueError, DimensionalCoherenceError
+
 
 
 def convert_to_constant(num):
@@ -31,7 +33,7 @@ class Constant(Quantity):
     making possible an almost-writing-syntax (eg: a() + b() )
     """
 
-    def __init__(self, name, units , description="", value=0, latex_text=""):
+    def __init__(self, name, units , description="", value=0, latex_text="", is_specified=False):
 
         super().__init__(name, units, description, value, latex_text)
 
@@ -54,3 +56,47 @@ class Constant(Quantity):
         self.units = units
 
         self.description = description
+        
+        self.is_specified = is_specified
+
+    def setValue(self, quantity_value, quantity_unit=None):
+
+        """
+        Method for value specification of Parameter object. Overloaded from base class Quantity.
+
+        :param [float, Quantity] quantity_value:
+            Value to the current Parameter object
+
+        :param Unit quantity_unit:
+            Unit object for the parameter. Defaults to currennt units
+        """
+
+        if isinstance(quantity_value, self.__class__):
+
+
+            if quantity_unit == None and  quantity_value.units._check_dimensional_coherence(self.units) == True:
+
+                self.value = quantity_value.value
+
+                self.is_specified = True
+
+            else:
+
+                raise DimensionalCoherenceError(self.units,quantity_value.units)
+
+        elif isinstance(quantity_value, float) or isinstance(quantity_value, int) and quantity_unit==None:
+
+            self.value = quantity_value
+
+            self.is_specified = True
+
+
+        elif isinstance(quantity_value, float) or isinstance(quantity_value, int) and quantity_unit!=None and quantity_unit._check_dimensional_coherence(self.units):
+
+            self.value = quantity_value
+
+            self.is_specified = True
+
+        else:
+
+            raise UnexpectedValueError("(Quantity, float, int)")

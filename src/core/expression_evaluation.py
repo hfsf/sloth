@@ -33,7 +33,7 @@ class EquationNode:
             Dictionary containing the mapping beetween the symbolic objects and their corresponding Quantity objects
 
         :ivar dict variable_map:
-            Dictionary containing only the mapping beetween the synmbolic objects and their corresponding Quantity objects that were not specified (eg:Variable, unespecified Parameter, etc)
+            Dictionary containing only the mapping beetween the symbolic objects and their corresponding Quantity objects that were not specified (eg:Variable, unespecified Parameter, etc)
 
         : ivar bool is_linear:
             If the current ENODE contains a linear expression
@@ -285,7 +285,7 @@ class EquationNode:
                                 repr_symbolic=self.repr_symbolic*other_obj.repr_symbolic                                
                                 )
 
-            enode_.equation_type = self._checkEquationTypePrecedence(self.equation_type, other_obj.equation_type)
+            enode_.equation_type = {'is_linear':False, 'is_nonlinear':True, 'is_differential':False} # self._checkEquationTypePrecedence(self.equation_type, other_obj.equation_type)
 
             return(enode_)
 
@@ -339,7 +339,7 @@ class EquationNode:
                                 repr_symbolic=self.repr_symbolic/other_obj.repr_symbolic       
                                 )
 
-            enode_.equation_type = self._checkEquationTypePrecedence(self.equation_type, other_obj.equation_type)
+            enode_.equation_type = {'is_linear':False, 'is_nonlinear':True, 'is_differential':False}# self._checkEquationTypePrecedence(self.equation_type, other_obj.equation_type)
 
             return(enode_)
 
@@ -393,7 +393,7 @@ class EquationNode:
                                 repr_symbolic=self.repr_symbolic/other_obj.repr_symbolic   
                                 )
 
-            enode_.equation_type = self._checkEquationTypePrecedence(self.equation_type, other_obj.equation_type)
+            enode_.equation_type = {'is_linear':False, 'is_nonlinear':True, 'is_differential':False}#self._checkEquationTypePrecedence(self.equation_type, other_obj.equation_type)
 
             return(enode_)
 

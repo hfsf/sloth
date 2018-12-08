@@ -9,6 +9,7 @@ from model import Model
 import solvers
 import analysis
 from core.error_definitions import UnexpectedValueError
+import prettytable
 
 class Simulation:
 
@@ -37,6 +38,10 @@ class Simulation:
 
         self.problem = problem
 
+        self.output = None
+
+        self.configurations = None
+
     def report(self, object):
 
         """
@@ -50,11 +55,11 @@ class Simulation:
 
         if isinstance(object, Model):
 
-            analist.modelReport(object)
+            print(analist.modelReport(object))
 
         elif isinstance(object, Problem):
 
-            analist.problemReport(object)
+            print(analist.problemReport(object))
 
         else:
 
@@ -70,7 +75,24 @@ class Simulation:
 
         self.problem = problem
 
-    def runSimulation(self, initial_time=0., end_time=None, linear_solver='sympy', nonlinear_solver='sympy', differential_solver='scipy', differential_algebraic_solver='scipy', problem_type=None, is_dynamic=False, compile_diff_equations=True, domain=None, time_variable_name='t', arg_names=[], args=[], number_of_time_steps=100, configuration_args={}, print_output=False, output_headers="", compilation_mechanism="numpy"):
+    def runSimulation(self, initial_time=0., 
+                      end_time=None, 
+                      linear_solver='sympy', 
+                      nonlinear_solver='sympy', 
+                      differential_solver='scipy', 
+                      differential_algebraic_solver='scipy', 
+                      problem_type=None, 
+                      is_dynamic=False, 
+                      compile_diff_equations=True, 
+                      domain=None, 
+                      time_variable_name='t', 
+                      arg_names=[], 
+                      args=[], 
+                      number_of_time_steps=100, 
+                      configuration_args={}, 
+                      print_output=False, output_headers="", 
+                      compilation_mechanism="numpy"
+                      ):
 
         """
         Run the current simulation using the defined parameters
@@ -95,21 +117,23 @@ class Simulation:
                            'compilation_mechanism':compilation_mechanism
                            }
 
+        self.configurations = additional_conf
+
         if problem_type == None:
 
             problem_type = self.problem._getProblemType()
 
         if problem_type == "linear":
 
-            solver_mechanism = solvers.createSolver(self.problem, additional_conf)
+            solver_mechanism = solvers._createSolver(self.problem, additional_conf)
 
         elif problem_type == "nonlinear":
 
-            solver_mechanism = solvers.createSolver(self.problem, additional_conf)
+            solver_mechanism = solvers._createSolver(self.problem, additional_conf)
         
         elif problem_type == "differential":
 
-            solver_mechanism = solvers.createSolver(self.problem, additional_conf)     
+            solver_mechanism = solvers._createSolver(self.problem, additional_conf)     
 
         elif problem_type == "differential-algebraic":
 
@@ -119,6 +143,62 @@ class Simulation:
 
             raise UnexpectedValueError("EquationBlock")
 
-        solver_mechanism.solve(additional_conf)
 
+        dof_analist = analysis.DOF_Analysis(self.problem)
+
+        dof_analist._makeSanityChecks()
+
+        out = solver_mechanism.solve(additional_conf)
+
+        if print_output==True:
+
+          print("\n ->{}".format(out))
+
+        self.output = out
+
+    def showResults(self):
+
+        """
+        Show the results for the current simulation in a table for easy visualization
+        """
+
+        assert self.output!=None, "\nShould run the simulation prior to showing results."
+
+        problem_type = self.problem._getProblemType()
+
+        if self.configurations['is_dynamic'] == True:
+
+            # Dynamic output. Output is a tuple (time_points, Y)
+
+            time_points, Y = self.output
+
+            header = '\nResult summary:\n'
+
+            tab = prettytable.PrettyTable()
+
+            tab.field_names = self.configurations['output_headers']
+
+            for i in range(len(time_points)):
+
+                tab.add_row(np.concatenate(([time_points[i]], Y[i,:])))
+
+            print(header+str(tab))          
+
+        else:
+
+            header = '\nResult summary:\n'
+
+            tab = prettytable.PrettyTable()
+
+            tab.field_names=["Variable","Unit","Value"]
+
+            for var_i in list(self.output.keys()):
+
+                tab.add_row([ str(var_i), 
+                              str(self.problem.equation_block._var_dict[str(var_i)].units),
+                              self.output[var_i]
+                            ]
+                )
+            
+            print(header + str(tab))
 

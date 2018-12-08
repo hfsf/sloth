@@ -29,6 +29,8 @@ class EquationBlock:
 
         self._var_list = []
 
+        self._var_dict = {}
+
         self._equations_list = []
 
         self._equation_groups = OrderedDict({'linear':[], 'nonlinear':[], 'differential':[]})
@@ -78,11 +80,15 @@ class EquationBlock:
 
             for var_i in list(eq_i.objects_declared.values()):
 
+                self._var_dict[var_i.name] = var_i
+
                 if var_i not in var_list:
 
                     var_list.append(var_i)
 
                     var_name_list.append(var_i.name)
+
+
 
         # ===========================================
 

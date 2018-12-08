@@ -115,6 +115,23 @@ class Unit:  # New-style class syntax
 
                 self.dimension[dim_i] = null_dimension[dim_i]
 
+    def __str__(self):
+
+        """
+        Overloaded function for printing out the dimension of the Unit object in a convenient way. Eg: str({m:1 kg:0 s:-1 ... }) = 'm^1 s^-1'
+
+        :return:
+            Dimension of the current Unit object in a convenient way
+        :rtype str output:
+        """
+
+        output=''
+
+        output = [dim_i+"^"+str(self.dimension[dim_i]) for dim_i in list(self.dimension.keys()) if self.dimension[dim_i] != 0]
+
+        output = " ".join(output)
+
+        return output
 
     def __add__(self, other_unit):
         """
