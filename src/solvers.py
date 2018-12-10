@@ -103,8 +103,6 @@ class LASolver(Solver):
 
     def lookUpForSolver(self):
 
-        print("\n Solving for LA")
-
         """
         Define the solver mechanism used for solution of the problem, given the name of desired mechanism in the instantiation of current Solver object 
         """
@@ -165,8 +163,6 @@ class NLASolver(Solver):
 
     def lookUpForSolver(self):
 
-        print("\n Solving for NLA")
-
         """
         Define the solver mechanism used for solution of the problem, given the name of desired mechanism in the instantiation of current Solver object 
         """
@@ -184,11 +180,6 @@ class NLASolver(Solver):
             pass
 
     def _sympySolveMechanism(self):
-
-        print("\n=> Equation list: %s"%self.problem.equation_block._equations_list)
-        for eqi in self.problem.equation_block._equations_list:
-
-            print("     %s"%repr(eqi))
 
         X = sp.solve(self.problem.equation_block._equations_list, dict=True)
 

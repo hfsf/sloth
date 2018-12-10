@@ -202,6 +202,22 @@ class EquationNode:
 
             raise UnexpectedValueError("(int, float, EquationNode)")
 
+    def __radd__(self, other_obj):
+
+        """
+        Overloaded function for reverse addition of ENODE object. The __radd__ function calls self.unit_object._check_dimensional_coherence.
+
+        :param ENODE other_obj:
+            Second ENODE object for which mathematical operation will be performed.
+
+        :return:
+            Return a new ENODE corresponding to the result of mathematical operation.
+        :rtype EquationNode:
+        """
+
+        return self.__add__(other_obj)
+
+
     def __sub__(self, other_obj):
 
         """
@@ -255,6 +271,21 @@ class EquationNode:
         else:
 
             raise UnexpectedValueError("(int, float, EquationNode)")
+    
+    def __rsub__(self, other_obj):
+
+        """
+        Overloaded function for reverse subtraction of ENODE object. The __sub__ function calls self.unit_object._check_dimensional_coherence.
+
+        :param ENODE other_obj:
+            Second ENODE object for which mathematical operation will be performed.
+
+        :return:
+            Return a new ENODE corresponding to the result of mathematical operation.
+        :rtype EquationNode:
+        """
+
+        return self*-1 + other_obj
 
     def __mul__(self, other_obj):
 
@@ -309,6 +340,20 @@ class EquationNode:
 
             raise UnexpectedValueError("(int, float, EquationNode)")
 
+    def __rmul__(self, other_obj):
+
+        """
+        Overloaded function for reverse multiplication of ENODE object. The __rmul__ function calls self.unit_object._check_dimensional_coherence.
+
+        :param ENODE other_obj:
+            Second ENODE object for which mathematical operation will be performed.
+
+        :return:
+            Return a new ENODE corresponding to the result of mathematical operation.
+        :rtype EquationNode:
+        """
+
+        return self.__mul__(other_obj)
 
     def __div__(self, other_obj):
 
@@ -363,6 +408,20 @@ class EquationNode:
 
             raise UnexpectedValueError("(int, float, EquationNode)")
 
+    def __rdiv__(self, other_obj):
+
+        """
+        Overloaded function for reverse division of ENODE object. The __rdiv__ function calls self.unit_object._check_dimensional_coherence.
+
+        :param ENODE other_obj:
+            Second ENODE object for which mathematical operation will be performed.
+
+        :return:
+            Return a new ENODE corresponding to the result of mathematical operation.
+        :rtype EquationNode:
+        """
+
+        return (self**(-1))*other_obj
 
     def __truediv__(self, other_obj):
 
@@ -417,6 +476,20 @@ class EquationNode:
 
             raise UnexpectedValueError("(int, float, EquationNode)")
 
+    def __rtruediv__(self, other_obj):
+
+        """
+        Overloaded function for reverse true division of ENODE object. The __rtruediv__ function calls self.unit_object._check_dimensional_coherence.
+
+        :param ENODE other_obj:
+            Second ENODE object for which mathematical operation will be performed.
+
+        :return:
+            Return a new ENODE corresponding to the result of mathematical operation.
+        :rtype EquationNode:
+        """
+
+        return (self**(-1))*other_obj
 
     def __pow__(self, other_obj):
 

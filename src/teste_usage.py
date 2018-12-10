@@ -16,20 +16,21 @@ class modelTest0(model.Model):
 
         self.a =  self.createVariable("a", kg_s, "A", is_exposed=True, type='output')
         self.b =  self.createVariable("b", kg_s, "B")
-        self.c =  self.createVariable("c", kg_s, "C")
-        self.d =  self.createVariable("d", kg_s, "D")
+        self.c =  self.createVariable("c", kg, "C")
+        self.d =  self.createConstant("d", s**-1, "D")
+        self.d.setValue(0.7)
 
     def DeclareEquations(self):
 
-        expr1 = self.a()*0.001 + self.b() - 1.
+        expr1 = self.a() + self.b() - 1.
 
-        expr2 = self.a() + self.b() - 2
+        expr2 = self.a() + self.c()*self.d() - 2
 
-        #expr3 = self.b() - self.a() - Log(3.5)
+        expr3 = self.c()*self.d() - self.a() - self.b()
 
         self.eq1 = self.createEquation("eq1", "Equation 1", expr1)
         self.eq2 = self.createEquation("eq2", "Equation 2", expr2)
-        #self.eq3 = self.createEquation("eq3", "Equation 3", expr3)
+        self.eq3 = self.createEquation("eq3", "Equation 3", expr3)
 
 class modelTest1(model.Model):
 

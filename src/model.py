@@ -4,7 +4,7 @@
 Define Model class, for storage of equations, distribution on domains and information about input and output variables (exposed variables).
 """
 import collections
-import core.error_definitions as errors  
+from .core import error_definitions as errors  
 from core.equation import *
 from core.equation_operators import *
 import core.variable as variable

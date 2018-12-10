@@ -115,4 +115,12 @@ def test_operations(var, name, latex_text, operation):
            result.latex_text == latex_result
 
 
+def test_operation_with_numeric_and_enodes(var):
+
+    assert var() + 2. == 2. + var() and \
+           1. - var() == var()*-1 + 1. and \
+           var()**-1 == 1./var() and \
+           2*var() == var() + var()
+
+
 
