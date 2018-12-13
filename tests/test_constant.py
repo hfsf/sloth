@@ -1,18 +1,16 @@
 # test_constant.py
 
-"""
 from pathlib import Path
 import sys
 
 root_dir = Path(Path.cwd()).parent
 
-sys.path[0] = str(root_dir)+'/src/'
-"""
+sys.path.append(str(root_dir))#+'/src/')
 
 import pytest
 
-from .core import constant
-from .core import template_units
+from src.sloth.core import constant
+from src.sloth.core import template_units
 
 import copy
 

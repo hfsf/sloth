@@ -7,9 +7,9 @@ Defines DOF_Analysis class. This class is responsible for degrees-of-freedom (Do
 """
 
 import prettytable
-import core.variable as variable
-import core.constant as constant
-import core.parameter as parameter
+from .core.variable import Variable
+from .core.constant import Constant
+from .core.parameter import Parameter
 
 class DOF_Analysis:
 
@@ -40,11 +40,13 @@ class DOF_Analysis:
 
         n_eqs = len(self.problem.equation_block._equations_list)
 
+        var_names_ = [i for i in self.problem.equation_block._var_list]
+
         n_dof = n_vars - n_eqs
 
         if n_vars > n_eqs:
 
-            raise Exception("\nThe system is OVER-specified\n    Number of variables:{} Number of equations:{}".format(n_vars, n_eqs))
+            raise Exception("\nThe system is OVER-specified\n    Number of variables:{} ({}) \n Number of equations:{}".format(n_vars, var_names_, n_eqs))
 
             return False
 
@@ -88,11 +90,11 @@ class Analysis:
         :rtype (str,str) info:
         """
 
-        var_str = [obj_i for obj_i in symb_map if isinstance(symb_map[obj_i], variable.Variable)]
+        var_str = [obj_i for obj_i in symb_map if isinstance(symb_map[obj_i], Variable)]
 
-        param_str = ["{}{}".format(obj_i, '(*)'*(symb_map[obj_i].is_specified==True)) for obj_i in symb_map if isinstance(symb_map[obj_i], parameter.Parameter)]
+        param_str = ["{}{}".format(obj_i, '(*)'*(symb_map[obj_i].is_specified==True)) for obj_i in symb_map if isinstance(symb_map[obj_i], Parameter)]
 
-        con_str = ["{}{}".format(obj_i, '(*)'*(symb_map[obj_i].is_specified==True)) for obj_i in symb_map if isinstance(symb_map[obj_i], constant.Constant)]
+        con_str = ["{}{}".format(obj_i, '(*)'*(symb_map[obj_i].is_specified==True)) for obj_i in symb_map if isinstance(symb_map[obj_i], Constant)]
 
         var_form = ", ".join(var_str)
 

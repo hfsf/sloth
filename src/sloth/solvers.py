@@ -12,7 +12,7 @@ from scipy.linalg import solve as scp_solve
 import sympy as sp
 import scipy.integrate as integrate
 from collections import OrderedDict
-from core.error_definitions import AbsentRequiredObjectError, UnexpectedValueError
+from .core.error_definitions import AbsentRequiredObjectError, UnexpectedValueError
 
 import prettytable
 

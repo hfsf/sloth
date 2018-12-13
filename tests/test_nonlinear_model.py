@@ -1,11 +1,19 @@
 #test_model.py
 
+
+from pathlib import Path
+import sys
+
+root_dir = Path(Path.cwd()).parent
+
+sys.path.append(str(root_dir))#+'/src/')
+
 import pytest
 
-from .model import Model
+from src.sloth.model import Model
 
-from core.equation_operators import *
-from core.template_units import *
+from src.sloth.core.equation_operators import *
+from src.sloth.core.template_units import *
 
 import copy
 
@@ -15,7 +23,7 @@ def mod():
     Create a generic linear model
     """
 
-    class linear_model(Model):
+    class nonlinear_model(Model):
 
         def __init__(self, name, description):
 
@@ -29,29 +37,29 @@ def mod():
 
         def DeclareEquations(self):
 
-            expr1 = self.a() + self.b() - 1.
+            expr1 = self.a() * self.b() - 1.
 
-            expr2 = self.a() + self.c()*self.d() - 2
+            expr2 = self.a() * self.c()*self.d() - 2
 
-            expr3 = self.c()*self.d() - self.a() - self.b()
+            expr3 = (self.c()*self.d())**2 - self.a() * self.b()
 
             self.eq1 = self.createEquation("eq1", "Equation 1", expr1)
             self.eq2 = self.createEquation("eq2", "Equation 2", expr2)
             self.eq3 = self.createEquation("eq3", "Equation 3", expr3)
 
-    lin_mod = linear_model("L0","Linear model")
+    nlin_mod = nonlinear_model("NL0","Non-linear model")
 
-    lin_mod()
+    nlin_mod()
 
-    return lin_mod
+    return nlin_mod
 
 def test_model_properties(mod):
 
-    assert mod.name == "L0" and \
-           mod.description == "Linear model" and \
-           list(mod.variables.keys()) == ["a@L0","b@L0","c@L0"] and \
-           list(mod.constants.keys()) == ["d@L0"] and \
-           list(mod.equations.keys()) == ["eq1@L0","eq2@L0","eq3@L0"]
+    assert mod.name == "NL0" and \
+           mod.description == "Non-linear model" and \
+           list(mod.variables.keys()) == ["a_NL0","b_NL0","c_NL0"] and \
+           list(mod.constants.keys()) == ["d_NL0"] and \
+           list(mod.equations.keys()) == ["eq1_NL0","eq2_NL0","eq3_NL0"]
 
 def test_model_enodes(mod):
 

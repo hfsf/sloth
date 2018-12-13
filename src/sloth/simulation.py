@@ -4,12 +4,13 @@
 Define Simulation class
 """
 
-from problem import Problem
-from model import Model
-import solvers
-import analysis
-from core.error_definitions import UnexpectedValueError
+from .problem import Problem
+from .model import Model
+from . import solvers
+from . import analysis
+from .core.error_definitions import UnexpectedValueError
 import prettytable
+import numpy as np
 
 class Simulation:
 
@@ -150,7 +151,7 @@ class Simulation:
 
         out = solver_mechanism.solve(additional_conf)
 
-        if print_output==True:
+        if print_output==True and problem_type != 'differential':
 
           print("\n ->{}".format(out))
 

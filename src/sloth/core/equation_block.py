@@ -4,6 +4,7 @@
 import sympy as sp
 from scipy.linalg import solve
 from collections import OrderedDict
+from .variable import Variable
 
 class EquationBlock:
 
@@ -80,9 +81,9 @@ class EquationBlock:
 
             for var_i in list(eq_i.objects_declared.values()):
 
-                self._var_dict[var_i.name] = var_i
+                if var_i not in var_list and isinstance(var_i, Variable):
 
-                if var_i not in var_list:
+                    self._var_dict[var_i.name] = var_i
 
                     var_list.append(var_i)
 

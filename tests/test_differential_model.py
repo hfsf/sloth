@@ -1,12 +1,19 @@
 #test_model.py
 
+from pathlib import Path
+import sys
+
+root_dir = Path(Path.cwd()).parent
+
+sys.path.append(str(root_dir))#+'/src/')
+
 import pytest
 
-from .model import Model
+from src.sloth.model import Model
 
-from core.equation_operators import *
-from core.template_units import *
-from core.domain import *
+from src.sloth.core.equation_operators import *
+from src.sloth.core.template_units import *
+from src.sloth.core.domain import *
 
 import copy
 
@@ -59,9 +66,9 @@ def test_model_properties(mod):
 
     assert mod.name == "D0" and \
            mod.description == "Differential model" and \
-           list(mod.variables.keys()) == ["u@D0","v@D0","t@D0"] and \
-           list(mod.constants.keys()) == ["a@D0","b@D0","c@D0", "d@D0"] and \
-           list(mod.equations.keys()) == ["eq1@D0","eq2@D0"]
+           list(mod.variables.keys()) == ["u_D0","v_D0","t_D0"] and \
+           list(mod.constants.keys()) == ["a_D0","b_D0","c_D0", "d_D0"] and \
+           list(mod.equations.keys()) == ["eq1_D0","eq2_D0"]
 
 def test_model_enodes(mod):
 

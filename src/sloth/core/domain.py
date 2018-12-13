@@ -4,7 +4,7 @@
 Define Domain class, which distributes one equation among a domain of variables.  
 """
 
-import pandas
+import pandas as pd
 from .error_definitions import UnexpectedValueError
 import numpy as np
 from collections import OrderedDict
@@ -55,6 +55,8 @@ class Domain:
 
             self.independent_vars[independent_vars.name] = independent_vars
 
+        # print("\n->independent_vars:%s"%self.independent_vars)
+
         self.dependent_objs = OrderedDict({})
 
         self.description = description
@@ -72,7 +74,7 @@ class Domain:
         """
         """
 
-        pass
+        self._setDomain(independent_vars)
 
     def __getitem__(self, idx):
 
@@ -90,23 +92,19 @@ class Domain:
             Independent vars on which the current domain rely on. Currently only unidimensional domains are suported.
         """
 
-        if self.is_set == False:
+        if independent_vars == None:
 
-            if independent_vars == None and self.independent_vars != None:
+            independent_vars = list(self.independent_vars.values())
 
-                independent_vars = list(self.independent_vars.values())
+        try:
 
-            try:
+            self.values = {var_i.name: self._createDataFramePrototype() for var_i in independent_vars}
 
-                self.values = {var_i.name: self._createDataFramePrototype() for var_i in independent_vars}
+        except:
 
-            except:
+            raise UnexpectedValueError("list(Variables)")
 
-                raise UnexpectedValueError("list(Variables)")
-
-            self.independent_vars = independent_vars
-
-            self.is_set = True
+        self.is_set = True
 
     def _distributeOnDomain(self, dependent_obj):
 
@@ -132,13 +130,26 @@ class Domain:
 
         """
 
+        if not isinstance(values, np.ndarray):
+
+            values = np.array(values)
+
+        print("\nShape of values is {}".format(values.shape))
+
         if var==None:
 
-            var = self.independent_vars
+            var = list(self.independent_vars.values())[-1]
 
-        if np.array(values).ndim == 1:
+        if self.values[var.name].values.size ==0 :
 
-            self.values[var] = self.values[var].append(values)
+            self.values[var.name] =  pd.DataFrame(values.T,index=self.values[var.name].index)
+        elif self.values[var.name].values.size > 0 and values.shape[1] == len(self.independent_vars.keys())+len(self.dependent_objs.keys()):
+
+            self.values[var.name] =  pd.DataFrame(np.hstack((self.values[var.name].values, values.T)),index=self.values[var.name].index)
+
+        else:
+
+            raise Exception("Error. Ill-formed input for domain register")
 
     def _createDataFramePrototype(self):
 
@@ -150,12 +161,16 @@ class Domain:
         :rtype pandas.DataFrame:
         """
 
-        keys_from_dependent_objs_ = list(self.dependent_objs.keys())
+        # print("\n~>dependent_objs: %s"%self.dependent_objs)
 
-        kys_from_independent_vars = list(self.independent_vars.keys())
+        keys_from_dependent_objs = list(self.dependent_objs.keys())
 
-        objs_names_ = kys_from_independent_vars+keys_from_dependent_objs_
+        keys_from_independent_vars = list(self.independent_vars.keys())
 
-        data_frame_ = pandas.DataFrame(index=objs_names_)
+        objs_names = keys_from_independent_vars+keys_from_dependent_objs
+
+        # print("\n~>Creating prototype with indexes: %s"%objs_names)
+
+        data_frame_ = pd.DataFrame(index=objs_names)
 
         return data_frame_

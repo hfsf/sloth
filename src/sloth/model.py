@@ -3,14 +3,18 @@
 """
 Define Model class, for storage of equations, distribution on domains and information about input and output variables (exposed variables).
 """
+import sys
+
+print("\n==>%s"%sys.path)
+
 import collections
-from .core import error_definitions as errors  
-from core.equation import *
-from core.equation_operators import *
-import core.variable as variable
-import core.constant as constant
-import core.parameter as parameter
-import connection
+from .core.error_definitions import *  
+from .core.equation import *
+from .core.equation_operators import *
+from .core.variable import Variable
+from .core.constant import Constant
+from .core.parameter import Parameter
+from . import connection
 import prettytable
 
 class Model:
@@ -170,7 +174,7 @@ class Model:
 
             self._gatherObjectsInfo_()
 
-            raise (errors.UnexpectedObjectDeclarationError( list(eq.objects_declared.keys()), self.objects_info ))
+            raise (UnexpectedObjectDeclarationError( list(eq.objects_declared.keys()), self.objects_info ))
 
             return(False)
         
@@ -226,7 +230,7 @@ class Model:
             EquationNode object to declare for the current Equation object. Defaults to None
         """
 
-        if isinstance(in_var, variable.Variable) and isinstance(out_var, variable.Variable):
+        if isinstance(in_var, Variable) and isinstance(out_var, Variable):
 
 
             if in_var in self.exposed_vars['input'] and \
@@ -252,11 +256,11 @@ class Model:
 
             else:
 
-                raise errors.ExposedVariableError(out_model.exposed_vars['output'], self.exposed_vars['input'], out_var, in_var)
+                raise ExposedVariableError(out_model.exposed_vars['output'], self.exposed_vars['input'], out_var, in_var)
 
         else:
 
-            raise errors.UnexpectedValueError("Variable")
+            raise UnexpectedValueError("Variable")
 
 
     def createEquation(self, name, description="", expr=None):
@@ -277,7 +281,7 @@ class Model:
         eq = Equation(name, description, expr)
         eq.setResidual(expr) # I DON'T UNDERSTAND WHY THIS NEED TO BE HERE! x)
 
-        eq.name=eq.name+'@'+self.name
+        eq.name=eq.name+'_'+self.name
 
         # #\nCreating equation for expression: %s\n     And its symbolic map is: %s"%(eq.equation_expression, eq.equation_expression.repr_symbolic, eq.equation_expression.symbolic_map))
 
@@ -332,9 +336,9 @@ class Model:
 
         """
 
-        var = variable.Variable(name, units , description, is_lower_bounded, is_upper_bounded, lower_bound, upper_bound, value)
+        var = Variable(name, units , description, is_lower_bounded, is_upper_bounded, lower_bound, upper_bound, value)
 
-        var.name=var.name+'@'+self.name
+        var.name=var.name+'_'+self.name
 
         self.variables[var.name] = var
 
@@ -363,9 +367,9 @@ class Model:
         Value of the current Parameter. Defaults to 0.      
 
         """
-        par = parameter.Parameter(name, units , description, value)
+        par = Parameter(name, units , description, value)
 
-        par.name=par.name+'@'+self.name
+        par.name=par.name+'_'+self.name
 
         self.parameters[par.name] = par
 
@@ -391,9 +395,9 @@ class Model:
 
         """
 
-        con = constant.Constant(name, units , description, value)
+        con = Constant(name, units , description, value)
 
-        con.name=con.name+'@'+self.name
+        con.name=con.name+'_'+self.name
 
         self.constants[con.name] = con
 

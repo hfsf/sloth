@@ -5,7 +5,7 @@ Define Connection class.
 
 """
 
-from core.equation import *
+from .core.equation import *
 
 class Connection(Equation):
 

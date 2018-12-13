@@ -1,18 +1,16 @@
 #test_parameter.py
 
-"""
 from pathlib import Path
 import sys
 
 root_dir = Path(Path.cwd()).parent
 
-sys.path[0] = str(root_dir)+'/src/'
-"""
+sys.path.append(str(root_dir))#+'/src/')
 
 import pytest
 
-from .core import parameter
-from .core import template_units
+from src.sloth.core import parameter
+from src.sloth.core import template_units
 
 import copy
 

@@ -4,8 +4,8 @@
 Define Problem class. Unite several Model classes through Connections, forming one single Equation block. Used by Simulation class to perform the calculations.
 """
 
-from core.error_definitions import ExposedVariableError
-from core.equation_block import EquationBlock
+from .core.error_definitions import ExposedVariableError
+from .core.equation_block import EquationBlock
 from collections import OrderedDict
 import numpy as np
 

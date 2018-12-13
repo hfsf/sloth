@@ -1,11 +1,11 @@
-import model
-import problem
-import simulation
-import analysis
-import solvers
-from core.equation_operators import *
-from core.template_units import *
-from core.domain import *
+from . import model
+from . import problem
+from . import simulation
+from . import analysis
+from . import solvers
+from .core.equation_operators import *
+from .core.template_units import *
+from .core.domain import *
 
 
 class modelTest0(model.Model):
@@ -17,7 +17,7 @@ class modelTest0(model.Model):
         self.a =  self.createVariable("a", kg_s, "A", is_exposed=True, type='output')
         self.b =  self.createVariable("b", kg_s, "B")
         self.c =  self.createVariable("c", kg, "C")
-        self.d =  self.createConstant("d", s**-1, "D")
+        self.d =  self.createParameter("d", s**-1, "D")
         self.d.setValue(0.7)
 
     def DeclareEquations(self):
@@ -38,18 +38,41 @@ class modelTest1(model.Model):
 
         super().__init__(name, description)
 
-        self.a =  self.createVariable("a1", dimless, "A1")
-        self.b =  self.createVariable("b1", dimless, "B1")
-        self.c =  self.createVariable("c1", dimless, "C1", is_exposed=True, type='input')
+        self.u =  self.createVariable("u", dimless, "u")
+        self.v =  self.createVariable("v", dimless, "v")
+        self.a =  self.createConstant("a", dimless, "A")
+        self.b =  self.createConstant("b", dimless, "B")
+        self.c =  self.createConstant("c", dimless, "C")
+        self.d =  self.createConstant("d", dimless, "D")
+        self.t = self.createVariable("t", dimless, "t")
+
+        # print("creating domain")
+
+        self.dom = Domain("domain",dimless,self.t,"generic domain")
+
+        # print("distributing u")
+
+        self.u.distributeOnDomain(self.dom)
+
+        # print("distributing v")
+
+        self.v.distributeOnDomain(self.dom)
+
+        # print("\n~~~>Domain dependent objs=%s",self.dom.dependent_objs)
+
+        self.a.setValue(1.)
+        self.b.setValue(0.1)
+        self.c.setValue(1.5)
+        self.d.setValue(0.75)
+
     def DeclareEquations(self):
 
-        expr1 = self.a() + self.b() + 5.
+        expr1 = self.u.Diff(self.t) == self.a()*self.u() - self.b()*self.u()*self.v()
 
-        expr2 = self.a() - self.c() - 1.5
+        expr2 = self.v.Diff(self.t) ==  self.d()*self.b()*self.u()*self.v() -self.c()*self.v()
 
         self.eq1 = self.createEquation("eq1", "Equation 1", expr1)
         self.eq2 = self.createEquation("eq2", "Equation 2", expr2)
-        #self.eq3 = self.createEquation("eq3", "Equation 3", expr3)
 
 class simul(simulation.Simulation):
 
@@ -86,31 +109,36 @@ def xec():
     print("=>: %s"%(rtrn))
     """
 
-    mod0()
+    #mod0()
 
-    #mod1()
+    mod1()
 
     #prob.addModels([mod0, mod1])
-    prob.addModels(mod0)
+    #prob.addModels(mod0)
+    prob.addModels(mod1)
 
     #prob.createConnection(mod0, mod1, mod0.a, mod1.c)
 
     prob.resolve()
 
-    # prob.setInitialConditions({'t':0.,'u':10.,'v':5.})
+    prob.setInitialConditions({'t_M1':0.,'u_M1':10.,'v_M1':5.})
+
+    print("\n===>%s"%mod1.dom.__dict__)
 
     sim.setProblem(prob)
-
-    sim.report(prob)
-
+    #sim.report(prob)
     sim.runSimulation(initial_time=0., 
                       end_time=16.,
-                      #is_dynamic=True,
-                      #domain=mod0.dom,
-                      print_output=True,
+                      is_dynamic=True,
+                      domain=mod1.dom,
+                      time_variable_name="t_M1",
+                      compile_diff_equations=True,
+                      print_output=False,
                       output_headers=["Time","Preys(u)","Predators(v)"] 
                       )
     sim.showResults()
+
+    print("\n===>%s"%mod1.dom.__dict__)
 
     # s = solvers.createSolver(prob, domain=mod0.dom, D_solver='scipy')
 

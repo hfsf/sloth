@@ -163,7 +163,11 @@ class Equation:
 
         eq_keys = list(symbolic_map_.keys())
 
+        print("\nEquation line#166\n\neq_keys=%s equation_expression = %s"%(eq_keys, str(equation_expression_)))
+
         func = sp.lambdify(eq_keys, equation_expression_.symbolic_object, compilation_mechanism)
+
+        print("Sucess.")
 
         return func
 
