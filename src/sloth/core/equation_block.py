@@ -121,15 +121,3 @@ class EquationBlock:
         self._equations_list = self._getEquationList()
 
         self._assignEquationGroups()
-
-    def solve(self):
-
-        """
-        Solve the current linear system defined in the class atributes
-
-        :return:
-            Solution for the linear system defined
-        :rtype ndarray:
-        """
-
-        return solve(self._matrix_A, self._matrix_b)

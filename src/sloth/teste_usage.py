@@ -109,24 +109,25 @@ def xec():
     print("=>: %s"%(rtrn))
     """
 
-    #mod0()
+    mod0()
 
-    mod1()
+    #mod1()
 
     #prob.addModels([mod0, mod1])
-    #prob.addModels(mod0)
-    prob.addModels(mod1)
+    prob.addModels(mod0)
+    #prob.addModels(mod1)
 
     #prob.createConnection(mod0, mod1, mod0.a, mod1.c)
 
     prob.resolve()
 
-    prob.setInitialConditions({'t_M1':0.,'u_M1':10.,'v_M1':5.})
+    #prob.setInitialConditions({'t_M1':0.,'u_M1':10.,'v_M1':5.})
 
     #print("\n===>%s"%mod1.dom.__dict__)
 
     sim.setProblem(prob)
     #sim.report(prob)
+    '''
     sim.runSimulation(initial_time=0., 
                       end_time=16.,
                       is_dynamic=True,
@@ -140,9 +141,17 @@ def xec():
                                          "v_M1":"Predators (v)"
                                         } 
                       )
+    '''
+
+    sim.runSimulation()
+
     sim.showResults()
 
-    print("\n===>%s"%mod1.dom.__dict__)
+    res = sim.getResults('dict')
+
+    print("\n-> keys:%s     its type:%s"%(list(res.keys()),type(list(res.keys())[0])))
+
+    print("\n===>%s"%sim.getResults('list'))
 
     # s = solvers.createSolver(prob, domain=mod0.dom, D_solver='scipy')
 

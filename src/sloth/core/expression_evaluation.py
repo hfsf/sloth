@@ -316,7 +316,21 @@ class EquationNode:
                                 repr_symbolic=self.repr_symbolic*other_obj.repr_symbolic                                
                                 )
 
-            enode_.equation_type = {'is_linear':False, 'is_nonlinear':True, 'is_differential':False} # self._checkEquationTypePrecedence(self.equation_type, other_obj.equation_type)
+            if other_obj.variable_map == {}: 
+
+                # other_obj is a specified Quantity
+
+                enode_.equation_type = {**self.equation_type}
+
+            elif self.variable_map == {} and other_obj.variable_map != {}:
+
+                # current object is a specified Quantity
+
+                enode_.equation_type = {**other_obj.equation_type}
+
+            else:
+
+                enode_.equation_type = {'is_linear':False, 'is_nonlinear':True, 'is_differential':False} # self._checkEquationTypePrecedence(self.equation_type, other_obj.equation_type)
 
             return(enode_)
 
@@ -333,6 +347,25 @@ class EquationNode:
                                 )
 
             enode_.equation_type = {**self.equation_type}
+
+            return(enode_)
+
+        elif self.variable_map=={} and isinstance(other_obj, self.__class__):
+
+            #Current ENODE is a specified quantity and the other is NOT
+
+
+            enode_ = self.__class__(
+                            name="*".join([self.name, str(other_obj)]), 
+                            symbolic_object=self.symbolic_object*other_obj,
+                            symbolic_map={**other_obj.symbolic_map},
+                            variable_map={**other_obj.variable_map}, 
+                            unit_object=self.unit_object*other_obj.unit_object, 
+                            latex_text=self.latex_text+"*"+str(other_obj),
+                            repr_symbolic=self.repr_symbolic*other_obj
+                    )
+
+            enode_.equation_type = {**other_obj.equation_type}
 
             return(enode_)
 
@@ -384,7 +417,21 @@ class EquationNode:
                                 repr_symbolic=self.repr_symbolic/other_obj.repr_symbolic       
                                 )
 
-            enode_.equation_type = {'is_linear':False, 'is_nonlinear':True, 'is_differential':False}# self._checkEquationTypePrecedence(self.equation_type, other_obj.equation_type)
+            if other_obj.variable_map == {}: 
+
+                # other_obj is a specified Quantity
+
+                enode_.equation_type = {**self.equation_type}
+
+            elif self.variable_map == {} and other_obj.variable_map != {}:
+
+                # current object is a specified Quantity
+
+                enode_.equation_type = {**other_obj.equation_type}
+
+            else:
+
+                enode_.equation_type = {'is_linear':False, 'is_nonlinear':True, 'is_differential':False} # self._checkEquationTypePrecedence(self.equation_type, other_obj.equation_type)
 
             return(enode_)
 
@@ -401,6 +448,24 @@ class EquationNode:
                         )
 
             enode_.equation_type = {**self.equation_type}
+
+            return(enode_)
+
+        elif self.variable_map=={} and isinstance(other_obj, self.__class__):
+
+            #Current ENODE is a specified quantity and the other is NOT
+
+            enode_ = self.__class__(
+                            name="/".join([self.name, str(other_obj)]), 
+                            symbolic_object=self.symbolic_object/other_obj,
+                            symbolic_map={**other_obj.symbolic_map},
+                            variable_map={**other_obj.variable_map}, 
+                            unit_object=self.unit_object/other_obj.unit_object,
+                            latex_text="\\frac{"+self.latex_text+"}{"+str(other_obj)+"}",
+                            repr_symbolic=self.repr_symbolic/other_obj
+                    )
+
+            enode_.equation_type = {**other_obj.equation_type}
 
             return(enode_)
 
@@ -436,45 +501,7 @@ class EquationNode:
         :rtype EquationNode:
         """
 
-        # * === Code snippet only work on Python 3.5+ ===
-
-        if isinstance(other_obj, self.__class__):
-
-            # other_obj is another ENODE.
-
-            enode_ = self.__class__(
-                                name="/".join([self.name, other_obj.name]),
-                                symbolic_object=self.symbolic_object/other_obj.symbolic_object,
-                                symbolic_map={**self.symbolic_map, **other_obj.symbolic_map},
-                                variable_map={**self.variable_map, **other_obj.variable_map},
-                                unit_object=self.unit_object/other_obj.unit_object,
-                                latex_text="\\frac{"+self.latex_text+"}{"+other_obj.latex_text+"}",             
-                                repr_symbolic=self.repr_symbolic/other_obj.repr_symbolic   
-                                )
-
-            enode_.equation_type = {'is_linear':False, 'is_nonlinear':True, 'is_differential':False}#self._checkEquationTypePrecedence(self.equation_type, other_obj.equation_type)
-
-            return(enode_)
-
-        elif isinstance(other_obj, int) or isinstance(other_obj, float):
-
-            enode_ = self.__class__(
-                        name="/".join([self.name, str(other_obj)]),
-                        symbolic_object=self.symbolic_object/other_obj,
-                        symbolic_map={**self.symbolic_map},
-                        variable_map={**self.variable_map},
-                        unit_object=self.unit_object,
-                        latex_text="\\frac{"+self.latex_text+"}{"+str(other_obj)+"}",
-                        repr_symbolic=self.repr_symbolic/other_obj
-                                )
-
-            enode_.equation_type = {**self.equation_type}
-
-            return(enode_)
-
-        else:
-
-            raise UnexpectedValueError("(int, float, EquationNode)")
+        return self.__div__(other_obj)
 
     def __rtruediv__(self, other_obj):
 

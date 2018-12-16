@@ -97,32 +97,42 @@ class Simulation:
                       print_output=False, 
                       output_headers=None,
                       variable_name_map={}, 
-                      compilation_mechanism="numpy"
+                      compilation_mechanism="numpy",
+                      definition_dict=None
                       ):
 
         """
         Run the current simulation using the defined parameters
+
+        :ivar dict definition_dict:
+            Dictinary containing configuratios for override all arguments with those defined in it. Tipically used for performing consecutive simulations (eg: optimization) or using predefined simulation configurations
         """
 
-        additional_conf = {'compile_diff_equations':compile_diff_equations, 
-                           'domain':domain, 
-                           'time_variable_name':time_variable_name,
-                           'initial_time':initial_time,
-                           'end_time':end_time,
-                           'is_dynamic':is_dynamic, 
-                           'arg_names':arg_names,
-                           'linear_solver':linear_solver,
-                           'nonlinear_solver':nonlinear_solver,
-                           'differential_solver':differential_solver,
-                           'differential_algebraic_solver':differential_algebraic_solver,
-                           'args':args,
-                           'number_of_time_steps':number_of_time_steps,
-                           'configuration_args':configuration_args,
-                           'print_output':print_output,
-                           'output_headers':output_headers,
-                           'variable_name_map':variable_name_map,
-                           'compilation_mechanism':compilation_mechanism
-                           }
+        if definition_dict is not None and isinstance(definition_dict, dict):
+
+            additional_conf = definition_dict
+
+        else:
+
+            additional_conf = {'compile_diff_equations':compile_diff_equations, 
+                               'domain':domain, 
+                               'time_variable_name':time_variable_name,
+                               'initial_time':initial_time,
+                               'end_time':end_time,
+                               'is_dynamic':is_dynamic, 
+                               'arg_names':arg_names,
+                               'linear_solver':linear_solver,
+                               'nonlinear_solver':nonlinear_solver,
+                               'differential_solver':differential_solver,
+                               'differential_algebraic_solver':differential_algebraic_solver,
+                               'args':args,
+                               'number_of_time_steps':number_of_time_steps,
+                               'configuration_args':configuration_args,
+                               'print_output':print_output,
+                               'output_headers':output_headers,
+                               'variable_name_map':variable_name_map,
+                               'compilation_mechanism':compilation_mechanism
+                               }
 
         self.configurations = additional_conf
 
@@ -209,7 +219,27 @@ class Simulation:
             
             print(header + str(tab))
 
-    def plotResults(self):
+    def plotResults(self, x_data=None, y_data=None):
     
         pass          
 
+    def getResults(self, return_type='list'):
+
+        """
+        Return the output of the current simulation according to the desired type
+        
+        :param str return_type:
+            Type of the output to be returned ('dict', 'list'). Defaults to 'list'
+        """
+
+        if return_type == 'list':
+
+            return list(self.output.values())
+
+        elif return_type == 'dict':
+
+            return self.output
+
+        else:
+
+            raise UnexpectedValueError("string ('list', 'dict')")

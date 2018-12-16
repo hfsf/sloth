@@ -52,7 +52,14 @@ class Plotter:
 
         plt.ylabel(y_label)
 
-        plt.plot(x_data, y_data, linewidth=linewidth)
+        if draw_markers is not None:
+
+            plt.plot(x_data, y_data, draw_markers, linewidth=linewidth)
+
+        else:
+
+            plt.plot(x_data, y_data, linewidth=linewidth)
+
 
         plt.grid(grid)
 
