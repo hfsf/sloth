@@ -104,7 +104,7 @@ class Unit:  # New-style class syntax
 
             dimension_dict = dimension_dict.dimension
 
-        dimension_dict = sorted(dimension_dict)
+        dimension_dict = OrderedDict(sorted(dimension_dict.items(), key=lambda x: x[0]))
 
         for (dim_i, idx_i) in zip(dimension_dict.keys(), dimension_dict.values()):
 
