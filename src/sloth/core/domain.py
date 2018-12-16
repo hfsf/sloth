@@ -134,7 +134,7 @@ class Domain:
 
             values = np.array(values)
 
-        print("\nShape of values is {}".format(values.shape))
+        # print("\nShape of values is {}".format(values.shape))
 
         if var==None:
 
@@ -142,10 +142,10 @@ class Domain:
 
         if self.values[var.name].values.size ==0 :
 
-            self.values[var.name] =  pd.DataFrame(values.T,index=self.values[var.name].index)
+            self.values[var.name] =  pd.DataFrame(values,columns=self.values[var.name].columns)
         elif self.values[var.name].values.size > 0 and values.shape[1] == len(self.independent_vars.keys())+len(self.dependent_objs.keys()):
 
-            self.values[var.name] =  pd.DataFrame(np.hstack((self.values[var.name].values, values.T)),index=self.values[var.name].index)
+            self.values[var.name] =  pd.DataFrame(np.vstack((self.values[var.name].values, values)),columns=self.values[var.name].index)
 
         else:
 
@@ -171,6 +171,19 @@ class Domain:
 
         # print("\n~>Creating prototype with indexes: %s"%objs_names)
 
-        data_frame_ = pd.DataFrame(index=objs_names)
+        data_frame_ = pd.DataFrame(columns=objs_names)
 
         return data_frame_
+
+    def _renameHeaders(self, variable_name_map):
+
+        """
+        Rename the column headers of the domain using the mapping provided
+
+        :param dict variable_name_map:
+            Dictionary containing the original name of the variables in the domain, and the corresponding name which will be modified.
+        """
+
+        for i,key in enumerate(list(self.values.keys())):
+
+            self.values[key].rename(columns=variable_name_map, inplace=True)

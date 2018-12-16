@@ -12,7 +12,7 @@ from scipy.linalg import solve as scp_solve
 import sympy as sp
 import scipy.integrate as integrate
 from collections import OrderedDict
-from .core.error_definitions import AbsentRequiredObjectError, UnexpectedValueError
+from .core.error_definitions import AbsentRequiredObjectError, UnexpectedValueError, UnresolvedPanicError
 
 import prettytable
 
@@ -460,7 +460,7 @@ class DSolver(Solver):
 
         # print("\ntime_points.T shape=%s\nY.T shape=%s"%(time_points.reshape(1,-1).T.shape,Y.T.shape))
 
-        to_register_ = np.hstack((time_points.reshape(1,-1).T, Y))
+        to_register_ = np.hstack((time_points.reshape(-1,1), Y))
 
         if self.additional_configurations['print_output'] == True:
 
@@ -476,4 +476,14 @@ class DSolver(Solver):
 
         self.domain._register(to_register_)
 
+        # ============ Rename domain columns =============
+
+        variable_map = self.additional_configurations['variable_name_map']
+
+        if variable_map is not {}:
+
+            self.domain._renameHeaders(variable_map)
+
+        # ================================================
+            
         return time_points,Y

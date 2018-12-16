@@ -2,5 +2,9 @@ numpy>=1.13.3
 sympy
 prettytable
 pytest>=3.8.0
+seaborn
+matplotlib
+numexpr
+mpmath
 scipy>=1.1.0
 sphinx_rtd_theme

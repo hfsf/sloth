@@ -3,10 +3,6 @@
 """
 Define Model class, for storage of equations, distribution on domains and information about input and output variables (exposed variables).
 """
-import sys
-
-print("\n==>%s"%sys.path)
-
 import collections
 from .core.error_definitions import *  
 from .core.equation import *

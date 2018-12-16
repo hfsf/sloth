@@ -123,7 +123,7 @@ def xec():
 
     prob.setInitialConditions({'t_M1':0.,'u_M1':10.,'v_M1':5.})
 
-    print("\n===>%s"%mod1.dom.__dict__)
+    #print("\n===>%s"%mod1.dom.__dict__)
 
     sim.setProblem(prob)
     #sim.report(prob)
@@ -134,7 +134,11 @@ def xec():
                       time_variable_name="t_M1",
                       compile_diff_equations=True,
                       print_output=False,
-                      output_headers=["Time","Preys(u)","Predators(v)"] 
+                      output_headers=["Time","Preys(u)","Predators(v)"],
+                      variable_name_map={"t_M1":"Time", 
+                                         "u_M1":"Preys (u)", 
+                                         "v_M1":"Predators (v)"
+                                        } 
                       )
     sim.showResults()
 

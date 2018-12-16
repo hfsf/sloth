@@ -4,6 +4,7 @@
 Define Simulation class
 """
 
+from .plotter import Plotter
 from .problem import Problem
 from .model import Model
 from . import solvers
@@ -42,6 +43,8 @@ class Simulation:
         self.output = None
 
         self.configurations = None
+
+        self.plotter = Plotter()
 
     def report(self, object):
 
@@ -91,7 +94,9 @@ class Simulation:
                       args=[], 
                       number_of_time_steps=100, 
                       configuration_args={}, 
-                      print_output=False, output_headers="", 
+                      print_output=False, 
+                      output_headers=None,
+                      variable_name_map={}, 
                       compilation_mechanism="numpy"
                       ):
 
@@ -115,6 +120,7 @@ class Simulation:
                            'configuration_args':configuration_args,
                            'print_output':print_output,
                            'output_headers':output_headers,
+                           'variable_name_map':variable_name_map,
                            'compilation_mechanism':compilation_mechanism
                            }
 
@@ -202,4 +208,8 @@ class Simulation:
                 )
             
             print(header + str(tab))
+
+    def plotResults(self):
+    
+        pass          
 
