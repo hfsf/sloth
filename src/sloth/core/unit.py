@@ -7,8 +7,9 @@ Define Unit class, for ulterior utilization (eg:Variable,Parameter)
 import copy
 from .error_definitions import DimensionalCoherenceError, UnexpectedValueError
 from .quantity import Quantity
+from collections import OrderedDict
 # Null dimension dict
-null_dimension = {'m':0.0,'kg':0.0,'s':0.0,'A':0.0,'K':0.0,'mol':0.0,'cd':0.0}
+null_dimension = OrderedDict({'m':0.0,'kg':0.0,'s':0.0,'A':0.0,'K':0.0,'mol':0.0,'cd':0.0})
 
 class Unit:  # New-style class syntax
     """
@@ -34,7 +35,7 @@ class Unit:  # New-style class syntax
             Description of the present unit. Defaults to "". 
         """
 
-        self.dimension = {'m':0,'kg':0,'s':0,'A':0,'K':0,'mol':0,'cd':0}
+        self.dimension = OrderedDict({'m':0,'kg':0,'s':0,'A':0,'K':0,'mol':0,'cd':0})
 
         self.name = name
 
