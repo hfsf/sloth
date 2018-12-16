@@ -12,6 +12,7 @@ from . import analysis
 from .core.error_definitions import UnexpectedValueError
 import prettytable
 import numpy as np
+from collections import OrderedDict
 
 class Simulation:
 
@@ -238,7 +239,11 @@ class Simulation:
 
         elif return_type == 'dict':
 
-            return self.output
+            output_dict = OrderedDict(sorted(self.output.items(), key=lambda x: str(x[0])))
+
+            output_dict = {str(k):v for (k,v) in output_dict.items()}
+
+            return output_dict
 
         else:
 
