@@ -17,16 +17,16 @@ class modelTest0(model.Model):
         self.a =  self.createVariable("a", kg_s, "A", is_exposed=True, type='output')
         self.b =  self.createVariable("b", kg_s, "B")
         self.c =  self.createVariable("c", kg, "C")
-        self.d =  self.createParameter("d", s**-1, "D")
+        self.d =  self.createConstant("d", s**-1, "D")
         self.d.setValue(0.7)
 
     def DeclareEquations(self):
 
-        expr1 = self.a() + self.b() - 1.
+        expr1 = self.a() + self.b() - 100.
 
-        expr2 = self.a() + self.c()*self.d() - 2
+        expr2 = self.c()*self.d() + self.a() - 4
 
-        expr3 = self.c()*self.d() - self.a() - self.b()
+        expr3 = (self.c()*self.d())**2 - self.a()*self.b()
 
         self.eq1 = self.createEquation("eq1", "Equation 1", expr1)
         self.eq2 = self.createEquation("eq2", "Equation 2", expr2)
@@ -151,7 +151,7 @@ def xec():
 
     print("\n-> keys:%s     its type:%s"%(list(res.keys()),type(list(res.keys())[0])))
 
-    print("\n===>%s"%sim.getResults('list'))
+    print("\n===>%s"%sim.getResults('dict'))
 
     # s = solvers.createSolver(prob, domain=mod0.dom, D_solver='scipy')
 
