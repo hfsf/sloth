@@ -9,7 +9,7 @@ from .error_definitions import DimensionalCoherenceError, UnexpectedValueError
 from .quantity import Quantity
 from collections import OrderedDict
 # Null dimension dict
-null_dimension = {'m':0.0,'kg':0.0,'s':0.0,'A':0.0,'K':0.0,'mol':0.0,'cd':0.0}
+null_dimension = OrderedDict({'m':0.0,'kg':0.0,'s':0.0,'A':0.0,'K':0.0,'mol':0.0,'cd':0.0})
 
 class Unit:  # New-style class syntax
     """
@@ -130,7 +130,9 @@ class Unit:  # New-style class syntax
 
         output=''
 
-        output = [dim_i+"^"+str(self.dimension[dim_i]) for dim_i in list(self.dimension.keys()) if self.dimension[dim_i] != 0]
+        dimension_ = {key:self.dimension[key] for key in null_dimension.keys()}
+
+        output = [dim_i+"^"+str(dimension_[dim_i]) for dim_i in list(dimension_.keys()) if dimension_[dim_i] != 0]
 
         output = " ".join(output)
 
