@@ -24,9 +24,9 @@ def var():
 
 def test_var_properties(var):
 
-    assert var.name == "generic_var" and \
-           str(var.units) == "kg^1 s^-1" and \
-           var.description == "A generic var"
+    assert var.name == "generic_var"
+    assert str(var.units.dimension) == pytest.approx({'m':0.0,'kg':1.,'s':-1,'A':0.0,'K':0.0,'mol':0.0,'cd':0.0})
+    assert var.description == "A generic var"
 
 def test_set_var_value(var):
 
