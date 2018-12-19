@@ -22,7 +22,7 @@ VERSION = '0.1'  # Put the package version as a string (ex.: '1.0.0')
 
 # What packages are required for this module to be executed?
 REQUIRED = [
-    'numpy', 'pytest', 'numpydoc', 'sympy', 'prettytable','numexpr', 'mpmath', 'scipy', 'pandas', 'seaborn', 'matplotlib'
+    'numpy', 'pytest', 'numpydoc', 'sympy', 'prettytable','numexpr', 'mpmath', 'scipy', 'pandas', 'seaborn', 'matplotlib', 'cython','assimulo'
 ]
 
 # What packages are optional?

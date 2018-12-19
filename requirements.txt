@@ -3,6 +3,7 @@ sympy
 prettytable
 pytest>=3.8.0
 seaborn
+cython
 matplotlib
 assimulo
 numexpr
