@@ -26,7 +26,7 @@ def const():
 def test_const_properties(const):
 
     assert const.name == "generic_const"
-    assert str(const.units.dimension) == pytest.approx({'m':0.0,'kg':1.,'s':-1,'A':0.0,'K':0.0,'mol':0.0,'cd':0.0})
+    assert dict(const.units.dimension) == pytest.approx({'m':0.0,'kg':1.,'s':-1,'A':0.0,'K':0.0,'mol':0.0,'cd':0.0})
     assert const.description == "A generic const"
 
 def test_set_const_value(const):

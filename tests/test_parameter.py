@@ -25,7 +25,7 @@ def param():
 def test_param_properties(param):
 
     assert param.name == "generic_param"
-    assert str(param.units.dimension) == pytest.approx({'m':0.0,'kg':1.,'s':-1,'A':0.0,'K':0.0,'mol':0.0,'cd':0.0})
+    assert dict(param.units.dimension) == pytest.approx({'m':0.0,'kg':1.,'s':-1,'A':0.0,'K':0.0,'mol':0.0,'cd':0.0})
     assert param.description == "A generic param"
 
 def test_set_param_value(param):
