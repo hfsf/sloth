@@ -4,6 +4,7 @@ prettytable
 pytest>=3.8.0
 seaborn
 matplotlib
+assimulo
 numexpr
 mpmath
 scipy>=1.1.0
