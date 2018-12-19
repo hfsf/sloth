@@ -8,6 +8,7 @@ import pandas as pd
 from .error_definitions import UnexpectedValueError
 import numpy as np
 from collections import OrderedDict
+from itertools import product
 
 class Domain:
 
@@ -81,7 +82,23 @@ class Domain:
         """
         """
 
-        pass
+        ind_vars = idx[0]
+
+        dep_headers = idx[1]
+
+        if not isinstance(ind_vars, list):
+
+            ind_vars = [ind_vars]
+
+        if not isinstance(dep_headers, list):
+
+            dep_headers = [dep_headers]
+
+        return np.array([self.values[i][j].values for (i,j) in product(ind_vars,dep_headers)])
+
+
+
+
 
     def _setDomain(self, independent_vars=None):
 

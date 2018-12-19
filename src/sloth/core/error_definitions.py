@@ -83,15 +83,15 @@ class UnresolvedPanicError(Exception):
     Error raised by unresolved problems. Ideally this exception would never arises. It is included only for debugging purposes
     """
 
-    def __init__(self):
+    def __init__(self, msg=''):
 
-        pass
+        self.msg=msg
 
     def __str__(self):
 
-        msg = "Unresolved Panic Error. This should not have ocurrred. \n Perhaps you should debug your code."
+        err_msg = "Unresolved Panic Error.%sThis should not have ocurrred. \n Perhaps you should debug your code."%self.msg
 
-        return(msg)
+        return(err_msg)
 
 
 

@@ -5,6 +5,7 @@ from .core.error_definitions import *
 import seaborn as sns
 import matplotlib.pyplot as plt
 import pandas as pd
+import numpy as np
 
 class Plotter:
 
@@ -36,32 +37,42 @@ class Plotter:
 
         self.simulation = simulation
 
-    def plotLines(self, x_data, y_data, set_style='darkgrid', x_label='time', y_label='output', linewidth=2.5, draw_markers=False, grid=False, save_file=None, show_plot=True, data=None):
+    def plotSimpleLines(self, x_data, y_data, set_style='darkgrid', x_label='time', y_label='output', labels=None, linewidth=2.5, markers=None, grid=False, save_file=None, show_plot=True, data=None, legend=False):
 
-        if data is not None and isinstance(x_data, str) and isinstance(y_data, str):
+        #TODO: Provide functionality for passing a dataset object (DataFrame) for which the name of the columns will be passed as x_data and y_data arguments
 
-            x_data = data[x_data]
+        if markers is not None:
 
-            y_data = data[y_data]
+            for i in range(len(x_data)):
+                for j in range(len(y_data)):
+                    
+                    plt.plot(x_data[i].reshape(-1), 
+                             y_data[j].reshape(-1), 
+                             marker=markers[j], 
+                             label=labels[j], 
+                             linewidth=linewidth
+                        )
 
         else:
 
-            raise Exception("Arguments (x_data and y_data) must be a numeric array or the name of the subset of the dataset (data)")
+            for i in range(len(x_data)):
+                for j in range(len(y_data)):
+                    
+                    plt.plot(x_data[i].reshape(-1), 
+                             y_data[j].reshape(-1), 
+                             label=labels[j], 
+                             linewidth=linewidth
+                        )
 
         plt.xlabel(x_label)
 
         plt.ylabel(y_label)
 
-        if draw_markers is not None:
-
-            plt.plot(x_data, y_data, draw_markers, linewidth=linewidth)
-
-        else:
-
-            plt.plot(x_data, y_data, linewidth=linewidth)
-
-
         plt.grid(grid)
+
+        if legend is not False:
+
+            plt.legend()
 
         if save_file is not None:
 
@@ -73,7 +84,40 @@ class Plotter:
 
         plt.clf()
 
+    def DEPRECATED_plotSimpleLines(self, data, set_style='darkgrid', x_label='time', y_label='output', legend_for_colors=None, legend_for_styles=None, linewidth=2.5, draw_markers=False, grid=False, save_file=None, show_plot=True):
 
+        """
+        :param str set_style:
 
+        :param DataFrame data:
+            Dataframe to retreve information
 
+        :param list(float), str x_data:
 
+        :param list(float), list(str y_data):
+
+        :param str x_label:
+
+        :param list(str) y_label:
+
+        :param str save_file:
+
+        :param bool show_plot:
+        """
+    
+        sns.set(style=set_style)
+
+        # Load an example dataset with long-form data
+
+        # Plot the responses for different events and regions
+        sns.lineplot(data=data, palette="tab10", linewidth=linewidth, hue=legend_for_colors, style=legend_for_styles)
+
+        if show_plot is not False:
+
+            plt.show()
+        
+        if save_file is not None:
+
+            plt.savefig(save_file,  bbox_inches="tight")
+
+        plt.clf()

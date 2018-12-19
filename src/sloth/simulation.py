@@ -9,7 +9,7 @@ from .problem import Problem
 from .model import Model
 from . import solvers
 from . import analysis
-from .core.error_definitions import UnexpectedValueError
+from .core.error_definitions import UnexpectedValueError, UnresolvedPanicError
 import prettytable
 import numpy as np
 from collections import OrderedDict
@@ -46,6 +46,8 @@ class Simulation:
         self.configurations = None
 
         self.plotter = Plotter()
+
+        self.domain = None
 
     def report(self, object):
 
@@ -106,7 +108,7 @@ class Simulation:
         Run the current simulation using the defined parameters
 
         :ivar dict definition_dict:
-            Dictinary containing configuratios for override all arguments with those defined in it. Tipically used for performing consecutive simulations (eg: optimization) or using predefined simulation configurations
+            Dictionary containing configuratios for override all Simulation.runSimulation arguments with those defined in it. Tipically used for performing consecutive simulations (eg: optimization) or using predefined simulation configurations
         """
 
         if definition_dict is not None and isinstance(definition_dict, dict):
@@ -152,7 +154,6 @@ class Simulation:
         elif problem_type == "differential":
 
             solver_mechanism = solvers._createSolver(self.problem, additional_conf)     
-
         elif problem_type == "differential-algebraic":
 
             pass
@@ -174,6 +175,8 @@ class Simulation:
 
         self.output = out
 
+        self.domain = additional_conf['domain']
+
     def showResults(self):
 
         """
@@ -181,8 +184,6 @@ class Simulation:
         """
 
         assert self.output!=None, "\nShould run the simulation prior to showing results."
-
-        problem_type = self.problem._getProblemType()
 
         if self.configurations['is_dynamic'] == True:
 
@@ -220,9 +221,22 @@ class Simulation:
             
             print(header + str(tab))
 
-    def plotResults(self, x_data=None, y_data=None):
+    def plotResults(self, x_data=None, y_data=None, set_style='darkgrid', x_label='time', y_label='output', labels=None, linewidth=2.5, markers=None, grid=False, save_file=None, show_plot=True, data=None, legend=False):
     
-        pass          
+        self.plotter.plotSimpleLines(x_data=x_data,
+                                     y_data=y_data,   
+                                     set_style=set_style, 
+                                     x_label=x_label, 
+                                     y_label=y_label, 
+                                     linewidth=linewidth, 
+                                     labels=labels, 
+                                     markers=markers, 
+                                     grid=grid, 
+                                     save_file=save_file, 
+                                     show_plot=show_plot,
+                                     legend=legend, 
+                                     data=data
+                    )          
 
     def getResults(self, return_type='list'):
 
@@ -233,18 +247,46 @@ class Simulation:
             Type of the output to be returned ('dict', 'list'). Defaults to 'list'
         """
 
-        if return_type == 'list':
+        problem_type = self.problem._getProblemType()
 
-            return list(self.output.values())
+        if problem_type == 'linear' or problem_type == 'nonlinear':
 
-        elif return_type == 'dict':
+            if return_type == 'list':
 
-            output_dict = OrderedDict(sorted(self.output.items(), key=lambda x: str(x[0])))
+                return list(self.output.values())
 
-            output_dict = {str(k):v for (k,v) in output_dict.items()}
+            elif return_type == 'dict':
 
-            return output_dict
+                output_dict = OrderedDict(sorted(self.output.items(), key=lambda x: str(x[0])))
+
+                output_dict = {str(k):v for (k,v) in output_dict.items()}
+
+                return output_dict
+
+            else:
+
+                raise UnexpectedValueError("string ('list', 'dict')")
+
+        elif problem_type == 'differential' or problem_type == 'differential-algebraic':
+
+            domain_ = self.configurations['domain']
+
+            if return_type == 'list':
+
+                return [domain_.values[ind_i].values 
+                        for ind_i in domain_.values.keys()
+                    ]
+
+            elif return_type == 'dict':
+
+                return {ind_i:domain_.values[ind_i].to_dict(orient='list') 
+                        for ind_i in domain_.values.keys()
+                    }
+
+            else:
+
+                raise UnexpectedValueError("string ('list', 'dict')")
 
         else:
 
-            raise UnexpectedValueError("string ('list', 'dict')")
+            raise UnresolvedPanicError("\nProblem type not recognized.\n")

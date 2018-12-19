@@ -109,49 +109,60 @@ def xec():
     print("=>: %s"%(rtrn))
     """
 
-    mod0()
+    #mod0()
 
-    #mod1()
+    mod1()
 
     #prob.addModels([mod0, mod1])
-    prob.addModels(mod0)
-    #prob.addModels(mod1)
+    #prob.addModels(mod0)
+    prob.addModels(mod1)
 
     #prob.createConnection(mod0, mod1, mod0.a, mod1.c)
 
     prob.resolve()
 
-    #prob.setInitialConditions({'t_M1':0.,'u_M1':10.,'v_M1':5.})
+    prob.setInitialConditions({'t_M1':0.,'u_M1':10.,'v_M1':5.})
 
     #print("\n===>%s"%mod1.dom.__dict__)
 
     sim.setProblem(prob)
     #sim.report(prob)
-    '''
+    
+
     sim.runSimulation(initial_time=0., 
                       end_time=16.,
                       is_dynamic=True,
                       domain=mod1.dom,
+                      number_of_time_steps=1000,
                       time_variable_name="t_M1",
                       compile_diff_equations=True,
                       print_output=False,
                       output_headers=["Time","Preys(u)","Predators(v)"],
-                      variable_name_map={"t_M1":"Time", 
-                                         "u_M1":"Preys (u)", 
-                                         "v_M1":"Predators (v)"
+                      variable_name_map={"t_M1":"Time(t)", 
+                                         "u_M1":"Preys(u)", 
+                                         "v_M1":"Predators(v)"
                                         } 
                       )
-    '''
 
-    sim.runSimulation()
+    #sim.runSimulation()
 
     sim.showResults()
 
-    res = sim.getResults('dict')
+    #res = sim.getResults('dict')
 
-    print("\n-> keys:%s     its type:%s"%(list(res.keys()),type(list(res.keys())[0])))
+    #print("\n-> keys:%s     its type:%s"%(list(res.keys()),type(list(res.keys())[0])))
 
-    print("\n===>%s"%sim.getResults('dict'))
+    #print("\n===>%s"%sim.getResults('dict'))
+
+    sim.plotResults(x_data=[sim.domain[('t_M1','Time(t)')]], 
+                    y_data=sim.domain[('t_M1',['Preys(u)','Predators(v)'])], 
+                    save_file='test_plot.png', 
+                    labels=['Preys($u$)','Predators($v$)'], 
+                    x_label=r'Time$\,(s)$', 
+                    y_label=r'Individuals$\,(\#)$',
+                    grid=True,
+                    legend=True
+            )
 
     # s = solvers.createSolver(prob, domain=mod0.dom, D_solver='scipy')
 
