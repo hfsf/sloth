@@ -121,6 +121,8 @@ def xec():
 
     prob.resolve()
 
+    print("~=~> Problem->EquationBlock->VarList: %s"%prob.equation_block._var_list)
+
     prob.setInitialConditions({'t_M1':0.,'u_M1':10.,'v_M1':5.})
 
     #print("\n===>%s"%mod1.dom.__dict__)
@@ -135,7 +137,7 @@ def xec():
                       domain=mod1.dom,
                       number_of_time_steps=1000,
                       time_variable_name="t_M1",
-                      compile_diff_equations=True,
+                      compile_equations=True,
                       print_output=False,
                       output_headers=["Time","Preys(u)","Predators(v)"],
                       variable_name_map={"t_M1":"Time(t)", 

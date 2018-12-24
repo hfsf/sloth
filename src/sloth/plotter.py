@@ -53,6 +53,9 @@ class Plotter:
                              linewidth=linewidth
                         )
 
+
+                    plt.xlim(min(x_data[i].reshape(-1)),max(x_data[i].reshape(-1)))
+
         else:
 
             for i in range(len(x_data)):
@@ -64,6 +67,7 @@ class Plotter:
                              linewidth=linewidth
                         )
 
+                    plt.xlim(min(x_data[i].reshape(-1)),max(x_data[i].reshape(-1)))
         plt.xlabel(x_label)
 
         plt.ylabel(y_label)

@@ -231,13 +231,13 @@ class DSolver(Solver):
 
         self.additional_configurations = additional_configurations
 
-        self.compiled_diff_equations = None
+        self.compiled_equations = None
 
         self.compilation_mechanism = additional_configurations['compilation_mechanism']
 
-        if self.additional_configurations['compile_diff_equations']==True:
+        if self.additional_configurations['compile_equations']==True:
 
-            self.compiled_diff_equations = self._compileDiffSystemIntoFunction()
+            self.compiled_equations = self._compileDiffSystemIntoFunction()
 
     def lookUpForSolver(self):
 
@@ -261,6 +261,7 @@ class DSolver(Solver):
 
         # Concatenate all the variable symbolic maps from the differential equations
 
+        '''
         global_var_map = self.diffSystem[0].elementary_equation_expression[1].variable_map
 
         # Using underscore to ignore list comprehension output
@@ -274,6 +275,9 @@ class DSolver(Solver):
                                    ]
 
         return compiled_diff_equations_
+        '''
+
+        return self.problem.equation_block._getEquationBlockAsFunction('elementary','rhs', self.compilation_mechanism)
 
     def _createMappingFromValues(self, var_names, var_vals):
 
@@ -414,13 +418,15 @@ class DSolver(Solver):
             else:
                 args_ = {}
 
-            if self.additional_configurations['compile_diff_equations'] == True:
+            if self.additional_configurations['compile_equations'] == True:
 
                 global_dict = Y_.copy()
 
                 global_dict.update(args_)
 
-                res = [f_i(*list(global_dict.values())) for f_i in self.compiled_diff_equations]
+                #res = [f_i(*list(global_dict.values())) for f_i in self.compiled_equations]
+
+                res = self.compiled_equations(*list(global_dict.values()))
 
             else:
 
@@ -511,8 +517,6 @@ class DaeSolver(Solver):
 
         self.differential_Eqs, self.algebraic_Eqs = self.setUpDaeSystem()
 
-        self.diffY = self.setUpDiffY()
-
         self.arg_names = arg_names
 
         # Differently from another solvers, solver_mechanism is not initialized because this is done in the solving time (Simulation.runSimulation), where the user can set additional args and configuration args
@@ -523,13 +527,13 @@ class DaeSolver(Solver):
 
         #======================================================================
 
-        self.compiled_diff_equations = None
+        self.compiled_equations = None
 
         self.compilation_mechanism = additional_configurations['compilation_mechanism']
 
-        if self.additional_configurations['compile_diff_equations']==True:
+        if self.additional_configurations['compile_equations']==True:
 
-            self.compiled_diff_equations = self._compileDiffSystemIntoFunction()
+            self.compiled_equations = self._compileEquationsIntoFunctions()
 
         #======================================================================
 
@@ -539,40 +543,21 @@ class DaeSolver(Solver):
         Define the solver mechanism used for solution of the problem, given the name of desired mechanism in the instantiation of current Solver object 
         """
 
-        if self.solver==None or self.solver == 'sympy':
+        if self.solver==None or self.solver == 'IDA':
 
-            return self._sympySolveMechanism
+            return self._idaSolveMechanism
 
-        if self.solver=='scipy':
-
-            return self._scipySolveMechanism
-
-
-    def _compileDiffSystemIntoFunction(self):
+    def _compileEquationsIntoFunctions(self):
 
         """
-        Return the differential equations composing the differential system as an array of numpy functions
+        Return the equations composing the differential algebraic system as an array of numpy functions
 
-        :return compiled_diff_equations_:
-            Array containing each of the differntial equations composing the differential system as numpy functions 
+        :return:
+            Function that will return the result for each of the equations in form of an array 
         :rtype function:
         """
 
-        # Concatenate all the variable symbolic maps from the differential equations
-
-        global_var_map = self.diffSystem[0].elementary_equation_expression[1].variable_map
-
-        # Using underscore to ignore list comprehension output
-
-        _ = [global_var_map.update(eq_i.elementary_equation_expression[1].variable_map) for eq_i in self.diffSystem]
-
-        # Convert each equation to corresponding numpy func using global symbolic map, and store it in the compiled_diff_equations atribute
-
-        compiled_diff_equations_ = [eq_i._convertToFunction(global_var_map, 'rhs', self.compilation_mechanism)
-                                    for eq_i in self.diffSystem
-                                   ]
-
-        return compiled_diff_equations_
+        return self.problem.equation_block._getEquationBlockAsFunction(None,'rhs', self.compilation_mechanism)        
 
     def _createMappingFromValues(self, var_names, var_vals):
 
@@ -615,11 +600,7 @@ class DaeSolver(Solver):
 
         return res
 
-    def _scipySolveMechanism(self):
-
-        return integrate.odeint
-
-    def _sympySolveMechanism(self):
+    def _idaSolveMechanism(self):
 
         pass
 

@@ -7,7 +7,7 @@ Define Connection class. Special type of Equation that are used as source or sin
 """
 
 from .expression_evaluation import EquationNode
-from .error_definitions import UnexpectedValueError, AbsentRequiredObjectError
+from .error_definitions import UnexpectedValueError, AbsentRequiredObjectError, UnresolvedPanicError
 import sympy as sp
 
 class Equation:
@@ -106,6 +106,76 @@ class Equation:
         else:
 
             self.type = None
+
+    def _getSymbolicObject(self, equation_form=None, side='rhs'):
+
+        """
+        Return the symbolic_object atribute of the EquationNode contained in the equation_expression atribute of the current Equation object
+
+        :param str equation_form:
+            Determine the form of the equation, if it is in the residual form (y - a*x - b == 0) or elementary form (y == a*x + b). Defaults to None, for which the equation form defined in the equation_form atribute is used
+
+        :param str side:
+            Determine which side of the equation should be examined to return the symbolic object. Valid only for those defined in the elementary form. Defaults to "rhs"
+
+        :return symbolic_object_:
+            Dictionary containing the mapping beetween the symbolic objects (sympy.Symbol) and their corresponding Quantity objects
+        """
+
+        if equation_form == None:
+
+            equation_form = self.equation_form
+
+        if equation_form == 'residual':
+
+            return self.equation_expression.symbolic_object
+
+        elif equation_form == 'elementary' and side is 'lhs':
+
+            return self.elementary_equation_expression[0].symbolic_object
+
+        elif equation_form == 'elementary' and side is 'rhs':
+
+            return self.elementary_equation_expression[1].symbolic_object
+        
+        else:
+
+            raise UnresolvedPanicError()
+
+    def _getSymbolicMap(self, equation_form=None, side='rhs'):
+
+        """
+        Return the symbolic_map atribute of the EquationNode contained in the equation_expression atribute of the current Equation object
+
+        :param str equation_form:
+            Determine the form of the equation, if it is in the residual form (y - a*x - b == 0) or elementary form (y == a*x + b). Defaults to None, for which the equation form defined in the equation_form atribute is used
+
+        :param str side:
+            Determine which side of the equation should be examined to return the symbolic map. Valid only for those defined in the elementary form. Defaults to "rhs"
+
+        :return symbolic_map_:
+            Dictionary containing the mapping beetween the symbolic objects (sympy.Symbol) and their corresponding Quantity objects
+        """
+
+        if equation_form == None:
+
+            equation_form = self.equation_form
+
+        if equation_form == 'residual':
+
+            return self.equation_expression.symbolic_map
+
+        elif equation_form == 'elementary' and side is 'lhs':
+
+            return self.elementary_equation_expression[0].symbolic_map
+
+        elif equation_form == 'elementary' and side is 'rhs':
+
+            return self.elementary_equation_expression[1].symbolic_map
+        
+        else:
+
+            raise UnresolvedPanicError()
 
     def _sweepObjects(self):
 

@@ -82,7 +82,8 @@ class Simulation:
 
         self.problem = problem
 
-    def runSimulation(self, initial_time=0., 
+    def runSimulation(self, 
+                      initial_time=0., 
                       end_time=None, 
                       linear_solver='sympy', 
                       nonlinear_solver='sympy', 
@@ -90,7 +91,7 @@ class Simulation:
                       differential_algebraic_solver='scipy', 
                       problem_type=None, 
                       is_dynamic=False, 
-                      compile_diff_equations=True, 
+                      compile_equations=True, 
                       domain=None, 
                       time_variable_name='t', 
                       arg_names=[], 
@@ -117,7 +118,7 @@ class Simulation:
 
         else:
 
-            additional_conf = {'compile_diff_equations':compile_diff_equations, 
+            additional_conf = {'compile_equations':compile_equations, 
                                'domain':domain, 
                                'time_variable_name':time_variable_name,
                                'initial_time':initial_time,

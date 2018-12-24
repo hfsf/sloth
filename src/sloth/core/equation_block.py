@@ -2,6 +2,7 @@
 # *coding:utf-8*
 
 import sympy as sp
+from numpy import array as np_array
 from scipy.linalg import solve
 from collections import OrderedDict
 from .variable import Variable
@@ -89,16 +90,63 @@ class EquationBlock:
 
                     var_name_list.append(var_i.name)
 
-
-
         # ===========================================
 
         return var_name_list
 
-    def _getEquationList(self):
+    def _getEquationBlockAsFunction(self, differential_form='residual', side='rhs', compilation_mechanism='numpy'):
+    
+        """
+        Return the Equations that compose the current EquationBlock object into a monolithical function that will return an array of results.
+
+        :param str differential_form:
+            Definition of which form the equations are presented, if in a 'elementary' form (y == a*x +b) or in a 'residual' form (y - a*x - b == 0). Defaults to 'residual'
+
+        :param str side:
+            Side of which the equality of the equation in the elementary form should be examined ('lhs' for left, 'rhs' for right-hand side). 
+
+        :param str compilation_mechanism:
+            Determination of which mechanism to use to compile the equations. Defaults to 'numpy'
+
+        :return:
+            Monolithic function corresponding to all the equations defined for current EquationBlock, retuning an array of results
+        :rtype function:
+        """
+ 
+        # POSSIBLY UNECESSARY SNIPPET. REMOVE IN FURTHER REFACTORIES
+        #===========================================================
+        '''
+        if differential_form == 'residual':
+
+            symbolic_map_ = self.equations[0]._getSymbolicMap('residual')
+
+            _ = [symbolic_map_.update(eq_i._getSymbolicMap('residual')) for eq_i in self.equations]
+
+        if differential_form == 'elementary':
+
+            symbolic_map_ = self.equations[0]._getSymbolicMap('elementary', side)
+
+            _ = [symbolic_map_.update(eq_i._getSymbolicMap('elementary', side)) for eq_i in self.equations]
+        '''
+        #=============================================================
+
+        fun_ = sp.lambdify(self._var_list, 
+                           np_array(self._getEquationList(differential_form, side)),
+                           compilation_mechanism
+                    )
+
+        return fun_
+
+    def _getEquationList(self, differential_form=None, side='rhs'):
 
         """
         Set the list of sympy expressions representing the equation.
+
+     :param str differential_form:
+            Definition of which form the equations are presented, if in a 'elementary' form (y == a*x +b) or in a 'residual' form (y - a*x - b == 0). Defaults to None, for which the declared form of the equation are used.
+
+        :param str side:
+            Side of which the equality of the equation in the elementary form should be examined ('lhs' for left, 'rhs' for right-hand side). 
 
         :return:
             List of the sympy expressions representing each Equation object of the model
@@ -106,7 +154,8 @@ class EquationBlock:
         :rtype list(sympy expresion):
         """
 
-        return [eq_i.equation_expression.symbolic_object for eq_i in self.equations]
+        #return [eq_i.equation_expression.symbolic_object for eq_i in self.equations]
+        return [eq_i._getSymbolicObject(differential_form, side) for eq_i in self.equations]
 
     def __call__(self):
 

@@ -124,7 +124,11 @@ def test_simulation_properties(mod, prob, sim):
     assert sim.problem == prob
 
 
-def test_simulation_result(mod, prob, sim):
+#Test for either compile differential equations and direct symbolic evaluation
+@pytest.mark.parametrize("compile_equations",[True,False])
+
+
+def test_simulation_result(mod, prob, sim, compile_equations):
 
     prob.addModels(mod)
 
@@ -139,8 +143,8 @@ def test_simulation_result(mod, prob, sim):
                       is_dynamic=True,
                       domain=mod.dom,
                       time_variable_name="t_D0",
-                      compile_diff_equations=True,
                       print_output=False,
+                      compile_equations=compile_equations,
                       output_headers=["Time","Preys(u)","Predators(v)"],
                       variable_name_map={"t_D0":"Time(t)", 
                                          "u_D0":"Preys(u)", 
