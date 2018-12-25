@@ -3,9 +3,9 @@ sympy
 prettytable
 pytest>=3.8.0
 seaborn
-cython
+cython>=0.18
 matplotlib
-assimulo
+assimulo==2.9
 numexpr
 mpmath
 scipy>=1.1.0
