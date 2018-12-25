@@ -1,9 +1,10 @@
+cython>=0.18
+Cython>=0.18
 numpy>=1.13.3
 sympy
 prettytable
 pytest>=3.8.0
 seaborn
-cython>=0.18
 matplotlib
 assimulo==2.9
 numexpr
