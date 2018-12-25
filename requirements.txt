@@ -1,5 +1,4 @@
-cython>=0.18
-Cython>=0.18
+cython
 numpy>=1.13.3
 sympy
 prettytable
