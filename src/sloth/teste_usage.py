@@ -14,23 +14,39 @@ class modelTest0(model.Model):
 
         super().__init__(name, description)
 
-        self.a =  self.createVariable("a", kg_s, "A", is_exposed=True, type='output')
-        self.b =  self.createVariable("b", kg_s, "B")
-        self.c =  self.createVariable("c", kg, "C")
-        self.d =  self.createConstant("d", s**-1, "D")
-        self.d.setValue(0.7)
+        self.y1 =  self.createVariable("y1", dimless, "y1")
+        self.y2 =  self.createVariable("y2", dimless, "y2")
+        self.y3 =  self.createVariable("y3", dimless, "y3")
+        self.y4 =  self.createVariable("y4", dimless, "y4")
+        self.y5 =  self.createVariable("y5", dimless, "y5")
+        self.t =  self.createVariable("t", dimless, "t")
+
+        self.dom = Domain("domain",dimless,self.t,"generic domain")
+
+        self.y1.distributeOnDomain(self.dom)
+        self.y2.distributeOnDomain(self.dom)
+        self.y3.distributeOnDomain(self.dom)
+        self.y4.distributeOnDomain(self.dom)
+        self.y5.distributeOnDomain(self.dom)
+
 
     def DeclareEquations(self):
 
-        expr1 = self.a() + self.b() - 100.
+        expr1 = self.y1.Diff(self.t) - self.y3()
 
-        expr2 = self.c()*self.d() + self.a() - 4
+        expr2 = self.y2.Diff(self.t) - self.y4()
 
-        expr3 = (self.c()*self.d())**2 - self.a()*self.b()
+        expr3 = self.y3.Diff(self.t) + self.y5()*self.y1()        
 
-        self.eq1 = self.createEquation("eq1", "Equation 1", expr1)
-        self.eq2 = self.createEquation("eq2", "Equation 2", expr2)
-        self.eq3 = self.createEquation("eq3", "Equation 3", expr3)
+        expr4 = self.y4.Diff(self.t) + self.y5()*self.y2() + 9.82
+
+        expr5 = self.y3()**2 + self.y4()**2 - self.y5()*(self.y1()**2+self.y2()**2)-9.82*self.y2()
+
+        self.eq1 = self.createEquation("eq1", "Eq.1", expr1)
+        self.eq2 = self.createEquation("eq2", "Eq.2", expr2)
+        self.eq3 = self.createEquation("eq3", "Eq.3", expr3)
+        self.eq4 = self.createEquation("eq4", "Eq.4", expr4)
+        self.eq5 = self.createEquation("eq5", "Eq.5", expr5)
 
 class modelTest1(model.Model):
 
@@ -109,53 +125,74 @@ def xec():
     print("=>: %s"%(rtrn))
     """
 
-    #mod0()
+    mod0()
 
-    mod1()
+    #mod1()
 
     #prob.addModels([mod0, mod1])
-    #prob.addModels(mod0)
-    prob.addModels(mod1)
-
-    #prob.createConnection(mod0, mod1, mod0.a, mod1.c)
+    prob.addModels(mod0)
+    #prob.addModels(mod1)
 
     prob.resolve()
 
-    print("~=~> Problem->EquationBlock->VarList: %s"%prob.equation_block._var_list)
+    analist = analysis.Analysis()
+    print(analist.problemReport(prob))
 
-    prob.setInitialConditions({'t_M1':0.,'u_M1':10.,'v_M1':5.})
+    #prob.createConnection(mod0, mod1, mod0.a, mod1.c)
+
+    #prob.equation_block._getMapForRewriteSystemAsResidual()
+
+    prob.setInitialConditions({'y1_M0_d':0.,
+                               'y2_M0_d':0.,
+                               'y3_M0_d':0.,
+                               'y4_M0_d':-9.82,
+                               'y5_M0_d':0.,
+                               'y5_M0':5.,
+                               'y4_M0':0.,
+                               'y3_M0':0.,
+                               'y2_M0':0.,
+                               'y1_M0':1.,
+                               't_M0':0.     
+                            }
+                        )
 
     #print("\n===>%s"%mod1.dom.__dict__)
 
     sim.setProblem(prob)
     #sim.report(prob)
     
+    sss=input("\n\n Press any key to continue ...")
 
     sim.runSimulation(initial_time=0., 
-                      end_time=16.,
+                      end_time=5.,
                       is_dynamic=True,
-                      domain=mod1.dom,
+                      domain=mod0.dom,
                       number_of_time_steps=1000,
-                      time_variable_name="t_M1",
+                      time_variable_name="t_M0",
                       compile_equations=True,
-                      print_output=False,
-                      output_headers=["Time","Preys(u)","Predators(v)"],
-                      variable_name_map={"t_M1":"Time(t)", 
-                                         "u_M1":"Preys(u)", 
-                                         "v_M1":"Predators(v)"
-                                        } 
+                      print_output=True,
+                      output_headers=["Time","y1","y2","y3","y4","y5"]#,
+                      #variable_name_map={"t_M1":"Time(t)", 
+                      #                   "u_M1":"Preys(u)", 
+                      #                   "v_M1":"Predators(v)"
+                      #                  } 
                       )
 
+    #print("\n===>%s"%mod0.dom.values)
+
+    """
     #sim.runSimulation()
 
-    sim.showResults()
+    #sim.showResults()
 
     #res = sim.getResults('dict')
 
     #print("\n-> keys:%s     its type:%s"%(list(res.keys()),type(list(res.keys())[0])))
 
     #print("\n===>%s"%sim.getResults('dict'))
+    """
 
+    """
     sim.plotResults(x_data=[sim.domain[('t_M1','Time(t)')]], 
                     y_data=sim.domain[('t_M1',['Preys(u)','Predators(v)'])], 
                     save_file='test_plot.png', 
@@ -165,6 +202,7 @@ def xec():
                     grid=True,
                     legend=True
             )
+    """
 
     # s = solvers.createSolver(prob, domain=mod0.dom, D_solver='scipy')
 

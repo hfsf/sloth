@@ -88,14 +88,15 @@ class Simulation:
                       linear_solver='sympy', 
                       nonlinear_solver='sympy', 
                       differential_solver='scipy', 
-                      differential_algebraic_solver='scipy', 
+                      differential_algebraic_solver='IDA', 
                       problem_type=None, 
                       is_dynamic=False, 
                       compile_equations=True, 
                       domain=None, 
                       time_variable_name='t', 
                       arg_names=[], 
-                      args=[], 
+                      args=[],
+                      verbosity_solver=0, 
                       number_of_time_steps=100, 
                       configuration_args={}, 
                       print_output=False, 
@@ -130,6 +131,7 @@ class Simulation:
                                'differential_solver':differential_solver,
                                'differential_algebraic_solver':differential_algebraic_solver,
                                'args':args,
+                               'verbosity_solver':verbosity_solver,
                                'number_of_time_steps':number_of_time_steps,
                                'configuration_args':configuration_args,
                                'print_output':print_output,
@@ -157,8 +159,7 @@ class Simulation:
             solver_mechanism = solvers._createSolver(self.problem, additional_conf)     
         elif problem_type == "differential-algebraic":
 
-            pass
-        
+            solver_mechanism = solvers._createSolver(self.problem, additional_conf)             
         else:
 
             raise UnexpectedValueError("EquationBlock")
@@ -170,9 +171,11 @@ class Simulation:
 
         out = solver_mechanism.solve(additional_conf)
 
+        '''
         if print_output==True and problem_type != 'differential':
 
           print("\n ->{}".format(out))
+        '''
 
         self.output = out
 

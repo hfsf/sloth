@@ -188,6 +188,20 @@ class Equation:
 
         self.objects_declared = { **self.equation_expression.symbolic_map }
 
+    def _convertToResidualForm(self):
+
+        """
+        Convert differential equations from the elementary form to the residual form (eg: u' == u + v  becomes u' -(u+v) )
+        """
+
+        self._getTypeFromExpression()
+
+        if self.type == "differential" and self.equation_form != "residual":
+
+            self.equation_expression = self.elementary_equation_expression[0] - self.elementary_equation_expression[1]
+
+            self.equation_form = "residual"
+
     def _convertToFunction(self, symbolic_map=None, side=None, compilation_mechanism='numpy'):
 
         """

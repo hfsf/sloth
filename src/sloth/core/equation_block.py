@@ -13,13 +13,16 @@ class EquationBlock:
     Define EquationBlock. Act as a container for Equation objects and provides mechanisms for transforming them into matrix form. 
     """
 
-    def __init__(self, equations, owner_model=None):
+    def __init__(self, equations, variable_dict, owner_model=None):
 
         """
         Instantiate EquationBlock
 
         :ivar list(Equations) equations:
             List containing the Equation objects for the EquationBlock. Defaults to the whole set of equations from the owner model.
+
+        :ivar dict variable_dict:
+            Dictionary containing all the Variable objects present in the EquationBlock, provided by the Problem instance that instantiate current EquationBlock.
 
         :ivar Model owner_model:
             Model for which the EquationBlock is defined. Defaults to None.
@@ -29,9 +32,11 @@ class EquationBlock:
 
         self.equations = equations
 
+        self.variable_dict = variable_dict
+
         self._var_list = []
 
-        self._var_dict = {}
+        #self._var_dict = variable_dict
 
         self._equations_list = []
 
@@ -59,6 +64,60 @@ class EquationBlock:
 
         self._equation_groups['differential'] = eq_diff
 
+    def _convertDifferentialEquationsToResidualForm(self):
+
+        """
+        Convert the differential equations present in the current EquationBlock (._equation_groups['differential']) to the residual form
+        """
+
+        _ = [eq_i._convertToResidualForm() for eq_i in self._equation_groups['differential'] if eq_i.equation_form!='residual']
+
+
+    def _getMapForRewriteSystemAsResidual(self):
+
+        """
+        Return dictionaries mapping the differential terms and ydot nomenclature (eg:yd[0]) and variables and y nomenclature (eg:y[0]), used for residual solvers
+
+        :return:
+            Two dictionaries that map between the differential terms and variables used in the equations with the residual nomenclature (yd,y)
+
+        :rtype dict yd_map,y_map:
+        """
+
+        diff_list = self._getDiffList()
+
+        yd_list = ["yd[{}]".format(i) for (i,_) in enumerate(diff_list)]
+
+        var_list = self._var_list
+
+        y_list = ["y[{}]".format(i) for (i,_) in enumerate(var_list)]
+
+        yd_map = {k:v for (k,v) in zip(diff_list,yd_list)}
+
+        y_map = {k:v for (k,v) in zip(var_list,y_list)} 
+
+        return yd_map, y_map
+
+    def _getDiffList(self):
+
+        """
+        Set the list for each of the occurences of Derivative objects that appear in the equations of the model
+
+        :return:
+            List of derivatives
+        :rtype list(str) diff_list:
+        """
+
+        diff_list = []
+
+        for eqi in self._equation_groups['differential']:
+
+            eq = eqi._getSymbolicObject('residual','rhs')
+
+            _ = [diff_list.append(abs(i).args[0]) for i in eq.args if 'Derivative' in sp.srepr(i)]
+
+        return diff_list
+
     def _getVarList(self):
 
         """
@@ -66,12 +125,13 @@ class EquationBlock:
         
         :return:
             List of variable names
-        :rtype list(Variable):
+        :rtype list(str):
         
         # TODO
             * Optimize code snippet marked below
         """
 
+        """
         # ========== NEEDS TO BE OPTIMIZED ==========
 
         var_name_list = []
@@ -91,6 +151,9 @@ class EquationBlock:
                     var_name_list.append(var_i.name)
 
         # ===========================================
+        """
+
+        var_name_list = list(self.variable_dict.keys())
 
         return var_name_list
 
@@ -130,12 +193,50 @@ class EquationBlock:
         '''
         #=============================================================
 
-        fun_ = sp.lambdify(self._var_list, 
-                           np_array(self._getEquationList(differential_form, side)),
-                           compilation_mechanism
-                    )
+        if differential_form == 'elementary':
 
-        return fun_
+            fun_ = sp.lambdify(self._var_list, 
+                               np_array(self._getEquationList(differential_form,                           side)
+                                    ),
+                               compilation_mechanism
+                        )
+
+            return fun_
+
+        if differential_form == 'residual':
+
+            yd_map, y_map = self._getMapForRewriteSystemAsResidual()
+
+            # Add y_map dict to yd_map
+
+            yd_map.update(y_map)
+
+            original_eqs = self._getEquationList(differential_form, side)
+
+            rewritten_eqs = [eq_i.subs(yd_map) for eq_i in original_eqs]
+            
+            _fun_ = sp.lambdify(["t","y","yd"], 
+                               np_array(rewritten_eqs),
+                               compilation_mechanism
+                        )
+
+            #Provide result as numpy.array
+
+            fun_ = lambda t,y,yd: np_array( _fun_(t,y,yd) )
+
+            return fun_
+
+    def _getBooleanDiffFlagsForEquations(self):
+
+        """
+        Return an boolean list of if each of the Equation objects contained in the current EquationBlock are differential
+
+        :return:
+            List of boolean flags indicating which equations are boolean
+        :rtype list(bool): 
+        """
+
+        return [float(i.type == 'differential') for i in self.equations]
 
     def _getEquationList(self, differential_form=None, side='rhs'):
 

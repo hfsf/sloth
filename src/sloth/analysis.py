@@ -119,10 +119,12 @@ class Analysis:
 
         tabs = ''
 
+        tabs += "Problem: {} ({})".format(problem.name,problem._getProblemType())
+
         for mod_i in problem.models:
 
 
-            tabs += "Model: {}\n".format(mod_i) + str(self.modelReport(problem.models[mod_i]))+'\n'
+            tabs += "\nModel: {}\n".format(mod_i) + str(self.modelReport(problem.models[mod_i]))+'\n'
 
         return(tabs)
 

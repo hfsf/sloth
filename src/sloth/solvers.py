@@ -10,7 +10,9 @@ Define solver mechanisms
 import numpy as np
 from scipy.linalg import solve as scp_solve
 import sympy as sp
-import assimulo
+from assimulo.solvers import IDA
+from assimulo.problem import Implicit_Problem
+import pylab as P
 import scipy.integrate as integrate
 from collections import OrderedDict
 from .core.error_definitions import AbsentRequiredObjectError, UnexpectedValueError, UnresolvedPanicError
@@ -58,7 +60,7 @@ def _createSolver(problem, additional_configurations):
 
     elif problem_type == "differential-algebraic":
 
-        pass
+        return DaeSolver(problem, solver=differential_algebraic_solver, additional_configurations=additional_configurations)
 
     else:
 
@@ -515,13 +517,9 @@ class DaeSolver(Solver):
 
             arg_names.append(time_variable_name)
 
-        self.differential_Eqs, self.algebraic_Eqs = self.setUpDaeSystem()
+        self.differential_Eqs, self.algebraic_Eqs = self._setUpDaeSystem()
 
         self.arg_names = arg_names
-
-        # Differently from another solvers, solver_mechanism is not initialized because this is done in the solving time (Simulation.runSimulation), where the user can set additional args and configuration args
-
-        self.solver_mechanism =  None
 
         self.additional_configurations = additional_configurations
 
@@ -530,22 +528,10 @@ class DaeSolver(Solver):
         self.compiled_equations = None
 
         self.compilation_mechanism = additional_configurations['compilation_mechanism']
-
-        if self.additional_configurations['compile_equations']==True:
-
-            self.compiled_equations = self._compileEquationsIntoFunctions()
+        
+        self.compiled_equations = self._compileEquationsIntoFunctions()
 
         #======================================================================
-
-    def lookUpForSolver(self):
-
-        """
-        Define the solver mechanism used for solution of the problem, given the name of desired mechanism in the instantiation of current Solver object 
-        """
-
-        if self.solver==None or self.solver == 'IDA':
-
-            return self._idaSolveMechanism
 
     def _compileEquationsIntoFunctions(self):
 
@@ -557,7 +543,7 @@ class DaeSolver(Solver):
         :rtype function:
         """
 
-        return self.problem.equation_block._getEquationBlockAsFunction(None,'rhs', self.compilation_mechanism)        
+        return self.problem.equation_block._getEquationBlockAsFunction('residual','rhs', self.compilation_mechanism)        
 
     def _createMappingFromValues(self, var_names, var_vals):
 
@@ -579,62 +565,7 @@ class DaeSolver(Solver):
 
         return mapped_dict
 
-    def _evaluateDiffYfromEquations(self, y_dict, args_dict):
-
-        """
-        Evaluate differential vector from the differential system defined symbolically, given the input values for the variables.
-
-        :param dict y_dict:
-            Dictionary containing the values of the variables used in the differential system of equations
-        :param dict args_dict:
-            Dictionary containing additional args passed to the solver, defined in the dictionary form likewise the for the variables.
-
-        :return res:
-            Values evaluated for the differential equations forming the differential system
-        :rtype list:
-        """
-
-        y_map_ = {**y_dict, **args_dict}
-
-        res = [eq_i.eval(y_map_, side='rhs') for eq_i in self.diffSystem]
-
-        return res
-
-    def _idaSolveMechanism(self):
-
-        pass
-
-    def _getArgsValuesByNames(self):
-
-        """
-        Given the name of the arguments, return a dictionary containing their names and values, retrieved from the Problem for the current Solver
-        """
-
-        pass
-
-    def _getDiffYinOrder(self):
-
-        y_name = []
-
-        for eq_i in self.diffSystem:
-
-            """
-            print("type=%s"%(type(eq_i.elementary_equation_expression[0])))
-            print("type2=%s"%(type(eq_i.elementary_equation_expression[0].symbolic_object)))            
-            print("type3=%s"%(type(eq_i.elementary_equation_expression[0].symbolic_object.args)))
-            print("\neq=%s\nexpression=%s\n expression[0]=%s, args=%s and %s" % 
-                (eq_i,
-                 eq_i.elementary_equation_expression,
-                 eq_i.elementary_equation_expression[0],
-                 eq_i.elementary_equation_expression[0].args, 
-                 eq_i.elementary_equation_expression[1].args)
-                )
-            """
-            y_name.append(str(eq_i.elementary_equation_expression[0].symbolic_object.args[0]))
-
-        return y_name
-
-    def setUpDaeSystem(self):
+    def _setUpDaeSystem(self):
 
         """
         Set up the DAE system
@@ -652,34 +583,7 @@ class DaeSolver(Solver):
 
         return diff_eqs, lin_eqs.append(nlin_eqs)
 
-    def setUpDiffY(self):
-
-        """
-        Set up the differential variables
-
-        :return:
-            Dict of variables used in the differential equations
-        :rtype list(Variables):
-        """
-
-        # ========== NEEDS TO BE OPTIMIZED ==========
-        # diff_eqs_ = self.setUpDiffSystem()
-
-        Y_= OrderedDict({})
-
-        for eq_i in self.differential_Eqs:
-
-            s_map_dict = eq_i.elementary_equation_expression[0].symbolic_map 
-
-            Y_.update(s_map_dict)
-
-        #============================================
-
-        return Y_
-
-    def solve(self, conf_args={}): 
-
-    # args_={}, conf_args_={}, initial_time=0., end_time=None, number_of_time_steps = None):
+    def solve(self, conf_args={}):
 
         initial_time = conf_args['initial_time']
 
@@ -691,58 +595,63 @@ class DaeSolver(Solver):
 
         conf_args_ = conf_args['configuration_args']
 
-        def diffYinterfaceForSolver(Y, t, args=()):
-
-            Y_ = self._createMappingFromValues(self.diffY.keys(), Y)
-
-            if len(args)>0:
-                args_ = self._createMappingFromValues(self.args_names, args)
-            else:
-                args_ = {}
-
-            if self.additional_configurations['compile_diff_equations'] == True:
-
-                global_dict = Y_.copy()
-
-                global_dict.update(args_)
-
-                res = [f_i(*list(global_dict.values())) for f_i in self.compiled_diff_equations]
-
-            else:
-
-                res = self._evaluateDiffYfromEquations(Y_, args_)
-
-            return res
-
-        initial_conditions = self.problem.initial_conditions
-
-        #Set solver, determine initial conditions, and execute solver to solve for the defined interval, store results in the domain, returning map for resultant variables
-
-        self.solver_mechanism = self.lookUpForSolver()
-
-        solver = self.solver_mechanism()
-
-        # Retrive initial conditions in the right order
-
-        Y_names = self._getDiffYinOrder()
-
-        Y_0 = [initial_conditions[var_i] for var_i in Y_names]
+        initial_conditions = self.problem.initial_conditions        
 
         if number_of_time_steps == None and self.end_time!= None:
 
             number_of_time_steps = int(2*(end_time - initial_time))
 
-        time_points = np.linspace(initial_time, end_time, number_of_time_steps+1)
+        time_points = np.linspace(initial_time, end_time, number_of_time_steps+1).tolist()
 
-        Y = solver( diffYinterfaceForSolver,
-                    Y_0,
-                    time_points, 
-                    **conf_args_
-                   )
+        ydmap,ymap = self.problem.equation_block._getMapForRewriteSystemAsResidual()
 
-        # print("\ntime_points.T shape=%s\nY.T shape=%s"%(time_points.reshape(1,-1).T.shape,Y.T.shape))
+        y_0 = [initial_conditions[var_i] for var_i in ymap.keys()]
 
-        to_register_ = np.hstack((time_points.reshape(-1,1), Y))
+        #Adopted nomenclature for search for initial conditions defined in the Problem object for differential expressions is original_name+'_d' (eg: u_d)
+
+        yd_0 = [initial_conditions[str(diff_i.args[0])+'_d'] for diff_i in ydmap.keys()]
+
+        if self.solver == None or self.solver == 'IDA':
+
+            yd_0.append(0.)
+
+            # ========= SET SOLVER INSTANCES ==============
+
+
+            problem_instance = Implicit_Problem(res=self.compiled_equations,
+                                                y0=y_0,
+                                                yd0= yd_0,
+                                                t0=initial_time,
+                                                name='IDA'
+                                        )
+
+            problem_instance.algvar = self.problem.equation_block._getBooleanDiffFlagsForEquations()
+
+            solver_instance = IDA(problem_instance)
+
+            #solver_instance.suppress_alg = True
+
+            #solver_instance.atol=???
+
+            #========== SOLVE THE PROBLEM =================
+
+            f_0_ = self.compiled_equations
+
+            f_0 = self.compiled_equations(initial_time,y_0, yd_0)
+
+            #print("\n\n y_0 = %s \n yd_0 = %s \n n = %s \n f_0? = %s \n f(t0,y0,yd0) = %s"%(y_0, yd_0, number_of_time_steps, f_0_, f_0))
+
+            solver_instance.make_consistent('IDA_YA_YDP_INIT')
+
+            verbosity_levels={0:50, 1:30, 2:10}
+
+            solver_instance.verbosity = verbosity_levels[conf_args['verbosity_solver']]
+
+            Time, Y, Yd = solver_instance.simulate(end_time, 0, time_points)
+
+            #================================================
+
+        to_register_ = np.hstack((np.array(time_points).reshape(-1,1), Y))
 
         if self.additional_configurations['print_output'] == True:
 
@@ -768,4 +677,4 @@ class DaeSolver(Solver):
 
         # ================================================
             
-        return time_points,Y
+        return Time, Y

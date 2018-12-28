@@ -7,6 +7,7 @@ Define Problem class. Unite several Model classes through Connections, forming o
 from .core.error_definitions import ExposedVariableError
 from .core.equation_block import EquationBlock
 from collections import OrderedDict
+from .core.variable import Variable
 import numpy as np
 
 class Problem:
@@ -40,6 +41,8 @@ class Problem:
         self.equation_block = None
 
         self.initial_conditions = {}
+
+        self.variable_dict = OrderedDict({})
 
     def setInitialConditions(self, condition):
 
@@ -101,15 +104,37 @@ class Problem:
 
         self._equation_list = []
 
+        _var_dict = {}
+
+        _var_list = []
+
+        _var_name_list = []
+
         for model_i in list(self.models.values()):
 
             for eq_i in list(model_i.equations.values()):
 
                 self._equation_list.append(eq_i)
 
+                for var_i in list(eq_i.objects_declared.values()):
+
+                    if var_i not in _var_list and isinstance(var_i, Variable):
+
+                        _var_dict[var_i.name] = var_i
+
+                        _var_list.append(var_i)
+
+                        _var_name_list.append(var_i.name)
+
         #=================================================================
 
-        self.equation_block = EquationBlock(equations=self._equation_list)
+        #Remove unused variables from self.variable_dict
+
+        variable_dict_ = OrderedDict({})
+
+        _ = [variable_dict_.update({k:self.variable_dict[k]}) for k in self.variable_dict.keys() if k in _var_name_list]
+
+        self.equation_block = EquationBlock(equations=self._equation_list, variable_dict=variable_dict_)
 
     def createConnection(self, model_1, model_2, output_var, input_var, expr=None):
 
@@ -146,13 +171,17 @@ class Problem:
 
             # A list of models were supplied
 
-            self.models = OrderedDict( (modx.name,modx) for modx in model_list )
+            #self.models = OrderedDict( (modx.name,modx) for modx in model_list )
+
+            _ = [self.addModels(modx) for modx in model_list]
 
         else:
 
             # A single model was supplied
 
             self.models[model_list.name] = model_list
+
+            self.variable_dict.update(model_list.variables)
 
     def resolve(self):
 
