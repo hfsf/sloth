@@ -5,7 +5,7 @@ python:
 cache: pip
 dist: xenial
 before_install:
-  - sudo apt-get install gfortran gcc ipython3  
+  - sudo apt-get install gfortran gcc ipython ipython3  
   - "pip install -U pip"
   - "python setup.py install"
 install: 
