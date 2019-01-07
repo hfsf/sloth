@@ -7,6 +7,7 @@ dist: xenial
 before_install:
   - sudo apt-get install gfortran gcc ipython ipython3  
   - "pip install -U pip"
+  - "pip install assimulo"  
   - "python setup.py install"
 install: 
   - pip install -r requirements.txt

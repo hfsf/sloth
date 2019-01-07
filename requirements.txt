@@ -5,9 +5,10 @@ prettytable
 pytest>=3.8.0
 seaborn
 matplotlib
-assimulo
+assimulo==2.9
 pandas
 numexpr
 mpmath
+PyGMO
 scipy>=1.1.0
 sphinx_rtd_theme
