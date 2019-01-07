@@ -8,6 +8,7 @@ from .core.error_definitions import ExposedVariableError
 from .core.equation_block import EquationBlock
 from collections import OrderedDict
 from .core.variable import Variable
+from .core.parameter import Parameter
 import numpy as np
 
 class Problem:
@@ -43,6 +44,8 @@ class Problem:
         self.initial_conditions = {}
 
         self.variable_dict = OrderedDict({})
+
+        self.parameter_dict = OrderedDict({})
 
     def setInitialConditions(self, condition):
 
@@ -110,31 +113,50 @@ class Problem:
 
         _var_name_list = []
 
+        _param_dict = {}
+
+        _param_list = []
+
+        _param_name_list = []
+
+
         for model_i in list(self.models.values()):
 
             for eq_i in list(model_i.equations.values()):
 
                 self._equation_list.append(eq_i)
 
-                for var_i in list(eq_i.objects_declared.values()):
+                for obj_i in list(eq_i.objects_declared.values()):
 
-                    if var_i not in _var_list and isinstance(var_i, Variable):
+                    if obj_i not in _var_list and isinstance(obj_i, Variable):
 
-                        _var_dict[var_i.name] = var_i
+                        _var_dict[obj_i.name] = obj_i
 
-                        _var_list.append(var_i)
+                        _var_list.append(obj_i)
 
-                        _var_name_list.append(var_i.name)
+                        _var_name_list.append(obj_i.name)
+
+                    elif obj_i not in _param_list and isinstance(obj_i, Parameter):
+
+                        _param_dict[obj_i.name] = obj_i
+
+                        _param_list.append(obj_i)
+
+                        _param_name_list.append(obj_i.name)
 
         #=================================================================
 
-        #Remove unused variables from self.variable_dict
+        #Remove unused variables from self.variable_dict and self.param_dict
 
         variable_dict_ = OrderedDict({})
 
         _ = [variable_dict_.update({k:self.variable_dict[k]}) for k in self.variable_dict.keys() if k in _var_name_list]
 
-        self.equation_block = EquationBlock(equations=self._equation_list, variable_dict=variable_dict_)
+        parameter_dict_ = OrderedDict({})
+
+        _ = [parameter_dict_.update({k:self.parameter_dict[k]}) for k in self.parameter_dict.keys() if k in _param_name_list]
+
+        self.equation_block = EquationBlock(equations=self._equation_list, variable_dict=variable_dict_, parameter_dict=parameter_dict_)
 
     def createConnection(self, model_1, model_2, output_var, input_var, expr=None):
 
@@ -157,6 +179,20 @@ class Problem:
         else:
 
             raise ExposedVariableError(model_1.exposed_vars['output'], model_2.exposed_vars['input'], output_var, input_var) 
+
+    def _reloadModels(self, models_name=None):
+
+        """
+        Reload defined models, redefining their equations
+        """
+
+        if models_name is None:
+
+            _ = [mod_i() for mod_i in self.models.values()]
+
+        else:
+
+            _ = [mod_i() for mod_i in self.models.values() if mod_i.name in models_name]
 
     def addModels(self, model_list):
 
@@ -183,12 +219,16 @@ class Problem:
 
             self.variable_dict.update(model_list.variables)
 
+            self.parameter_dict.update(model_list.parameters)
+
     def resolve(self):
 
         """
         Resolve current Problem object, builing its EquationBlock object and resolving it
         """ 
     
+        self._reloadModels()
+
         self._buildEquationBlock()
 
         self.equation_block()

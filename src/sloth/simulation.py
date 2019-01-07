@@ -9,10 +9,11 @@ from .problem import Problem
 from .model import Model
 from . import solvers
 from . import analysis
-from .core.error_definitions import UnexpectedValueError, UnresolvedPanicError
+from .core.error_definitions import UnexpectedValueError, UnresolvedPanicError, AbsentRequiredObjectError
 import prettytable
 import numpy as np
 from collections import OrderedDict
+import json
 
 class Simulation:
 
@@ -82,38 +83,72 @@ class Simulation:
 
         self.problem = problem
 
-    def runSimulation(self, 
-                      initial_time=0., 
-                      end_time=None, 
-                      linear_solver='sympy', 
-                      nonlinear_solver='sympy', 
-                      differential_solver='scipy', 
-                      differential_algebraic_solver='IDA', 
-                      problem_type=None, 
-                      is_dynamic=False, 
-                      compile_equations=True, 
-                      domain=None, 
-                      time_variable_name='t', 
-                      arg_names=[], 
-                      args=[],
-                      verbosity_solver=0, 
-                      number_of_time_steps=100, 
-                      configuration_args={}, 
-                      print_output=False, 
-                      output_headers=None,
-                      variable_name_map={}, 
-                      compilation_mechanism="numpy",
-                      definition_dict=None
-                      ):
+    def setConfigurations(self, configurations=None, configurations_file=None):
 
         """
-        Run the current simulation using the defined parameters
+        Set the configurations for the current simulation
+        
+        :param dict configurations:
+            Configurations for the current simulation
+
+        :param str configurations_file:
+            File name for the configurations for the current simulation
+        """
+
+        if configurations is None and configurations_file is None:
+
+            raise AbsentRequiredObjectError("(Configurations or Configurations file)")
+
+        elif configurations is not None:
+
+            self.configurations = configurations
+
+        elif configurations_file is not None:
+
+            with open(configurations_file, "r") as read_file:
+
+                self.configurations = json.load(read_file)            
+
+
+    def setConfigurations(self, 
+                          initial_time=0., 
+                          end_time=None, 
+                          linear_solver='sympy', 
+                          nonlinear_solver='sympy', 
+                          differential_solver='scipy', 
+                          differential_algebraic_solver='IDA', 
+                          problem_type=None, 
+                          is_dynamic=False, 
+                          compile_equations=True, 
+                          domain=None, 
+                          time_variable_name='t', 
+                          arg_names=[], 
+                          args=[],
+                          verbosity_solver=0, 
+                          number_of_time_steps=100, 
+                          configuration_args={}, 
+                          print_output=False, 
+                          output_headers=None,
+                          variable_name_map={}, 
+                          compilation_mechanism="numpy",
+                          definition_dict=None,
+                          configurations_file=None,
+                          number_parameters_to_optimize=0):
+
+        """
+        Set the configurations of the current simulation using the defined parameters
 
         :ivar dict definition_dict:
-            Dictionary containing configuratios for override all Simulation.runSimulation arguments with those defined in it. Tipically used for performing consecutive simulations (eg: optimization) or using predefined simulation configurations
+            Dictionary containing configurations for override all Simulation.runSimulation arguments with those defined in it. Tipically used for performing consecutive simulations (eg: optimization) or using predefined simulation configurations
         """
 
-        if definition_dict is not None and isinstance(definition_dict, dict):
+        if configurations_file is not None:
+
+            with open(configurations_file, "r") as read_file:
+
+                additional_conf = json.load(read_file)
+
+        elif definition_dict is not None and isinstance(definition_dict, dict):
 
             additional_conf = definition_dict
 
@@ -130,6 +165,7 @@ class Simulation:
                                'nonlinear_solver':nonlinear_solver,
                                'differential_solver':differential_solver,
                                'differential_algebraic_solver':differential_algebraic_solver,
+                               'problem_type':problem_type,
                                'args':args,
                                'verbosity_solver':verbosity_solver,
                                'number_of_time_steps':number_of_time_steps,
@@ -137,10 +173,23 @@ class Simulation:
                                'print_output':print_output,
                                'output_headers':output_headers,
                                'variable_name_map':variable_name_map,
-                               'compilation_mechanism':compilation_mechanism
+                               'compilation_mechanism':compilation_mechanism,
+                               'number_parameters_to_optimize':number_parameters_to_optimize
                                }
 
+        #print("additional_conf is: %s"%additional_conf)
+
+        if number_parameters_to_optimize != 0 and additional_conf['number_parameters_to_optimize'] != number_parameters_to_optimize:
+
+            additional_conf['number_parameters_to_optimize'] = number_parameters_to_optimize
+
         self.configurations = additional_conf
+
+    def runSimulation(self):
+
+        problem_type = self.configurations['problem_type']
+
+        number_parameters_to_optimize = self.configurations['number_parameters_to_optimize']
 
         if problem_type == None:
 
@@ -148,28 +197,28 @@ class Simulation:
 
         if problem_type == "linear":
 
-            solver_mechanism = solvers._createSolver(self.problem, additional_conf)
+            solver_mechanism = solvers._createSolver(self.problem, self.configurations)
 
         elif problem_type == "nonlinear":
 
-            solver_mechanism = solvers._createSolver(self.problem, additional_conf)
+            solver_mechanism = solvers._createSolver(self.problem, self.configurations)
         
         elif problem_type == "differential":
 
-            solver_mechanism = solvers._createSolver(self.problem, additional_conf)     
+            solver_mechanism = solvers._createSolver(self.problem, self.configurations)     
         elif problem_type == "differential-algebraic":
 
-            solver_mechanism = solvers._createSolver(self.problem, additional_conf)             
+            solver_mechanism = solvers._createSolver(self.problem, self.configurations)             
         else:
 
             raise UnexpectedValueError("EquationBlock")
 
 
-        dof_analist = analysis.DOF_Analysis(self.problem)
+        dof_analist = analysis.DOF_Analysis(self.problem, number_parameters_to_optimize)
 
         dof_analist._makeSanityChecks()
 
-        out = solver_mechanism.solve(additional_conf)
+        out = solver_mechanism.solve(self.configurations)
 
         '''
         if print_output==True and problem_type != 'differential':
@@ -179,7 +228,7 @@ class Simulation:
 
         self.output = out
 
-        self.domain = additional_conf['domain']
+        self.domain = self.configurations['domain']
 
     def showResults(self):
 
@@ -294,3 +343,25 @@ class Simulation:
         else:
 
             raise UnresolvedPanicError("\nProblem type not recognized.\n")
+
+    def dumpConfigurations(self, file_name=None):
+
+        """
+        Dump the configurations used for running the simulation into one JSON file for later utilization (eg: optimization studies, or re-simulation)
+        
+        :param str file_name:
+            File name for dumping the configurations. Defaults to None, which will use the name of the simulation '<NAME_OF_THE_SIMULATION>-conf.json'
+        
+        :return:
+            JSON file containing the configurations
+        :rtype JSON:
+        """
+
+        if file_name is None:
+
+            file_name = self.name+'-conf.json'
+
+        with open(file_name, "w") as write_file:
+
+            json.dump(self.configurations, write_file)
+

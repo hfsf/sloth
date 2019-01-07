@@ -17,16 +17,21 @@ class DOF_Analysis:
     Degrees of freedom analysis class.
     """
 
-    def __init__(self, problem):
+    def __init__(self, problem, number_optimizated_parameters=0):
 
         """
         Instantiate DOF_Analysis
 
         :ivar Problem problem:
             Problem which need to be analyzed
+
+        :ivar int number_optimizated_parameters:
+            Number of parameters which are being optimized. Thus, those are not acounted as specified parameters in DOF analysis. 
         """
 
         self.problem = problem
+
+        self.number_optimizated_parameters = number_optimizated_parameters
 
     def _makeSanityChecks(self):
 
@@ -42,17 +47,19 @@ class DOF_Analysis:
 
         var_names_ = [i for i in self.problem.equation_block._var_list]
 
+        eq_reps = self.problem.equation_block._equations_list
+
         n_dof = n_vars - n_eqs
 
         if n_vars > n_eqs:
 
-            raise Exception("\nThe system is OVER-specified\n    Number of variables:{} ({}) \n Number of equations:{}".format(n_vars, var_names_, n_eqs))
+            raise Exception("\nThe system is OVER-specified\n    Number of variables:{} ({}) \n Number of equations:{} \n Equations:{}".format(n_vars, var_names_, n_eqs, eq_reps))
 
             return False
 
         elif n_vars < n_eqs:
 
-            raise Exception("\nThe system is UNDER-specified\n    Number of variables:{} Number of equations:{}".format(n_vars, n_eqs))
+            raise Exception("\nThe system is UNDER-specified\n    Number of variables:{} ({}) \n Number of equations:{} \n Equations:{}".format(n_vars, var_names_, n_eqs, eq_reps))
 
             return False
 

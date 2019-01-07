@@ -1,4 +1,4 @@
-#test_model.py
+#test_optimization.py
 
 from pathlib import Path
 import sys
@@ -51,9 +51,9 @@ def mod():
 
         def DeclareEquations(self):
 
-            expr1 = self.u.Diff(self.t) == self.a()*self.u() - self.b()*self.u()*self.v()
+            expr1 = self.u.Diff(self.t) - ( self.a()*self.u() - self.b()*self.u()*self.v() )
 
-            expr2 = self.v.Diff(self.t) ==  self.d()*self.b()*self.u()*self.v() -self.c()*self.v()
+            expr2 = self.v.Diff(self.t) - ( self.d()*self.b()*self.u()*self.v() -self.c()*self.v() )
 
             self.eq1 = self.createEquation("eq1", "Equation 1", expr1)
             self.eq2 = self.createEquation("eq2", "Equation 2", expr2)
@@ -87,6 +87,14 @@ def sim():
             super().__init__(name, description)
 
     return simul("simul", "generic simulation")
+
+@pytest.fixture
+def opt():
+    """
+    Create a generic optimization study
+    """
+
+    pass
 
 def test_model_properties(mod):
 
@@ -138,7 +146,7 @@ def test_simulation_result(mod, prob, sim, compile_equations):
 
     sim.setProblem(prob)
 
-    sim.setConfigurations(initial_time=0., 
+    sim.runSimulation(initial_time=0., 
                       end_time=16.,
                       is_dynamic=True,
                       domain=mod.dom,
@@ -151,8 +159,6 @@ def test_simulation_result(mod, prob, sim, compile_equations):
                                          "v_D0":"Predators(v)"
                                 } 
                 )
-
-    sim.runSimulation()
 
     result = sim.getResults('dict')
 

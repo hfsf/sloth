@@ -155,7 +155,7 @@ def test_simulation_result(mod, prob, sim, compile_equations):
 
     sim.setProblem(prob)
 
-    sim.runSimulation(initial_time=0., 
+    sim.setConfigurations(initial_time=0., 
                       end_time=5.,
                       is_dynamic=True,
                       domain=mod.dom,
@@ -172,6 +172,8 @@ def test_simulation_result(mod, prob, sim, compile_equations):
                                          "y5_DA0":"Y-5"
                                         } 
                       )
+
+    sim.runSimulation()
 
     result = sim.getResults('dict')
 

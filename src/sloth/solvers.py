@@ -31,10 +31,15 @@ def _createSolver(problem, additional_configurations):
     :param dict additional_configurations:
         Dictionary containing additional configurations for the solver definition
     """
+    try:
+        domain = additional_configurations['domain']
+    except:
+        domain = None
 
-    domain = additional_configurations['domain']
-    
-    time_variable_name = additional_configurations['time_variable_name']
+    try:
+        time_variable_name = additional_configurations['time_variable_name']
+    except:
+        time_variable_name = None
 
     linear_solver = additional_configurations['linear_solver']
 

@@ -117,6 +117,8 @@ def test_simulation_result(mod, prob, sim):
 
     sim.setProblem(prob)
 
+    sim.setConfigurations()
+
     sim.runSimulation()
 
     assert sim.getResults(return_type='dict') == pytest.approx({'a_NL0': 0.148556835804896, 'b_NL0': 99.8514431641951, 'c_NL0': 5.50206166313586})

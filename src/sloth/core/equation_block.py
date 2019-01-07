@@ -13,7 +13,7 @@ class EquationBlock:
     Define EquationBlock. Act as a container for Equation objects and provides mechanisms for transforming them into matrix form. 
     """
 
-    def __init__(self, equations, variable_dict, owner_model=None):
+    def __init__(self, equations, variable_dict, parameter_dict, owner_model=None):
 
         """
         Instantiate EquationBlock
@@ -24,6 +24,9 @@ class EquationBlock:
         :ivar dict variable_dict:
             Dictionary containing all the Variable objects present in the EquationBlock, provided by the Problem instance that instantiate current EquationBlock.
 
+        :ivar dict parameter_dict:
+            Dictionary containing all the Parameter objects present in the EquationBlock, provided by the Problem instance that instantiate current EquationBlock.
+
         :ivar Model owner_model:
             Model for which the EquationBlock is defined. Defaults to None.
         """
@@ -33,6 +36,8 @@ class EquationBlock:
         self.equations = equations
 
         self.variable_dict = variable_dict
+
+        self.parameter_dict = parameter_dict
 
         self._var_list = []
 
