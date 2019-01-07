@@ -11,6 +11,8 @@ from shutil import rmtree
 
 from setuptools import find_packages, setup, Command
 
+#ipython ipython3 cython cython3 libblas-common libblas3 liblapack3 liblapack-dev libsundials-ida2 libsundials-idas0 libsundials-serial libsundials-serial-dev"  
+
 # Package meta-data.
 NAME = 'sloth'
 DESCRIPTION = 'Humble and umpretentious equation oriented process simulation tool'
@@ -22,7 +24,7 @@ VERSION = '0.1'  # Put the package version as a string (ex.: '1.0.0')
 
 # What packages are required for this module to be executed?
 REQUIRED = [
-    'numpy', 'pytest', 'numpydoc', 'sympy', 'cython>0.18', 'prettytable','numexpr', 'mpmath', 'scipy', 'pandas', 'seaborn', 'matplotlib', 'assimulo==2.9', 'PyGMO'
+    'numpy', 'pytest', 'numpydoc', 'sympy', 'cython>0.18', 'prettytable','numexpr', 'mpmath', 'scipy', 'pandas', 'seaborn', 'matplotlib', 'assimulo', 'PyGMO'
 ]
 
 # What packages are optional?
