@@ -5,7 +5,7 @@ python:
 cache: pip
 dist: xenial
 before_install:
-  - sudo apt-get install gfortran gcc ipython ipython3 cython cython3 libblas libblas3 libblas-dev libblas3-dev liblapack3 liblapack-dev libatlas3-dev  
+  - "sudo apt-get install gfortran gcc ipython ipython3 cython cython3 libblas-common libblas3 liblapack3 liblapack-dev"  
   - "pip install -U pip"
   - "pip install 'cython>=0.18' 'assimulo==2.8'"  
   - "python setup.py install"
