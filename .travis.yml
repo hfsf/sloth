@@ -1,7 +1,8 @@
 language: python
 python:
   - "3.6"
-  - "3.7"  
+  - "3.7"
+dist: xenial  
 install:
   - sudo apt-get update
   # We do this conditionally because it saves us some downloading if the
