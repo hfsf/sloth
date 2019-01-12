@@ -2,9 +2,6 @@
 
 """
 Define solver mechanisms
-
-* TODO: 
-       - Complete differential algebraic solver 
 """
 
 import numpy as np

@@ -14,6 +14,7 @@ import prettytable
 import numpy as np
 from collections import OrderedDict
 import json
+from .core.quantity import Quantity
 
 class Simulation:
 
@@ -306,13 +307,13 @@ class Simulation:
 
             if return_type == 'list':
 
-                return list(self.output.values())
+                return [float(i) for i in list(self.output.values())]
 
             elif return_type == 'dict':
 
                 output_dict = OrderedDict(sorted(self.output.items(), key=lambda x: str(x[0])))
 
-                output_dict = {str(k):v for (k,v) in output_dict.items()}
+                output_dict = {str(k):float(v) for (k,v) in output_dict.items()}
 
                 return output_dict
 
@@ -365,3 +366,36 @@ class Simulation:
 
             json.dump(self.configurations, write_file)
 
+    def reset(self):
+
+        """
+        Reset current simulation, in order to restore its initial state
+        """
+
+        if self.domain is not None:
+
+            self.domain._reset()
+
+    def __getitem__(self, obj):
+
+        """
+        Overloaded function for searching for an specific Parameter through the equations defined for the Problem used in current Simulation
+        
+        :param (str, Quantity) obj:
+            Parameter which will be searched among the equations for the current simulation
+        :return obj_reference:
+            Parameter referenced by the argument obj_name
+        :rtype Quantity:
+        """
+
+        if isinstance(obj, str):
+
+            return self.problem.equation_block.parameter_dict[obj]
+
+        elif isinstance(obj, Quantity):
+
+            return self.problem.equation_block.parameter_dict[obj.name]
+
+        else:
+
+            raise UnexpectedValueError("(str, Quantity)")

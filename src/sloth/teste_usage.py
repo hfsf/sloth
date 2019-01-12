@@ -7,6 +7,8 @@ from .core.equation_operators import *
 from .core.template_units import *
 from .core.domain import *
 from . import optimization
+import numpy as np
+#import ipdb
 
 
 class modelTest0(model.Model):
@@ -86,9 +88,9 @@ class simul(simulation.Simulation):
 
 class opt_prob(optimization.OptimizationProblem):
 
-    def __init__(self,nb_dimension=1, name='', description=''):
+    def __init__(self, number_of_dimensions, name='', description='', bounds=None):
 
-        super().__init__(nb_dimension)
+        super().__init__(number_of_dimensions)
 
         self.name = name
 
@@ -96,36 +98,25 @@ class opt_prob(optimization.OptimizationProblem):
 
     def DeclareObjectiveFunction(self, x):
 
-        #print("\nx(%s) is = %s"%(type(x),x))
+        if not isinstance(x, float):
 
-        #=========== SHOULD AUTOMATE THIS ==============
+            x = x[0]
 
-        self.simulation_instance.problem.equation_block.parameter_dict[mod1.v.name].setValue(x[0])
-
-        #print("\n\n     ===>%s"%self.simulation_instance.problem.equation_block.parameter_dict[mod1.v.name].__dict__)
+        self.simulation_instance[mod1.v.name].setValue(x)
 
         #Reload problem definitions (Equation symbolic objects etc)
 
         self.simulation_instance.problem.resolve() 
 
-        #===============================================
-
         self.simulation_instance.setConfigurations(
-                                    definition_dict=self.simulation_configuration,
-                                    number_parameters_to_optimize=1
+                                    definition_dict=self.simulation_configuration
                         )
 
         self.simulation_instance.runSimulation()
 
-        #print("\nParameter is {}. Results are: {}".format(x[0],self.simulation_instance.getResults('dict')))
-        #print("Equations are: %s"%self.simulation_instance.problem.equation_block._equations_list)
+        f = self.simulation_instance.getResults('dict')['u_M1']
 
-        #f = sum([x[i]**2 for i in range(self.dimension)])
-
-        f = float(self.simulation_instance.getResults('dict')['u_M1'])
-
-        return (f,)
-
+        return [f]
 
 # mod1 = modelTest1("test_model1", "A model for testing purposes")
 
@@ -137,6 +128,7 @@ prob = problem.Problem("test_problem", "A problem for testing purposes")
 
 sim = simul("test_simulation", "A simulation for testing purposes")
 
+#ipdb.set_trace()
 opt_prob = opt_prob(1,"opt_prob", "Sphere optimization problem")
 
 def xec():
@@ -198,21 +190,22 @@ def xec():
                           print_output=True  
                     )
     
-    sim.dumpConfigurations('sim_conf.json')
+    #sim.dumpConfigurations('sim_conf.json')
 
     sss=input("\n\n Press any key to continue ...")
 
     opt_prob()
 
+    #ipdb.set_trace()
     opt = optimization.Optimization(simulation=sim, 
-                                    optimization_problem=opt_prob, 
-                                    simulation_configuration='sim_conf.json',
+                                    optimization_problem=opt_prob,
                                     optimization_parameters=[mod1.v], 
+                                    simulation_configuration=None, 
                                     constraints=[-5.12,5.12],
                                     optimization_configuration=None
                         )
 
-    opt.runOptimization() 
+    opt.runOptimization(True, 1) 
 
     '''
     sim.runSimulation(initial_time=0., 

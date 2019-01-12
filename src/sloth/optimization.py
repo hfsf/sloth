@@ -6,11 +6,13 @@ Define optimization mechanisms
 from .core.error_definitions import *
 from .core.quantity import Quantity
 import copy
-import PyGMO as pygmo
-from PyGMO.problem import base as pygmo_base
+import pygmo as pg
 import json
+import numpy as np
+from time import time, strftime, gmtime
+#import ipdb
 
-class OptimizationProblem(pygmo_base):
+class OptimizationProblem:
 
     """
     Definition of an optimization problem. Used by the class Optimization to perform the relevant optimization studies
@@ -20,6 +22,8 @@ class OptimizationProblem(pygmo_base):
         Mandatory structure that user should supply when importing OptimizationProblem:
 
         *DeclareObjectiveFunction
+
+        *DeclareSetBounds (Not recommended)
 
         *DeclareFitnessComparison
 
@@ -31,24 +35,41 @@ class OptimizationProblem(pygmo_base):
         Instantiate OptimizationProblem
         """
 
-        super(OptimizationProblem, self).__init__(number_of_dimensions)
-
         self.name = name
+
+        self.dim = number_of_dimensions
 
         self.description = description
 
         self.is_maximization = False
 
-        if isinstance(bounds, list):
-            self.setBounds(*bounds)
-        elif isinstance(bounds, tuple):
-            self.setBounds(bounds)
+        self.bounds = None
 
         self.simulation_instance = simulation_instance
 
         self.simulation_configuration = None
 
         self._is_ready=False
+
+    def fitness(self,x):
+
+        pass
+
+    def get_bounds(self):
+
+        return self.bounds
+
+    def get_name(self):
+
+        return self.name
+
+    def get_extra_info(self):
+
+        return "\tDimensions: "+str(self.dim)
+
+    def setBounds(self, bounds):
+
+        self.bounds = bounds
 
     def _setSimulationInstance(self, simulation_instance):
 
@@ -58,9 +79,20 @@ class OptimizationProblem(pygmo_base):
 
         self.simulation_configuration = simulation_configuration
 
-    def setBounds(self, x_0, x_f):
+    def DeclareSetBounds(self):
 
-        self.set_bounds(x_0, x_f)
+        """
+        Virtual function for overloading the bounds setting
+        """
+
+        if np.array(self.bounds).ndim==1:
+
+            return tuple([np.array([i]) for i in self.bounds])
+
+        else:
+
+            return tuple([np.array(i) for i in self.bounds])
+
 
     def DeclareFitnessComparison(self, f1, f2):
 
@@ -78,15 +110,19 @@ class OptimizationProblem(pygmo_base):
 
     def DeclareObjectiveFunction(self, x):
 
+        """
+        Virtual function for overloading the fitness evaluation
+        """
+
         pass
 
     def __call__(self):
 
         #Reimplement virtual methods
 
-        self._objfun_impl = self.DeclareObjectiveFunction
+        self.fitness = self.DeclareObjectiveFunction
 
-        self._comparefitness_impl = self.DeclareFitnessComparison
+        self.get_bounds = self.DeclareSetBounds
 
         self._is_ready = True
 
@@ -97,7 +133,7 @@ class Optimization:
     Define optimization mechanisms. Given variables for an subspecified system, the optimizator will work on the variables or parameters subjected to study towards the minimization (or maximization) of an objective function.
     """
 
-    def __init__(self, simulation, optimization_problem, simulation_configuration, optimization_parameters, constraints=None, is_maximization=False, optimizer='de', constraints_fun=None, constraints_additional_args=[], additional_args=[], objective_function=None,optimization_configuration=None):
+    def __init__(self, simulation, optimization_problem, optimization_parameters, simulation_configuration=None, constraints=None, is_maximization=False, optimizer='de', constraints_fun=None, constraints_additional_args=[], additional_args=[], objective_function=None,optimization_configuration=None):
 
         """
         Instantiate Optimization
@@ -109,7 +145,7 @@ class Optimization:
             Optimization problem to be studied
 
         :ivar (dict, str) simulation_configuration:
-            Configuration (either a dictionary or a JSON file name to be loaded) to run the simulations used in the optimization study
+            Configuration (either a dictionary or a JSON file name to be loaded) to run the simulations used in the optimization study. Defaults to None, from which the configurations defined for the simulation input will be loaded, raising an exception if it is not possible
 
         :ivar list(Quantity or str) optimization_parameters:
             List of parameters to be optimized for the supplied problem. Can be supplied either the names of the Quantity objects or direct reference to them. 
@@ -154,9 +190,14 @@ class Optimization:
             with open(simulation_configuration, "r") as read_file:
 
                 self.simulation_configuration = json.load(read_file)
+        
+        elif simulation_configuration is None and simulation.configurations is not None:
+
+            self.simulation_configuration = simulation.configurations
+
         else:
 
-            raise AbsentRequiredObjectError("(Dictionary, file path)")
+            raise AbsentRequiredObjectError("(Dictionary, file path, simulation with defined configurations)")
 
         self.optimization_parameters = optimization_parameters
 
@@ -182,9 +223,6 @@ class Optimization:
 
         self.optimization_configuration = None
 
-        print("Optimization configuration is: %s"%optimization_configuration)
-        print("Constraints is: %s"%self.constraints)
-
         if optimization_configuration is None:
 
             self.optimization_configuration = {'number_of_individuals':50,
@@ -194,11 +232,12 @@ class Optimization:
                                                'elitism':1,
                                                'crossover_type':'exponential',
                                                'mutation_type':'gaussian',
-                                               'selection_type':'roulette',
+                                               'selection_type':'tournament',
+                                               'selection_param':4,
                                                'scale_factor':.8,
                                                'variant_de':2,
-                                               'ftol_de':1e-6,
-                                               'xtol_de':1e-6,
+                                               'ftol_de':1e-10,
+                                               'xtol_de':1e-10,
                                                'omega_pso':0.7298,
                                                'eta1_pso':2.05,
                                                'eta2_pso':2.05,
@@ -224,6 +263,11 @@ class Optimization:
 
         self.optimizer = self._setOptimizer(optimizer)
 
+        self.best_parameters = None 
+
+        self.best_fitness = None
+
+        self.run_sucessful = False
 
     def saveConfigurations(self, file_name):
 
@@ -275,49 +319,22 @@ class Optimization:
 
                 ind = self.optimization_configuration['number_of_individuals']
 
-                #==================================================================
+                #=================================================================
 
                 crossover_type = self.optimization_configuration['crossover_type']
 
-                if crossover_type is 'binomial' or crossover_type is 'Binomial':
-
-                    crossover_type = pygmo.algorithm._algorithm._sga_crossover_type.BINOMIAL
-
-                if crossover_type is 'exponential' or crossover_type is 'Exponential':
-
-                    crossover_type = pygmo.algorithm._algorithm._sga_crossover_type.EXPONENTIAL
-
-                #==================================================================
-
                 mutation_type = self.optimization_configuration['mutation_type']
-
-                if mutation_type is 'gaussian' or mutation_type is 'Gaussian':
-
-                    mutation_type = pygmo.algorithm._algorithm._sga_mutation_type.GAUSSIAN
-
-                if mutation_type is 'random' or mutation_type is 'Random':
-
-                    mutation_type = pygmo.algorithm._algorithm._sga_mutation_type.RANDOM
-
-                #==================================================================
-
 
                 selection_type = self.optimization_configuration['selection_type']
 
-                if selection_type is 'roulette' or selection_type is 'Roulette':
+                selection_param=self.optimization_configuration['selection_param']
 
-                    selection_type = pygmo.algorithm._algorithm._sga_selection_type.ROULETTE
-
-                if selection_type is 'best20' or selection_type is 'Best20':
-
-                    selection_type = pygmo.algorithm._algorithm._sga_selection_type.BEST20
-
-                #==================================================================
+                #=================================================================
 
 
-                algo = pygmo.algorithm.sga(gen = gen, cr = cr, m = mr, elitism = elitism, mutation=mutation_type, selection=selection_type, crossover=crossover_type)
+                algo = pg.algorithm(pg.sga(gen = gen, cr = cr, m = mr, elitism = elitism, mutation=mutation_type, selection=selection_type, crossover=crossover_type, param_s=selection_param))
 
-                #isl = pygmo.island(algo, self.optimization_problem, ind)
+                #isl = pg.island(algo, self.optimization_problem, ind)
 
                 self.optimization_mechanism = algo
 
@@ -339,9 +356,9 @@ class Optimization:
 
                 #==================================================================
 
-                algo = pygmo.algorithm.de(gen=gen, f=f_w, cr = cr, variant=de_variant, ftol=de_ftol, xtol=de_xtol)
+                algo = pg.algorithm(pg.de(gen=gen, F=f_w, CR = cr, variant=de_variant, ftol=de_ftol, xtol=de_xtol))
 
-                #isl = pygmo.island(algo, self.optimization_problem, ind)
+                #isl = pg.island(algo, self.optimization_problem, ind)
 
                 self.optimization_mechanism = algo
 
@@ -368,9 +385,9 @@ class Optimization:
 
                 #==================================================================
 
-                algo = pygmo.algorithm.pso_gen(gen=gen, omega=omega, eta1=eta1, eta2=eta2,vcoeff=vcoeff,  variant=pso_variant, ftol=de_ftol, xtol=de_xtol)
+                algo = pg.algorithm(pg.pso_gen(gen=gen, omega=omega, eta1=eta1, eta2=eta2, max_vel=vcoeff,  variant=pso_variant))
 
-                #isl = pygmo.island(algo, self.optimization_problem, ind)
+                #isl = pg.island(algo, self.optimization_problem, ind)
 
                 self.optimization_mechanism = algo
 
@@ -430,50 +447,84 @@ class Optimization:
 
             raise AbsentRequiredObjectError("(New values to parameters)")
 
-    def runOptimization(self):
+    def getOptimizationInfo(self):
+
+        """
+        Return information about the optimization task to be performed
+        """
+
+        print("Starting optimization")
+        print("\tOptimization problem: %s"%self.optimization_problem.name)
+        param_names = [i if isinstance(i,str) else i.name for i in self.optimization_parameters]
+        print("\tParameters to optimize: %s"%param_names)
+        print("\tOptimization algorithm: %s"%self.optimization_mechanism.get_name())
+        try:
+            print("\tAlgorithm parameters: \n %s"%self.optimization_mechanism.get_extra_info().replace("\t","\t\t"))
+        except:
+            pass
+
+
+    def runOptimization(self, print_output=False, report_frequency=0):
 
         if self._performSaneTests() == True:
-
-            '''
-            def _optimizationWorkflow(parameters, args=None):
-
-                self._setParameters(parameters)
-
-                self.simulation.runSimulation(definition_dict=self.simulation.configurations)
-
-                simulation_output = self.simulation.output
-
-                obj_func_result = self.objective_function(simulation_output,
-                                                          args
-                                                )
-
-                return obj_func_result
-
-            opt_params, opt_obj_func = \
-                self.optimization_mechanism(workflow=_optimizationWorkflow,                   constraints = self._getFixedConstraints()
-                                )
-            '''
-
-            # Run optimization
 
             self.optimization_problem._setSimulationInstance(self.simulation)
 
             self.optimization_problem._setSimulationConfiguration(self.simulation_configuration)
 
-            self.optimization_problem.setBounds(*self.constraints)
+            self.optimization_problem.setBounds(self.constraints)
 
-            print("\n\n==>Optimization problem:")
-            print(self.optimization_problem)
+            self.optimization_mechanism.set_verbosity(report_frequency)
 
-            print("\n\n==>Optimization algorithm:")
-            print(self.optimization_mechanism)
+            # Print information
 
-            pop = pygmo.population(self.optimization_problem,self.optimization_configuration['number_of_individuals'])
+            start_time = time()
+
+            self.getOptimizationInfo()
+
+            # Run optimization
+
+            prob = pg.problem(self.optimization_problem)
+
+            pop = pg.population(prob, size=self.optimization_configuration['number_of_individuals'])
 
             pop = self.optimization_mechanism.evolve(pop)
 
-            print("Best individual: \n%s"%pop.champion)
+            self.best_parameters = pop.champion_x
+
+            self.best_fitness = pop.champion_f
+
+            end_time = time()
+
+            elapsed_time = end_time - start_time
+
+            print("\n\tOptimization ended. \n\t Elapsed time:{}".format(strftime("%H:%M:%S", gmtime(elapsed_time))))
+
+            if print_output is True:
+                print("Best individual: \n%s -> finess: %s"%(pop.champion_x, pop.champion_f))
+
+            self.run_sucessful=True
 
         else:
 
             raise Exception("Ill-formed optimization configuration")
+
+    def getResults(self):
+
+        """
+        Return the results obtained by the optimization
+        
+        :return (self.best_parameters, self.best_fitness):
+            Tuple containing the best parameters obtained by the optimization algorithm (aka the decision vector) and the best fitness obtained
+        :rtype tuple(numpy.array, numpy.array)
+        """
+
+        if self.best_fitness is None and self.best_parameters is None:
+
+            raise Exception("Should run the optimization first to return its results")
+
+        else:
+
+            return (self.best_parameters, self.best_fitness)
+
+

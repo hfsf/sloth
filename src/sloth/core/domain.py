@@ -134,6 +134,14 @@ class Domain:
 
         self.dependent_objs[dependent_obj.name] = dependent_obj
 
+    def _reset(self):
+
+        """
+        Reset the current domain, restoring the initial state
+        """
+
+        self._setDomain()
+
     def _register(self, values, var=None):
 
         """

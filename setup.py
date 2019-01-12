@@ -19,12 +19,12 @@ DESCRIPTION = 'Humble and umpretentious equation oriented process simulation too
 URL = 'https://github.com/hfsf/sloth'
 EMAIL = 'freitas.hfs@gmail.com'
 AUTHOR = 'Hanniel Freitas'
-REQUIRES_PYTHON = '>=3.5'  # Put your required Python version
+REQUIRES_PYTHON = '>=3.6'  # Put your required Python version
 VERSION = '0.1'  # Put the package version as a string (ex.: '1.0.0')
 
 # What packages are required for this module to be executed?
 REQUIRED = [
-    'numpy', 'pytest', 'numpydoc', 'sympy', 'cython>0.18', 'prettytable','numexpr', 'mpmath', 'scipy', 'pandas', 'seaborn', 'matplotlib', 'assimulo', 'PyGMO'
+    'numpy', 'pytest', 'numpydoc', 'sympy', 'cython>0.18', 'prettytable','numexpr', 'mpmath', 'scipy', 'pandas', 'seaborn', 'matplotlib', 'assimulo', 'pygmo>=2.7'
 ]
 
 # What packages are optional?

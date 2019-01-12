@@ -125,8 +125,7 @@ def test_simulation_properties(mod, prob, sim):
 
 
 #Test for either compile differential equations and direct symbolic evaluation
-@pytest.mark.parametrize("compile_equations",[True,False])
-
+@pytest.mark.parametrize("compile_equations",[True, False])
 
 def test_simulation_result(mod, prob, sim, compile_equations):
 
