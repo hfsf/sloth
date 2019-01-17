@@ -1,7 +1,0 @@
-option mtype usersparse
-option sparsemode infile
-data sparse
-    i = : 0
-endata
-
-# endfile

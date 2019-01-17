@@ -49,13 +49,19 @@ class AbsentRequiredObjectError(Exception):
     Error raised by the absence of an required object.
     """
 
-    def __init__(self, expected_type):
+    def __init__(self, expected_type, supplied_object=""):
 
         self.expected_type = expected_type
+
+        self.supplied_object = supplied_object
 
     def __str__(self):
 
         msg = "Absent required object error. A %s was expected, but no one was supplied." % (self.expected_type)
+
+        if self.supplied_object is not "":
+
+            msg += " Supplied object was: %s" % (self.supplied_object)
 
         return(msg)
 

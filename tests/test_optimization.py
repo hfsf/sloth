@@ -262,7 +262,7 @@ def test_simulation_result(mod, prob, sim, compile_equations):
 
     assert result['t_D0']['Predators(v)'][-1] == pytest.approx(7.1602100083)
 
-def test_optimization(mod, prob, sim, opt, prob_opt):
+def DONOTtest_optimization(mod, prob, sim, opt, prob_opt):
 
     prob.addModels(mod)
 

@@ -202,7 +202,7 @@ class Model:
 
             print("Warning: No equations were declared.")
 
-    def _createConnection(self, name, description, out_var, in_var, out_model, expr=None):
+    def _createConnection(self, name, description, out_vars, in_vars, out_model, expr):
 
         """
         Function for creation of an Connection object, and inclusion of a connective equation in the current model. Typically called externally.
@@ -213,50 +213,47 @@ class Model:
         :ivar str description:
             Description for the present equation. Defaults to ""
 
-        :param Variable out_var:
-            Variable object from which that supplies the input object
+        :param list(Variable) out_vars:
+            List of Variable objects from which that supplies the input object
 
-        :param Variable in_var:
-            Variable object that is supplied by the output object
+        :param list(Variable) in_vars:
+            List of Variable objects that is supplied by the output object
 
         :param List(Variable) out_model_exposed_vars:
             List of exposed variables of 'output' type in the output Model
 
-        :param EquationNode expr:
-            EquationNode object to declare for the current Equation object. Defaults to None
+        :param list(EquationNode) expr:
+            List of EquationNode objects to declare for the current Equation object.
         """
 
-        if isinstance(in_var, Variable) and isinstance(out_var, Variable):
 
+        in_vars_is_Var = all(isinstance(in_i, Variable) for in_i in in_vars)
 
-            if in_var in self.exposed_vars['input'] and \
-               out_var in out_model.exposed_vars['output']:
+        out_vars_is_Var = all(isinstance(out_i, Variable) for out_i in out_vars)
 
-                name = out_var.name+"--->"+in_var.name
+        if in_vars_is_Var and out_vars_is_Var:
 
-                description = "["+out_var.name+"--->"+in_var.name+"]"
+            out_vars_names = (",").join([out_i.name for out_i in out_vars])
 
-                if expr == None:
+            in_vars_names = (",").join([in_i.name for in_i in in_vars])
 
-                    expr = in_var.__call__() - out_var.__call__()
+            name = out_vars_names+"--->"+in_vars_names
 
-                conn = connection.Connection(name, description, in_var.name, out_var.name, expr)
+            description = "["+out_vars_names+"--->"+in_vars_names+"]"
 
-                conn.setResidual(expr) # I DON'T UNDERSTAND WHY THIS NEED TO BE HERE! x)
+            conn = connection.Connection(name, description, in_vars_names, out_vars_names, expr)
 
-                conn._sweepObjects()
+            conn.setResidual(expr) # I DON'T UNDERSTAND WHY THIS NEED TO BE HERE! x)
 
-                self.equations[name] = conn
+            conn._sweepObjects()
 
-                return(conn)
+            self.equations[name] = conn
 
-            else:
-
-                raise ExposedVariableError(out_model.exposed_vars['output'], self.exposed_vars['input'], out_var, in_var)
+            return(conn)
 
         else:
 
-            raise UnexpectedValueError("Variable")
+            raise UnexpectedValueError("list(Variable)")
 
 
     def createEquation(self, name, description="", expr=None):

@@ -619,7 +619,6 @@ class DaeSolver(Solver):
 
             # ========= SET SOLVER INSTANCES ==============
 
-
             problem_instance = Implicit_Problem(res=self.compiled_equations,
                                                 y0=y_0,
                                                 yd0= yd_0,

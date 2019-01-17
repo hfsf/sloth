@@ -4,7 +4,7 @@
 Define Problem class. Unite several Model classes through Connections, forming one single Equation block. Used by Simulation class to perform the calculations.
 """
 
-from .core.error_definitions import ExposedVariableError
+from .core.error_definitions import ExposedVariableError, AbsentRequiredObjectError
 from .core.equation_block import EquationBlock
 from collections import OrderedDict
 from .core.variable import Variable
@@ -158,27 +158,81 @@ class Problem:
 
         self.equation_block = EquationBlock(equations=self._equation_list, variable_dict=variable_dict_, parameter_dict=parameter_dict_)
 
-    def createConnection(self, model_1, model_2, output_var, input_var, expr=None):
+    def createConnection(self, model_1, model_2, output_vars, input_vars, expr=None, description=""):
 
         """
         Connect two Models creating a Connection for both models, linking the ouput variable of the former to the input variable of the later.
         """
 
-        if output_var in model_1.exposed_vars['output'] and \
-           input_var  in model_2.exposed_vars['input']:
+        if isinstance(input_vars, list):
 
-           # Creating connection equation in the second Model object
-
-           conn = model_2._createConnection("","", output_var, input_var, \
-                                            model_1, expr)
-
-           self.connections[output_var.name+"@"+model_1.name+" ---> "+input_var.name+"@"+model_2.name] = conn
-
-           return conn
+            input_var_is_declared= all(in_i in model_2.exposed_vars['input'] for in_i in input_vars)
 
         else:
 
-            raise ExposedVariableError(model_1.exposed_vars['output'], model_2.exposed_vars['input'], output_var, input_var) 
+            input_var_is_declared= input_vars in model_2.exposed_vars['input']
+
+        if isinstance(output_vars, list):
+
+            output_var_is_declared= all(out_i in model_1.exposed_vars['output'] for out_i in output_vars)
+
+        else:
+
+            output_var_is_declared= output_vars in model_1.exposed_vars['output']
+
+        if output_var_is_declared and input_var_is_declared:
+
+           # Creating connection equation in the second Model object
+
+           #return self._createDirectConnection(model_1, output_var, model_2, input_var)
+
+
+            if not isinstance(output_vars, list):
+
+                output_var_ = [output_vars]
+
+            else:
+
+                output_var_ = output_vars
+
+            if not isinstance(input_vars, list):
+
+                input_var_ = [input_vars]
+
+            else:
+
+                input_var_ = input_vars
+
+            if expr is None:
+
+                expr = sum([in_var_i.__call__() for in_var_i in input_var_]) - sum([out_var_i.__call__() for out_var_i in output_var_])
+
+            # The process of connection creation
+
+            self._createDirectConnection(model_1, output_var_, model_2, input_var_, expr, description)
+
+        else:
+
+            raise ExposedVariableError(model_1.exposed_vars['output'], model_2.exposed_vars['input'], output_vars, input_vars) 
+
+
+    def _createDirectConnection(self, out_model, out_vars, in_model, in_vars, expr, description):
+
+        """
+        Create a connection beetween one model an their output variable, and another model and other variable, which is an input for the later model
+        """
+
+        out_var_names = (",").join([out_i.name for out_i in out_vars])
+
+        in_var_names = (",").join([in_i.name for in_i in in_vars])
+
+        conn = in_model._createConnection(out_var_names+"--->"+in_var_names, description, out_vars, in_vars, out_model, expr)
+
+        #in_model._createConnection(out_var.name+"--->"+in_var.name, description, out_var, in_var, out_model, expr)
+
+        self.connections[out_var_names+"@"+out_model.name+" ---> "+in_var_names+"@"+in_model.name] = conn
+
+        #return conn
 
     def _reloadModels(self, models_name=None):
 
