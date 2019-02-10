@@ -82,34 +82,7 @@ class Simulation:
         :param Problem problem:
         """
 
-        self.problem = problem
-
-    def setConfigurations(self, configurations=None, configurations_file=None):
-
-        """
-        Set the configurations for the current simulation
-        
-        :param dict configurations:
-            Configurations for the current simulation
-
-        :param str configurations_file:
-            File name for the configurations for the current simulation
-        """
-
-        if configurations is None and configurations_file is None:
-
-            raise AbsentRequiredObjectError("(Configurations or Configurations file)")
-
-        elif configurations is not None:
-
-            self.configurations = configurations
-
-        elif configurations_file is not None:
-
-            with open(configurations_file, "r") as read_file:
-
-                self.configurations = json.load(read_file)            
-
+        self.problem = problem       
 
     def setConfigurations(self, 
                           initial_time=0., 

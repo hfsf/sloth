@@ -1,12 +1,12 @@
 # *coding:utf-8*
 
 """
-Define Model class, for storage of equations, distribution on domains and information about input and output variables (exposed variables).
+Define Model class, for storage of equations, distribution on domains and information about input and output variables (exposed variables), and incorporation of other models variables and equations
 """
 import collections
-from .core.error_definitions import *  
-from .core.equation import *
-from .core.equation_operators import *
+from .core.error_definitions import UnexpectedObjectDeclarationError, UnexpectedValueError 
+from .core.equation import Equation
+from .core.equation_operators import Log, Log10, Sqrt, Abs, Exp, Sin, Cos, Tan
 from .core.variable import Variable
 from .core.constant import Constant
 from .core.parameter import Parameter
@@ -42,13 +42,7 @@ class Model:
 
     """
 
-    def __init__(self, name = "", description = "", parent_model = None):
-
-        if parent_model != None: 
-
-            # Inherit from parent_model if it was defined.
-
-            super().__init__(name, description)
+    def __init__(self, name, description = ""):
 
         """
         Instantiate Model.
@@ -59,19 +53,24 @@ class Model:
         :ivar str description"
             Short description of the current model
 
-        :param Model parent_model:
-            Base model fro the current, which will inherit equations, exposed variables, etc from the first. Defaults to None
+        :param Model incorporated_models:
+            Base model(s) for the current, which will inherit equations, exposed variables, etc from the first. Defaults to None
         """
 
         self.name = name
 
         self.description = description
 
-        self.parent_model = parent_model
 
-        if parent_model == None:
+        #If exposed_vars already exists due to model inheritance:
 
-            self.exposed_vars = {'input':[], 'output':[]}
+        try:
+
+            len(self.exposed_vars) #Check if it already was defined
+
+        except:
+
+            self.exposed_vars = {'input':[], 'output':[]} #Nope. Define it
 
         self.parameters = collections.OrderedDict({})
 
@@ -104,6 +103,30 @@ class Model:
         self.objects_info[ 'connections' ] = list(self.connections.keys())
 
         self.objects_info[ 'exposed_vars' ] = self.exposed_vars
+
+    def _infoInputOutputVariables(self, return_output=True):
+
+        """
+        Return information about the name of variables exposed as input and output for the current model
+
+        :param bool return_output:
+            Whether the function should print to stdout the output information or not
+
+        :return:
+            Name of input variables, name of output variables
+
+        :rtype tuple(list(str), list(str))
+        """
+
+        input_var_names = [i_var.name for i_var in list(self.exposed_vars['input'].items())]
+
+        output_var_names = [o_var.name for o_var in list(self.exposed_vars['output'].items())]
+
+        if return_output is True:
+
+            print("\nModel: {}\n\tInput var. names: {}\n\tOutput var. names:{}".format(self.name, input_var_names, output_var_names))
+
+        return input_var_names, output_var_names
 
     def _infoDegreesOfFreedom_(self):
 

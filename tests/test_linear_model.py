@@ -57,7 +57,6 @@ def mod1():
 
     return lin_mod
 
-
 @pytest.fixture
 def mod2():
     """
