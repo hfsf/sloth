@@ -61,26 +61,38 @@ class Model:
 
         self.description = description
 
-
-        #If exposed_vars already exists due to model inheritance:
+        #If those argurments already exists due to model inheritance:
 
         try:
 
             len(self.exposed_vars) #Check if it already was defined
-
         except:
-
             self.exposed_vars = {'input':[], 'output':[]} #Nope. Define it
 
-        self.parameters = collections.OrderedDict({})
+        try:
+            len(self.parameters)
+        except:
+            self.parameters = collections.OrderedDict({})
 
-        self.variables = collections.OrderedDict({})
+        try:
+            len(self.variables)
+        except:
+            self.variables = collections.OrderedDict({})
 
-        self.constants = collections.OrderedDict({})
+        try:
+            len(self.constants)
+        except:
+            self.constants = collections.OrderedDict({})
 
-        self.equations = collections.OrderedDict({})
+        try:
+            len(self.equations)
+        except:
+            self.equations = collections.OrderedDict({})
 
-        self.connections = collections.OrderedDict({})
+        try:
+            len(self.connections)
+        except:
+            self.connections = collections.OrderedDict({})
 
         self.objects_info = {}
 

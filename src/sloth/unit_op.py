@@ -13,7 +13,7 @@ class _molarFluxConservation(model.Model):
 
     def __init__(self):
 
-        super().__init__("","")
+        super().__init__("massFlux","Mass flux conservation")
 
         self.n_in_dot = self.createVariable("n_in_dot", mol/s, "n_in_dot")
         self.n_out_dot = self.createVariable("n_out_dot", mol/s, "n_out_dot")
@@ -26,7 +26,7 @@ class _massFluxConservation(model.Model):
 
     def __init__(self):
 
-        super().__init__("","")
+        super().__init__("massFlux","Mass flux conservation")
 
         self.m_in_dot = self.createVariable("m_in_dot", kg/s, "m_in_dot")
         self.m_out_dot = self.createVariable("m_out_dot", kg/s, "m_out_dot")
@@ -35,7 +35,7 @@ class _massFluxConservation(model.Model):
 
         self.createEquation("mass_flux_conservation", "Molar flux consevation", _mass_conservation)
 
-class Mixer:
+class Mixer():
 
     pass
 
