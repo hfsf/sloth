@@ -177,7 +177,7 @@ def test_multiple_model_incorporation(mod3):
     print("\n\n===> Equations(mod1b): ",mod1b_.equations)
     
     assert mod3.parameters['f_M3'].value == mod1a_.parameters['f_M1a'].value
-    assert mod3.parameters['hh_M3'].value == mod1b_.parameters['h_M1b'].value
+    assert mod3.parameters['h_M3'].value == mod1b_.parameters['h_M1b'].value
 
 def test_single_incorporated_model_solution(prob, mod2, sim):
 
