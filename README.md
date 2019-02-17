@@ -11,6 +11,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Build Status](https://travis-ci.com/hfsf/sloth.svg?branch=master)](https://travis-ci.com/hfsf/sloth)
 [![Documentation Status](https://readthedocs.org/projects/aloth/badge/?version=latest)](https://sloth.readthedocs.io/en/latest/?badge=latest)
+[![DOI](https://zenodo.org/badge/150873489.svg)](https://zenodo.org/badge/latestdoi/150873489)
 
 ## Contact
 

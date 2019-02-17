@@ -330,7 +330,7 @@ class Model:
 
             pass
 
-    def createVariable(self, name, units , description = "", is_lower_bounded = False, is_upper_bounded = False, lower_bound = None, upper_bound = None, is_exposed = False, type = '', value = 0.):
+    def createVariable(self, name, units , description = "", is_lower_bounded = False, is_upper_bounded = False, lower_bound = None, upper_bound = None, is_exposed = False, type = '', latex_text="", value = 0.):
 
         """
         
@@ -359,12 +359,15 @@ class Model:
         :param float upperBound:
         Minimum value for Variable object
 
+        :param str latex_text:
+        Latex text to represent the variable
+
         :param float value:
         Value of the current variable. Defaults to 0.      
 
         """
 
-        var = Variable(name, units , description, is_lower_bounded, is_upper_bounded, lower_bound, upper_bound, value)
+        var = Variable(name, units , description, is_lower_bounded, is_upper_bounded, lower_bound, upper_bound, value, latex_text)
 
         var.name=var.name+'_'+self.name
 

@@ -133,7 +133,7 @@ class Optimization:
     Define optimization mechanisms. Given variables for an subspecified system, the optimizator will work on the variables or parameters subjected to study towards the minimization (or maximization) of an objective function.
     """
 
-    def __init__(self, simulation, optimization_problem, optimization_parameters, simulation_configuration=None, constraints=None, is_maximization=False, optimizer='de', constraints_fun=None, constraints_additional_args=[], additional_args=[], objective_function=None,optimization_configuration=None):
+    def __init__(self, simulation, optimization_problem, optimization_parameters, simulation_configuration=None, constraints=None, is_maximization=False, optimizer='de', constraints_fun=None, constraints_additional_args=[], additional_args=[], objective_function=None,optimization_configuration={}):
 
         """
         Instantiate Optimization
@@ -221,9 +221,9 @@ class Optimization:
 
         self.optimization_mechanism = None
 
-        self.optimization_configuration = None
+        self.optimization_configuration = optimization_configuration
 
-        if optimization_configuration is None:
+        if optimization_configuration is {}:
 
             self.optimization_configuration = {'number_of_individuals':50,
                                                'number_of_generations':1000,
