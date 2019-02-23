@@ -98,6 +98,7 @@ class Quantity:  # New-style class syntax
 
             raise UnexpectedValueError("(Quantity, float, int)")
 
+    ''' MARKED FOR REMOVAL
     def _return_proto_object(self, name="", units={""}, description="", value=0):
         """
         Return a Proto Quantity (QTY) class with given name, description and other
@@ -121,6 +122,8 @@ class Quantity:  # New-style class syntax
         :rtype: object
         """
         return self.__class__(name=name, units=units, description=description, value=value)
+
+    '''
 
     def __call__(self):
         """
@@ -175,7 +178,7 @@ class Quantity:  # New-style class syntax
 
             # Dimensional coherence confirmed. Insert here commands
 
-            new_obj = self._return_proto_object(units = self.units, value = self.value+other_obj.value)
+            new_obj = self.__class__(units = self.units, value = self.value+other_obj.value)
 
             return new_obj
 
@@ -202,7 +205,7 @@ class Quantity:  # New-style class syntax
 
             # Dimensional coherence confirmed. Insert here commands
 
-            new_obj = self._return_proto_object(units = self.units, value = self.value-other_obj.value)
+            new_obj = self.__class__(units = self.units, value = self.value-other_obj.value)
 
             return new_obj
 
@@ -224,7 +227,7 @@ class Quantity:  # New-style class syntax
         :rtype Variable new_obj:
         """
 
-        new_obj = self._return_proto_object(units = self.units*other_obj.units, value = self.value*other_obj.value)
+        new_obj = self.__class__(units = self.units*other_obj.units, value = self.value*other_obj.value)
 
         return new_obj
 
@@ -242,7 +245,7 @@ class Quantity:  # New-style class syntax
         :rtype Variable new_obj:
         """
 
-        new_obj = self._return_proto_object(units = self.units/other_obj.units, value = self.value/other_obj.value)
+        new_obj = self.__class__(units = self.units/other_obj.units, value = self.value/other_obj.value)
 
         return(new_obj) 
 
@@ -261,9 +264,6 @@ class Quantity:  # New-style class syntax
 
         """
 
-        new_obj = self._return_proto_object(
-                                          units = self.units**power.value, \
-                                          value = self.value**power.value
-                                         )
+        new_obj = self.__class__( units = self.units**power.value, value = self.value**power.value )
 
         return(new_obj) 
