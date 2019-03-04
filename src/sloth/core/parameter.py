@@ -43,6 +43,8 @@ class Parameter(Quantity):
 
         self.is_specified = is_specified
 
+        self.value = value
+
     def setValue(self, quantity_value, quantity_unit=None):
 
         """

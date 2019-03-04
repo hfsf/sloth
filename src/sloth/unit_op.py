@@ -50,9 +50,20 @@ class Mixer(_molarFluxConservation, _massFluxConservation):
         self.mdot_in  = self.createVariable("mdot_in", kg/s, "mass input flux", latex_text="\\dot{m}_{in}")
         self.mdot_out = self.createVariable("mdot_out", kg/s, "mass output flux", latex_text="\\dot{m}_{out}")
 
-class Tee:
+class Tee(_molarFluxConservation, _massFluxConservation):
 
-    pass
+    """
+    Model for a tee (separation in multiple streams from one initial one) of material streams
+    """
+
+    def __init__(self, name, description="Mixer model"):
+
+        super().__init__(name)
+
+        self.ndot_in  = self.createVariable("ndot_in", mol/s, "molar input flux", latex_text="\\dot{n}_{in}")
+        self.ndot_out = self.createVariable("ndot_out", mol/s, "molar output flux", latex_text="\\dot{n}_{out}")
+        self.mdot_in  = self.createVariable("mdot_in", kg/s, "mass input flux", latex_text="\\dot{m}_{in}")
+        self.mdot_out = self.createVariable("mdot_out", kg/s, "mass output flux", latex_text="\\dot{m}_{out}")
 
 class Recycle:
 

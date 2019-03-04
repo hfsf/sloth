@@ -58,27 +58,6 @@ class Unit:  # New-style class syntax
 
         return is_dimless
 
-    def _return_proto_unit(self, name="", dimension_dict={""}, description=""):
-        """
-        Return a Unit class with given name and description (defaults to "").
-        Used for return of an Unit object as the result of unit operations, with dimension given by dimension_dict.
-
-        :param str name:
-            Unit object name
-
-        :param str description:
-            Unit object description
-    
-        :param dict(float) dimension_dict:
-            Dimensions of the Unit object to be returned
-
-        :return:
-            Unit object returned
-        :rtype Unit proto_unit:
-        """
-
-        return self.__class__(name, dimension_dict, description) 
-
     def _reset_dimensions(self, null_dimension):
         """
         Private function for reseting the dimensions of the present unit,
@@ -216,7 +195,7 @@ class Unit:  # New-style class syntax
 
                     new_dimension[dim_i] = idx_i
 
-            new_unit = self._return_proto_unit(dimension_dict=new_dimension)
+            new_unit = self.__class__(name="", dimension_dict=new_dimension, description="") 
 
             return new_unit
 
@@ -262,7 +241,7 @@ class Unit:  # New-style class syntax
 
                     new_dimension[dim_i] = -idx_i
 
-            new_unit = self._return_proto_unit(dimension_dict=new_dimension)
+            new_unit = self.__class__(name="", dimension_dict=new_dimension, description="") 
 
             return new_unit
 
@@ -309,7 +288,7 @@ class Unit:  # New-style class syntax
 
                     new_dimension[dim_i] = -idx_i
 
-            new_unit = self._return_proto_unit(dimension_dict=new_dimension)
+            new_unit = self.__class__(name="", dimension_dict=new_dimension, description="") 
 
             return new_unit
 
@@ -347,7 +326,7 @@ class Unit:  # New-style class syntax
 
                 new_dimension[dim_i] = idx_i*power
 
-            new_unit = self._return_proto_unit(dimension_dict=new_dimension)
+            new_unit = self.__class__(name="", dimension_dict=new_dimension, description="") 
 
             return new_unit
 
@@ -355,7 +334,7 @@ class Unit:  # New-style class syntax
 
             # power is another unit, presumably dimensionless
 
-            new_unit = self._return_proto_unit(dimension_dict=self.dimension)
+            new_unit = self.__class__(name="", dimension_dict=self.dimension, description="") 
 
             return new_unit
 

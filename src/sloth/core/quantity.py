@@ -98,33 +98,6 @@ class Quantity:  # New-style class syntax
 
             raise UnexpectedValueError("(Quantity, float, int)")
 
-    ''' MARKED FOR REMOVAL
-    def _return_proto_object(self, name="", units={""}, description="", value=0):
-        """
-        Return a Proto Quantity (QTY) class with given name, description and other
-        variables (defaults to "", False and None, when applicable). Used for return of an
-        Variable object as the result of variable operations, with dimension given by units.
-
-        :param name:
-            Proto Quantity name
-
-        :param units:
-            Dimension of Variable object result
-
-        :param description:
-            Description of the Proto Quantity object
-
-        :param value:
-            Value attached
-
-        :return:
-            A Proto Quantity Object
-        :rtype: object
-        """
-        return self.__class__(name=name, units=units, description=description, value=value)
-
-    '''
-
     def __call__(self):
         """
         Overloaded function for calling the QTY as an function. 
