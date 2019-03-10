@@ -447,8 +447,4 @@ class Model:
     def DeclareEquations(self):
 
         pass
-
-    def DeclareConnections(self):
-
-        pass
     #=======================================================
