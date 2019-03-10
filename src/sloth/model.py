@@ -37,8 +37,6 @@ class Model:
         *DeclareEquations()
             Function for declaration of the Equations. Later, a sanity check (method .performSanityCheck) is performed examinating all the declared Variables, Parameters, Constants and checking if those was declared.
 
-        * DeclareConnections()
-            Function for declaration of the Connections. Those special equations are used to receive external input (eg: output from another model, external input for the current process, etc) and provide output (eg: input to another model, or simple output for the current process).
 
     """
 
@@ -226,8 +224,6 @@ class Model:
         self.DeclareVariables()
 
         self.DeclareEquations()
-
-        self.DeclareConnections()
 
         if len(self.variables) == 0:
 
