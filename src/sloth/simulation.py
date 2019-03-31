@@ -22,7 +22,7 @@ class Simulation:
     Simulation class definition
     """
 
-    def __init__(self, name, description="", problem=None):
+    def __init__(self, name, description="", problem=None, plotter=None):
 
         """
         Instantiate Simulation.
@@ -47,7 +47,10 @@ class Simulation:
 
         self.configurations = None
 
-        self.plotter = Plotter()
+        if plotter is None:
+          plotter = Plotter(simulation=self)
+
+        self.plotter = plotter
 
         self.domain = None
 
@@ -78,32 +81,32 @@ class Simulation:
 
         """
         Set the Problem object for the current simulation
-        
+
         :param Problem problem:
         """
 
-        self.problem = problem       
+        self.problem = problem
 
-    def setConfigurations(self, 
-                          initial_time=0., 
-                          end_time=None, 
-                          linear_solver='sympy', 
-                          nonlinear_solver='sympy', 
-                          differential_solver='scipy', 
-                          differential_algebraic_solver='IDA', 
-                          problem_type=None, 
-                          is_dynamic=False, 
-                          compile_equations=True, 
-                          domain=None, 
-                          time_variable_name='t', 
-                          arg_names=[], 
+    def setConfigurations(self,
+                          initial_time=0.,
+                          end_time=None,
+                          linear_solver='sympy',
+                          nonlinear_solver='sympy',
+                          differential_solver='scipy',
+                          differential_algebraic_solver='IDA',
+                          problem_type=None,
+                          is_dynamic=False,
+                          compile_equations=True,
+                          domain=None,
+                          time_variable_name='t',
+                          arg_names=[],
                           args=[],
-                          verbosity_solver=0, 
-                          number_of_time_steps=100, 
-                          configuration_args={}, 
-                          print_output=False, 
+                          verbosity_solver=0,
+                          number_of_time_steps=100,
+                          configuration_args={},
+                          print_output=False,
                           output_headers=None,
-                          variable_name_map={}, 
+                          variable_name_map={},
                           compilation_mechanism="numpy",
                           definition_dict=None,
                           configurations_file=None,
@@ -128,12 +131,12 @@ class Simulation:
 
         else:
 
-            additional_conf = {'compile_equations':compile_equations, 
-                               'domain':domain, 
+            additional_conf = {'compile_equations':compile_equations,
+                               'domain':domain,
                                'time_variable_name':time_variable_name,
                                'initial_time':initial_time,
                                'end_time':end_time,
-                               'is_dynamic':is_dynamic, 
+                               'is_dynamic':is_dynamic,
                                'arg_names':arg_names,
                                'linear_solver':linear_solver,
                                'nonlinear_solver':nonlinear_solver,
@@ -176,13 +179,13 @@ class Simulation:
         elif problem_type == "nonlinear":
 
             solver_mechanism = solvers._createSolver(self.problem, self.configurations)
-        
+
         elif problem_type == "differential":
 
-            solver_mechanism = solvers._createSolver(self.problem, self.configurations)     
+            solver_mechanism = solvers._createSolver(self.problem, self.configurations)
         elif problem_type == "differential-algebraic":
 
-            solver_mechanism = solvers._createSolver(self.problem, self.configurations)             
+            solver_mechanism = solvers._createSolver(self.problem, self.configurations)
         else:
 
             raise UnexpectedValueError("EquationBlock")
@@ -228,7 +231,7 @@ class Simulation:
 
                 tab.add_row(np.concatenate(([time_points[i]], Y[i,:])))
 
-            print(header+str(tab))          
+            print(header+str(tab))
 
         else:
 
@@ -240,36 +243,36 @@ class Simulation:
 
             for var_i in list(self.output.keys()):
 
-                tab.add_row([ str(var_i), 
+                tab.add_row([ str(var_i),
                               str(self.problem.equation_block._var_dict[str(var_i)].units),
                               self.output[var_i]
                             ]
                 )
-            
+
             print(header + str(tab))
 
-    def plotResults(self, x_data=None, y_data=None, set_style='darkgrid', x_label='time', y_label='output', labels=None, linewidth=2.5, markers=None, grid=False, save_file=None, show_plot=True, data=None, legend=False):
-    
-        self.plotter.plotSimpleLines(x_data=x_data,
-                                     y_data=y_data,   
-                                     set_style=set_style, 
-                                     x_label=x_label, 
-                                     y_label=y_label, 
-                                     linewidth=linewidth, 
-                                     labels=labels, 
-                                     markers=markers, 
-                                     grid=grid, 
-                                     save_file=save_file, 
+    def plotTimeSeries(self, x_data=None, y_data=None, set_style='darkgrid', x_label='time', y_label='output', labels=None, linewidth=2.5, markers=None, grid=False, save_file=None, show_plot=True, data=None, legend=False):
+
+        self.plotter.plotTimeSeries(x_data=x_data,
+                                     y_data=y_data,
+                                     set_style=set_style,
+                                     x_label=x_label,
+                                     y_label=y_label,
+                                     linewidth=linewidth,
+                                     labels=labels,
+                                     markers=markers,
+                                     grid=grid,
+                                     save_file=save_file,
                                      show_plot=show_plot,
-                                     legend=legend, 
+                                     legend=legend,
                                      data=data
-                    )          
+                    )
 
     def getResults(self, return_type='list'):
 
         """
         Return the output of the current simulation according to the desired type
-        
+
         :param str return_type:
             Type of the output to be returned ('dict', 'list'). Defaults to 'list'
         """
@@ -300,13 +303,13 @@ class Simulation:
 
             if return_type == 'list':
 
-                return [domain_.values[ind_i].values 
+                return [domain_.values[ind_i].values
                         for ind_i in domain_.values.keys()
                     ]
 
             elif return_type == 'dict':
 
-                return {ind_i:domain_.values[ind_i].to_dict(orient='list') 
+                return {ind_i:domain_.values[ind_i].to_dict(orient='list')
                         for ind_i in domain_.values.keys()
                     }
 
@@ -322,10 +325,10 @@ class Simulation:
 
         """
         Dump the configurations used for running the simulation into one JSON file for later utilization (eg: optimization studies, or re-simulation)
-        
+
         :param str file_name:
             File name for dumping the configurations. Defaults to None, which will use the name of the simulation '<NAME_OF_THE_SIMULATION>-conf.json'
-        
+
         :return:
             JSON file containing the configurations
         :rtype JSON:
@@ -353,7 +356,7 @@ class Simulation:
 
         """
         Overloaded function for searching for an specific Parameter through the equations defined for the Problem used in current Simulation
-        
+
         :param (str, Quantity) obj:
             Parameter which will be searched among the equations for the current simulation
         :return obj_reference:

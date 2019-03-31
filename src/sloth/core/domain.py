@@ -1,7 +1,7 @@
 # *coding:utf-8*
 
 """
-Define Domain class, which distributes one equation among a domain of variables.  
+Define Domain class, which distributes one equation among a domain of variables.
 """
 
 import pandas as pd
@@ -39,7 +39,7 @@ class Domain:
             Inferior limit for the independent variables in which the current domain rely on, with a key for each variable or 'all' for one single value for whole domain.
 
         :ivar dict(Float) upper_bound:
-            Superior limit for the independent variables in which the current domain rely on, with a key for each variable or 'all' for one single value for whole domain.            
+            Superior limit for the independent variables in which the current domain rely on, with a key for each variable or 'all' for one single value for whole domain.
         """
 
         self.name = name
@@ -82,9 +82,13 @@ class Domain:
         """
         """
 
+        #TODO: Single element, assume that there is only one independent variable, and it should be acessed
+
         ind_vars = idx[0]
 
         dep_headers = idx[1]
+
+        #If the either the independent or dependent vars are a single element, convert to list for iteration
 
         if not isinstance(ind_vars, list):
 
@@ -93,6 +97,8 @@ class Domain:
         if not isinstance(dep_headers, list):
 
             dep_headers = [dep_headers]
+
+        print("self.values:",self.values)
 
         return np.array([self.values[i][j].values for (i,j) in product(ind_vars,dep_headers)])
 

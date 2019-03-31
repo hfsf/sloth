@@ -53,7 +53,7 @@ def mod():
 
             expr2 = self.y2.Diff(self.t) - self.y4()
 
-            expr3 = self.y3.Diff(self.t) + self.y5()*self.y1()        
+            expr3 = self.y3.Diff(self.t) + self.y5()*self.y1()
 
             expr4 = self.y4.Diff(self.t) + self.y5()*self.y2() + 9.82
 
@@ -108,9 +108,9 @@ def test_model_properties(mod):
 def test_model_enodes(mod):
 
     assert mod.eq1.equation_expression.symbolic_map[list(mod.y3().symbolic_map.keys())[0]] == mod.y3
-    
+
     assert mod.eq2.equation_expression.symbolic_map[list(mod.y4().symbolic_map.keys())[0]] == mod.y4
-    
+
     assert mod.eq1.equation_expression.symbolic_map[list(mod.y3().symbolic_map.keys())[0]] == mod.eq5.equation_expression.symbolic_map[list(mod.y3().symbolic_map.keys())[0]]
 
 
@@ -122,10 +122,12 @@ def test_simulation_properties(mod, prob, sim):
 
     sim.setProblem(prob)
 
+    print(sim.__dict__)
+
     assert sim.name == "simul"
 
     assert sim.description == "generic simulation"
-    
+
     assert sim.problem == prob
 
 
@@ -149,13 +151,13 @@ def test_simulation_result(mod, prob, sim, compile_equations):
                                'y3_DA0':0.,
                                'y2_DA0':0.,
                                'y1_DA0':1.,
-                               't_DA0':0.     
+                               't_DA0':0.
                             }
-                        ) 
+                        )
 
     sim.setProblem(prob)
 
-    sim.setConfigurations(initial_time=0., 
+    sim.setConfigurations(initial_time=0.,
                       end_time=5.,
                       is_dynamic=True,
                       domain=mod.dom,
@@ -164,13 +166,13 @@ def test_simulation_result(mod, prob, sim, compile_equations):
                       compile_equations=True,
                       print_output=False,
                       output_headers=["Time","y1","y2","y3","y4","y5"],
-                      variable_name_map={"t_DA0":"Time(t)", 
-                                         "y1_DA0":"Y-1", 
-                                         "y2_DA0":"Y-2", 
-                                         "y3_DA0":"Y-3", 
-                                         "y4_DA0":"Y-4", 
+                      variable_name_map={"t_DA0":"Time(t)",
+                                         "y1_DA0":"Y-1",
+                                         "y2_DA0":"Y-2",
+                                         "y3_DA0":"Y-3",
+                                         "y4_DA0":"Y-4",
                                          "y5_DA0":"Y-5"
-                                        } 
+                                        }
                       )
 
     sim.runSimulation()

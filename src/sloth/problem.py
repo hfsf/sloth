@@ -17,7 +17,7 @@ class Problem:
     Problem class definitions. Unite several Model objects into one single equation block for solving.
     """
 
-    def __init__(self, name, description=""):
+    def __init__(self, name, description="", models={}, connections={}, variable_dict={}, parameter_dict={}):
 
         """
         Instantiate Problem.
@@ -33,9 +33,9 @@ class Problem:
 
         self.description = description
 
-        self.models = OrderedDict({})
+        self.models = OrderedDict(models)
 
-        self.connections = OrderedDict({})
+        self.connections = OrderedDict(connections)
 
         self._equation_list = None
 
@@ -43,9 +43,9 @@ class Problem:
 
         self.initial_conditions = {}
 
-        self.variable_dict = OrderedDict({})
+        self.variable_dict = OrderedDict(variable_dict)
 
-        self.parameter_dict = OrderedDict({})
+        self.parameter_dict = OrderedDict(parameter_dict)
 
     def setInitialConditions(self, condition):
 
