@@ -26,7 +26,7 @@ class DOF_Analysis:
             Problem which need to be analyzed
 
         :ivar int number_optimizated_parameters:
-            Number of parameters which are being optimized. Thus, those are not acounted as specified parameters in DOF analysis. 
+            Number of parameters which are being optimized. Thus, those are not acounted as specified parameters in DOF analysis.
         """
 
         self.problem = problem
@@ -109,7 +109,7 @@ class Analysis:
 
         con_form = ", ".join(con_str)
 
-        return var_form, param_form, con_form 
+        return var_form, param_form, con_form
 
     def problemReport(self, problem):
 
@@ -117,7 +117,7 @@ class Analysis:
         Print the descritive report of the problem, using the information provided by the cointained Model objects.
 
         :param Problem problem:
-            Problem to be examined        
+            Problem to be examined
 
         :return:
             Formated table with the information of the models

@@ -41,18 +41,22 @@ class Plotter:
 
         #y_data=sim.domain[('t_M1',['Preys(u)','Predators(v)'])],
 
-        if isinstance(x_data, tuple) and data is not None:
+        if isinstance(x_data, str) and data is not None:
 
             try:
+                ind_var_ = list(data.independent_vars.keys())[0]
+                x_data = (ind_var_ ,x_data)
                 x_data = data[x_data]
 
             except:
 
                 raise ValueError("Improper value for x_data or y_data. \n\tThey should be either a direct reference for simulation data or reference for domain values.")
 
-        if isinstance(y_data, tuple) and data is not None:
+        if isinstance(y_data, list) and all(isinstance(y_i, str) for y_i in y_data) and data is not None:
 
             try:
+                ind_var_ = list(data.independent_vars.keys())[0]
+                y_data = (ind_var_ ,y_data)
                 y_data = data[y_data]
 
             except:

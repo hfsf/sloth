@@ -88,7 +88,7 @@ def mod3():
 
         def __init__(self, name, description):
 
-            super().__init__(name, "Model 1")
+            super().__init__(name, "Model 3")
 
             self.a = self.createVariable("a",dimless,"a")
             self.b = self.createVariable("b",dimless,"b")
@@ -175,7 +175,7 @@ def test_multiple_model_incorporation(mod3):
     print("\n\n===> Constants(mod1b): ",mod1b_.constants)
     print("\n\n===> Variables(mod1b): ",mod1b_.variables)
     print("\n\n===> Equations(mod1b): ",mod1b_.equations)
-    
+
     assert mod3.parameters['f_M3'].value == mod1a_.parameters['f_M1a'].value
     assert mod3.parameters['h_M3'].value == mod1b_.parameters['h_M1b'].value
 

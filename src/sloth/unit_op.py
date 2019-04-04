@@ -9,6 +9,19 @@ from .core.equation_operators import *
 from .core.template_units import *
 from .core.domain import *
 
+class _mechanicalEquilibrium(model.Model):
+
+    def __init__(self, name, description=""):
+
+        super().__init__(name,"Mechanical Equilibrium")
+
+        self.P_In = self.createVariable("P_In", Pa, "p_in")
+        self.P_Out = self.createVariable("P_Out", Pa, "p_out")
+
+        _mechanical_equilibrium = self.P_In() - self.P_Out()
+
+        self.createEquation("mechanical_equilibrium", "Mechanical Equilibrium", _mechanical_equilibrium)
+
 class _molarFluxConservation(model.Model):
 
     def __init__(self, name, description=""):
@@ -18,7 +31,7 @@ class _molarFluxConservation(model.Model):
         self.N_In_Dot = self.createVariable("N_In_Dot", mol/s, "n_in_dot")
         self.N_Out_Dot = self.createVariable("N_Out_Dot", mol/s, "n_out_dot")
 
-        _molar_conservation = self.N_In_Dot() - self.N_Out_Dot()
+        _molar_conservation = self. self.N_In_Dot() - self.N_Out_Dot()
 
         self.createEquation("molar_conservation", "Molar consevation", _molar_conservation)
 
@@ -35,8 +48,7 @@ class _massFluxConservation(model.Model):
 
         self.createEquation("mass_flux_conservation", "Molar flux consevation", _mass_conservation)
 
-class Mixer(_molarFluxConservation, _massFluxConservation):
-
+class Mixer(Model):
     """
     Model for a mixer of material streams
     """
@@ -47,43 +59,140 @@ class Mixer(_molarFluxConservation, _massFluxConservation):
 
         self.ndot_in  = self.createVariable("ndot_in", mol/s, "molar input flux", latex_text="\\dot{n}_{in}")
         self.ndot_out = self.createVariable("ndot_out", mol/s, "molar output flux", latex_text="\\dot{n}_{out}")
+
+        _molar_conservation = self. self.ndot_in() - self.ndot_out()
+
+        self.createEquation("molar_conservation", "Molar consevation", _molar_conservation)
+
         self.mdot_in  = self.createVariable("mdot_in", kg/s, "mass input flux", latex_text="\\dot{m}_{in}")
         self.mdot_out = self.createVariable("mdot_out", kg/s, "mass output flux", latex_text="\\dot{m}_{out}")
 
-class Tee(_molarFluxConservation, _massFluxConservation):
+        _mass_conservation = self. self.mdot_in() - self.mdot_out()
+
+        self.createEquation("mass_conservation", "Mass consevation", _mass_conservation)
+
+class Tee(Model):
 
     """
     Model for a tee (separation in multiple streams from one initial one) of material streams
     """
 
-    def __init__(self, name, description="Mixer model"):
+    def __init__(self, name, description="Tee model"):
 
         super().__init__(name)
 
         self.ndot_in  = self.createVariable("ndot_in", mol/s, "molar input flux", latex_text="\\dot{n}_{in}")
         self.ndot_out = self.createVariable("ndot_out", mol/s, "molar output flux", latex_text="\\dot{n}_{out}")
+
+        _molar_conservation = self. self.ndot_in() - self.ndot_out()
+
+        self.createEquation("molar_conservation", "Molar consevation", _molar_conservation)
+
         self.mdot_in  = self.createVariable("mdot_in", kg/s, "mass input flux", latex_text="\\dot{m}_{in}")
         self.mdot_out = self.createVariable("mdot_out", kg/s, "mass output flux", latex_text="\\dot{m}_{out}")
 
-class Recycle:
+        _mass_conservation = self. self.mdot_in() - self.mdot_out()
 
-    pass
+        self.createEquation("mass_conservation", "Mass consevation", _mass_conservation)
 
-class Tank:
+class Tank(_mechanicalEquilibrium, Model):
 
-    pass
+
+    def __init__(self, name, description="Tank"):
+
+        super().__init__(name)
+
+        self.t = self.createVariable("t",s,"time",latex_text="t")
+
+        self.time_domain = Domain("time_domain", s, self.t, "time domain")
+
+        self.ndot_in  = self.createVariable("ndot_in", mol/s, "molar input flux", latex_text="\\dot{n}_{in}")
+        self.ndot_out = self.createVariable("ndot_out", mol/s, "molar output flux", latex_text="\\dot{n}_{out}")
+        self.N = self.createVariable("N", mol, "molar holdup", latex_text="N")
+
+        self.N.distributeOnDomain(self.time_domain)
+
+        _molar_conservation = self.N.Diff(self.t) == self. self.ndot_in() - self.ndot_out()
+
+        self.createEquation("molar_conservation", "Molar consevation", _molar_conservation)
+
+        self.mdot_in  = self.createVariable("mdot_in", kg/s, "mass input flux", latex_text="\\dot{m}_{in}")
+        self.mdot_out = self.createVariable("mdot_out", kg/s, "mass output flux", latex_text="\\dot{m}_{out}")
+        self.M = self.createVariable("M", kg, "mass holdup", latex_text="M")
+
+        self.M.distributeOnDomain(self.time_domain)
+
+        _mass_conservation = self.M.Diff(self.t) ==  self. self.mdot_in() - self.mdot_out()
+
+        self.createEquation("mass_conservation", "Mass conservation", _mass_conservation)
+
+        self.h_in  = self.createVariable("h_in", J/mol, "molar enthalpy input", latex_text="h_{in}")
+        self.h_out = self.createVariable("h_out", J/mol, "molar enthalpy output", latex_text="h_{out}")
+        self.E = self.createVariable("E", J, "Internal energy", latex_text="E")
+
+        self.Q = self.createVariable("Q", J, "Heat rate", latex_text="Q")
+
+        self.E.distributeOnDomain(self.time_domain)
+
+        _energy_balance = self.E.Diff(self.t) == self.n_dot_in*self.h_in() - self.n_dot_out*self.h_out() + self.Q()
+
+        self.createEquation("energy_balance", "Energy balance", _energy_balance)
+
+        self.level = self.createVariable("level", m, "liquid level", latex_text="L")
+        self.area_sec = self.createParameter("area_sec", m**2, "squared section area", latex_text="{A}_{sec}")
 
 class Centrifuge:
 
     pass
 
-class Fermenter:
+class Fermenter(Tank):
 
-    pass
+    def __init__(self, name, description="Fermenter"):
 
-class Valve:
+        super().__init__(name)
 
-    pass
+class Valve(Model):
+
+    def __init__(self, name, description="Tank"):
+
+        super().__init__(name)
+
+        self.ndot_in  = self.createVariable("ndot_in", mol/s, "molar input flux", latex_text="\\dot{n}_{in}")
+        self.ndot_out = self.createVariable("ndot_out", mol/s, "molar output flux", latex_text="\\dot{n}_{out}")
+
+        self.mdot_in  = self.createVariable("mdot_in", kg/s, "mass input flux", latex_text="\\dot{m}_{in}")
+        self.mdot_out = self.createVariable("mdot_out", kg/s, "mass output flux", latex_text="\\dot{m}_{out}")
+
+
+        self.perc_open = self.createParameter("perc_open", dimless, "percentage of opening", latex_text="{\%}_{open}")
+
+        self.h_in = self.createVariable("h_in", J, "input enthalpy", latex_text="{h}_{in}")
+        self.h_out = self.createVariable("h_out", J, "output enthalpy", latex_text="{h}_{out}")
+
+        self.P_in = self.createVariable("P_In", Pa, "p_in", latex_text="{P}_{in}")
+        self.P_out = self.createVariable("P_Out", Pa, "p_out", latex_text="{P}_{out}")
+        self.Delta_P = self.createParameter("Delta_P", Pa, "pressure drop", latex_text="{\\Delta P}")
+
+
+    def DeclareEquations(self):
+
+
+        _molar_conservation = self.N.Diff(self.t) == self. self.ndot_in() - self.ndot_out()
+
+        self.createEquation("molar_conservation", "Molar consevation", _molar_conservation)
+
+        _mass_conservation = self. self.mdot_in() - self.mdot_out()
+
+        self.createEquation("mass_conservation", "Mass conservation", _mass_conservation)
+
+       _isoenthalpy = self.h_in() - self.h_out()
+
+        self.createEquation("isoenthalpy", "isoenthalpy", _isoenthalpy)
+
+       _mechanical_equilibrium = self.P_out() - self.P_in() + self.Delta_P()
+
+        self.createEquation("mechanical_equilibrium", "Mechanical Equilibrium", _mechanical_equilibrium)
+
 
 class Pump:
 

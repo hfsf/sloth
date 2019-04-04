@@ -93,8 +93,9 @@ def sim():
 
 
 @pytest.mark.parametrize("compile_equations",[True, False])
+@pytest.mark.parametrize("short_reference_to_domain",[True, False])
 
-def test_plotter_after_simulation(mod, prob, sim, compile_equations):
+def test_plotter_after_simulation(mod, prob, sim, compile_equations, short_reference_to_domain):
 
     prob.addModels(mod)
 
@@ -138,15 +139,33 @@ def test_plotter_after_simulation(mod, prob, sim, compile_equations):
 
     #Check if a output file is produced
 
-    sim.plotTimeSeries( x_data=[sim.domain[('t_D0','Time(t)')]],
-                        y_data=sim.domain[('t_D0',['Preys(u)','Predators(v)'])],
-                        save_file='test_plot.png',
-                        labels=['Preys($u$)','Predators($v$)'],
-                        x_label=r'Time$\,(s)$',
-                        y_label=r'Individuals$\,(\#)$',
-                        show_plot=False,
-                        grid=True,
-                        legend=True
-                    )
+    if short_reference_to_domain is True:
 
-    assert os.path.isfile('test_plot.png')
+        sim.plotTimeSeries( x_data='Time(t)',
+                            y_data=['Preys(u)','Predators(v)'],
+                            save_file='test_plot.png',
+                            data=sim.domain,
+                            labels=['Preys($u$)','Predators($v$)'],
+                            x_label=r'Time$\,(s)$',
+                            y_label=r'Individuals$\,(\#)$',
+                            show_plot=False,
+                            grid=True,
+                            legend=True
+                        )
+
+        assert os.path.isfile('test_plot.png')
+
+    if short_reference_to_domain is False:
+
+        sim.plotTimeSeries( x_data=[sim.domain[('t_D0','Time(t)')]],
+                            y_data=sim.domain[('t_D0',['Preys(u)','Predators(v)'])],
+                            save_file='test_plot.png',
+                            labels=['Preys($u$)','Predators($v$)'],
+                            x_label=r'Time$\,(s)$',
+                            y_label=r'Individuals$\,(\#)$',
+                            show_plot=False,
+                            grid=True,
+                            legend=True
+                        )
+
+        assert os.path.isfile('test_plot.png')
