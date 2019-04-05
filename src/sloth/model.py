@@ -4,7 +4,7 @@
 Define Model class, for storage of equations, distribution on domains and information about input and output variables (exposed variables), and incorporation of other models variables and equations
 """
 import collections
-from .core.error_definitions import UnexpectedObjectDeclarationError, UnexpectedValueError 
+from .core.error_definitions import UnexpectedObjectDeclarationError, UnexpectedValueError
 from .core.equation import Equation
 from .core.equation_operators import Log, Log10, Sqrt, Abs, Exp, Sin, Cos, Tan
 from .core.variable import Variable
@@ -15,14 +15,14 @@ import prettytable
 
 class Model:
 
-    """   
+    """
     Model class definition. Stores several Equation objects, map exposed the exposed variables of the model and allow distribution of a variable among a specific domain.
 
-    * Note: 
+    * Note:
 
         Mandatory structure that user should supply when importing Model:
 
-        * DeclareVariables() 
+        * DeclareVariables()
             Function  that is executed in the initial preparation of the model, declaring all the Variable objects for later reference.
 
         * DeclareExposedVariables()
@@ -142,7 +142,7 @@ class Model:
 
         """
         Return information about the number of degrees of freedom
-        
+
         :return:
             Number of design, control and chemical degrees of freedom.
         :rtype:
@@ -206,7 +206,7 @@ class Model:
             raise (UnexpectedObjectDeclarationError( list(eq.objects_declared.keys()), self.objects_info ))
 
             return(False)
-        
+
         else:
 
             return(True)
@@ -237,7 +237,7 @@ class Model:
 
         """
         Function for creation of an Connection object, and inclusion of a connective equation in the current model. Typically called externally.
-        
+
         :ivar str name:
             Name for the current equation
 
@@ -317,7 +317,7 @@ class Model:
         #Check if all objects used in the current equation were declared
 
         if self._checkEquation_(eq) == True:
-            
+
             self.equations[eq.name] = eq
 
             return eq
@@ -329,7 +329,7 @@ class Model:
     def createVariable(self, name, units , description = "", is_lower_bounded = False, is_upper_bounded = False, lower_bound = None, upper_bound = None, is_exposed = False, type = '', latex_text="", value = 0.):
 
         """
-        
+
         Function for creation of an Variable object. Store an Variable object in '.variables' dict. Mandatory interface for model Variable creation in the DeclareVariables() function.
 
         :param str name:
@@ -359,7 +359,7 @@ class Model:
         Latex text to represent the variable
 
         :param float value:
-        Value of the current variable. Defaults to 0.      
+        Value of the current variable. Defaults to 0.
 
         """
 
@@ -375,10 +375,10 @@ class Model:
 
         return var
 
-    def createParameter(self, name, units , description = "", value = 0):
+    def createParameter(self, name, units , description = "", value = 0, latex_text=""):
 
         """
-        
+
         Function for creation of an Parameter object. Store an Parameter object in '.Parameters' dict. Mandatory interface for model Parameter creation in the DeclareParameters() function.
 
         :param str name:
@@ -391,10 +391,12 @@ class Model:
         Description for the present Parameter. Defauls to ""
 
         :param float value:
-        Value of the current Parameter. Defaults to 0.      
+        Value of the current Parameter. Defaults to 0.
 
+        :param str latex_text:
+        Latex text to represent the parameter
         """
-        par = Parameter(name, units , description, value)
+        par = Parameter(name, units , description, value, latex_text)
 
         par.name=par.name+'_'+self.name
 
@@ -402,10 +404,10 @@ class Model:
 
         return par
 
-    def createConstant(self, name, units , description = "", value = 0):
+    def createConstant(self, name, units , description = "", value = 0, latex_text=""):
 
         """
-        
+
         Function for creation of an Constant object. Mandatory interface for model Constant creation in the DeclareConstants() function.
 
         :param str name:
@@ -418,11 +420,13 @@ class Model:
         Description for the present constant. Defauls to ""
 
         :param float value:
-        Value of the current constant. Defaults to 0.      
+        Value of the current constant. Defaults to 0.
 
+        :param str latex_text:
+        Latex text to represent the constant
         """
 
-        con = Constant(name, units , description, value)
+        con = Constant(name, units , description, value, latex_text)
 
         con.name=con.name+'_'+self.name
 

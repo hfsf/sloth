@@ -17,10 +17,7 @@ from src.sloth.core.equation_operators import *
 from src.sloth.core.template_units import *
 from src.sloth.core.domain import *
 
-import copy
-
 import os
-
 
 @pytest.fixture
 def mod():

@@ -54,6 +54,8 @@ class Simulation:
 
         self.domain = None
 
+        self.status = None
+
     def report(self, object):
 
         """
@@ -162,7 +164,7 @@ class Simulation:
 
         self.configurations = additional_conf
 
-    def runSimulation(self):
+    def runSimulation(self, show_output_msg = False):
 
         problem_type = self.configurations['problem_type']
 
@@ -206,6 +208,34 @@ class Simulation:
         self.output = out
 
         self.domain = self.configurations['domain']
+
+        if show_output_msg is True:
+
+            exit_status = self.getStatus()
+
+            if exit_status == 0:
+
+                print("Simulation ended sucessfully with status=",exit_status,".")
+
+            if exit_status is not 0:
+
+                print("Simulation ended unsucessfully with status=",exit_status,".\n Some sort of error ocurred.")
+
+    def getStatus(self):
+
+        """
+        Get the status of the current simulation (0 for sucess, >=1 for errors)
+        """
+
+        if self.getResults() is not []:
+
+            self.status = 0
+
+        else:
+
+            self.status = 1
+
+        return self.status
 
     def showResults(self):
 

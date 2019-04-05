@@ -213,7 +213,7 @@ class Problem:
 
         else:
 
-            raise ExposedVariableError(model_1.exposed_vars['output'], model_2.exposed_vars['input'], output_vars, input_vars) 
+            raise ExposedVariableError(model_1.exposed_vars['output'], model_2.exposed_vars['input'], output_vars, input_vars)
 
 
     def _createDirectConnection(self, out_model, out_vars, in_model, in_vars, expr, description):
@@ -256,7 +256,7 @@ class Problem:
         :param [Model, list(Model)] mod_list:
             Model to be added to the current Problem.
         """
-        
+
         if isinstance(model_list,list):
 
             # A list of models were supplied
@@ -279,8 +279,8 @@ class Problem:
 
         """
         Resolve current Problem object, builing its EquationBlock object and resolving it
-        """ 
-    
+        """
+
         self._reloadModels()
 
         self._buildEquationBlock()
