@@ -132,6 +132,8 @@ def test_simulation_only_mixer(mod_1, prob, sim):
 
     assert results["mdot_out_M0"] == pytest.approx(300.)
 
+    assert results["mdot_out_M0"] == pytest.approx(results["mdot_in_M0"])
+
 
 def test_simulation_mixer_and_valves(mod_1, valve_mod, prob, sim):
 
@@ -167,3 +169,5 @@ def test_simulation_mixer_and_valves(mod_1, valve_mod, prob, sim):
 
     assert results["mdot_out_V0"] == pytest.approx(300.)
     assert results["ndot_out_V0"] == pytest.approx(300/0.018)
+    assert results["mdot_out_V0"] == pytest.approx(results["mdot_in_M0"])
+    assert results["ndot_out_V0"] == pytest.approx(results["ndot_in_M0"])
