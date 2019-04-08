@@ -172,8 +172,8 @@ class Valve(model.Model):
 
         self.perc_open = self.createParameter("perc_open", dimless, "percentage of opening", latex_text="{\\%}_{open}")
 
-        self.h_in = self.createVariable("h_in", J, "input enthalpy", latex_text="{h}_{in}", is_exposed=True, type='input')
-        self.h_out = self.createVariable("h_out", J, "output enthalpy", latex_text="{h}_{out}", is_exposed=True, type='output')
+        self.H_in = self.createVariable("H_in", J/mol, "input molar enthalpy", latex_text="{H}_{in}", is_exposed=True, type='input')
+        self.H_out = self.createVariable("H_out", J/mol, "output molar enthalpy", latex_text="{H}_{out}", is_exposed=True, type='output')
 
         self.P_in = self.createVariable("P_In", Pa, "p_in", latex_text="{P}_{in}", is_exposed=True, type='input')
         self.P_out = self.createVariable("P_Out", Pa, "p_out", latex_text="{P}_{out}", is_exposed=True, type='output')
@@ -191,7 +191,7 @@ class Valve(model.Model):
 
         self.createEquation("mass_conservation", "Mass conservation", _mass_conservation)
 
-        _isoenthalpy = self.h_in() - self.h_out()
+        _isoenthalpy = self.H_in()*self.ndot_in() - self.H_out()*self.ndot_out()
 
         self.createEquation("isoenthalpy", "isoenthalpy", _isoenthalpy)
 

@@ -46,7 +46,7 @@ def mod_1():
 
             self.mdot_out =  self.createVariable("mdot_out", kg/s, "mass flux from output stream", is_exposed=True, type='output')
 
-            self.h_out =  self.createVariable("h_out", J, "enthalpy for output stream", is_exposed=True, type='output')
+            self.H_out =  self.createVariable("H_out", J/mol, "molar enthalpy for output stream", latex_text="H_{out}", is_exposed=True, type='output')
 
             self.mdot_1.setValue(100.)
             self.mdot_2.setValue(200.)
@@ -60,7 +60,7 @@ def mod_1():
             self.eq1 = self.createEquation("eq1", "Input mass flow", self.mdot_in() - self.mdot_1() - self.mdot_2() )
             self.eq2 = self.createEquation("eq2", "Input molar flow", self.ndot_in() - self.mdot_in()/self.molar_mass() )
             self.eq3 = self.createEquation("eq3", "Pressure input", self.P_in() - min(self.P_1.value, self.P_2.value))
-            self.eq4 = self.createEquation("eq4", "Enthalpy output", self.h_out() )
+            self.eq4 = self.createEquation("eq4", "Enthalpy output", self.H_out() )
 
     m_mod = mix_model("M0","Model for simple stream mixer")
 
@@ -149,13 +149,13 @@ def test_simulation_mixer_and_valves(mod_1, valve_mod, prob, sim):
 
     prob.addModels([mod_1, valve_mod])
 
-    prob.createConnection(mod_1, valve_mod, mod_1.mdot_out, valve_mod.mdot_in)
+    prob.createConnection(mod_1, valve_mod, mod_1.mdot_out, valve_mod.mdot_in) # M_dot
 
-    prob.createConnection(mod_1, valve_mod, mod_1.ndot_out, valve_mod.ndot_in)
+    prob.createConnection(mod_1, valve_mod, mod_1.ndot_out, valve_mod.ndot_in) #
 
     prob.createConnection(mod_1, valve_mod, mod_1.P_out, valve_mod.P_in) # P
 
-    prob.createConnection(mod_1, valve_mod, mod_1.h_out, valve_mod.h_in) # h
+    prob.createConnection(mod_1, valve_mod, mod_1.H_out, valve_mod.H_in) # h
 
     prob.resolve()
 
