@@ -2,7 +2,7 @@ language: python
 python:
   - "3.6"
   - "3.7"
-dist: xenial  
+dist: xenial
 install:
   - sudo apt-get update
   # We do this conditionally because it saves us some downloading if the
@@ -19,10 +19,11 @@ install:
   - conda update -q conda
   # Useful for debugging any issues with conda
   - conda info -a
-  #Adding conda-forge channel  
-  - conda config --add channels conda-forge     
+  #Adding conda-forge channel
+  - conda config --add channels conda-forge
   # Replace dep1 dep2 ... with your dependencies
   - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION cython numpy scipy assimulo pygmo>2.7 matplotlib seaborn sympy prettytable pandas pytest mpmath numexpr
+  - pip install thermo
   - source activate test-environment
   - python setup.py install
 

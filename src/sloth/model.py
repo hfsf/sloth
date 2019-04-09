@@ -40,7 +40,7 @@ class Model:
 
     """
 
-    def __init__(self, name, description = ""):
+    def __init__(self, name, description = "", property_package=None):
 
         """
         Instantiate Model.
@@ -51,13 +51,15 @@ class Model:
         :ivar str description"
             Short description of the current model
 
-        :param Model incorporated_models:
-            Base model(s) for the current, which will inherit equations, exposed variables, etc from the first. Defaults to None
+        :ivar PropertyPackage property_package:
+            Object that holds the properties (eg: physico-chemical properties, etc) for the current model. Defaults to None
         """
 
         self.name = name
 
         self.description = description
+
+        self.property_package = property_package
 
         #If those argurments already exists due to model inheritance:
 

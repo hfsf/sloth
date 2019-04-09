@@ -53,9 +53,9 @@ class Mixer(model.Model):
     Model for a mixer of material streams
     """
 
-    def __init__(self, name, description="Mixer model"):
+    def __init__(self, name, description="Mixer model", property_package=None):
 
-        super().__init__(name)
+        super().__init__(name, description, property_package)
 
         self.ndot_in  = self.createVariable("ndot_in", mol/s, "molar input flux", latex_text="\\dot{n}_{in}", is_exposed=True, type='input')
         self.ndot_out = self.createVariable("ndot_out", mol/s, "molar output flux", latex_text="\\dot{n}_{out}", is_exposed=True, type='output')
@@ -78,31 +78,18 @@ class Mixer(model.Model):
 
         self.createEquation("mechanical_equilibrium", "Mechanical Equilibrium", _mechanical_equilibrium)
 
-class Tee(model.Model):
+class Tee(Mixer):
 
     """
     Model for a tee (separation in multiple streams from one initial one) of material streams
     """
 
-    def __init__(self, name, description="Tee model"):
+    def __init__(self, name, description="Tee model", property_package=None):
 
-        super().__init__(name)
+        super().__init__(name, description, property_package)
 
-        self.ndot_in  = self.createVariable("ndot_in", mol/s, "molar input flux", latex_text="\\dot{n}_{in}", is_exposed=True, type='input')
-        self.ndot_out = self.createVariable("ndot_out", mol/s, "molar output flux", latex_text="\\dot{n}_{out}", is_exposed=True, type='output')
 
-        _molar_conservation = self. self.ndot_in() - self.ndot_out()
-
-        self.createEquation("molar_conservation", "Molar consevation", _molar_conservation)
-
-        self.mdot_in  = self.createVariable("mdot_in", kg/s, "mass input flux", latex_text="\\dot{m}_{in}", is_exposed=True, type='input')
-        self.mdot_out = self.createVariable("mdot_out", kg/s, "mass output flux", latex_text="\\dot{m}_{out}", is_exposed=True, type='output')
-
-        _mass_conservation = self. self.mdot_in() - self.mdot_out()
-
-        self.createEquation("mass_conservation", "Mass consevation", _mass_conservation)
-
-class Tank(_mechanicalEquilibrium, model.Model):
+class Tank(model.Model):
 
 
     def __init__(self, name, description="Tank"):
@@ -148,21 +135,29 @@ class Tank(_mechanicalEquilibrium, model.Model):
         self.level = self.createVariable("level", m, "liquid level", latex_text="L")
         self.area_sec = self.createParameter("area_sec", m**2, "squared section area", latex_text="{A}_{sec}")
 
+        self.P_In = self.createVariable("P_In", Pa, "p_in")
+        self.P_Out = self.createVariable("P_Out", Pa, "p_out")
+
+        _mechanical_equilibrium = self.P_In() - self.P_Out()
+
+        self.createEquation("mechanical_equilibrium", "Mechanical Equilibrium", _mechanical_equilibrium)
+
+
 class Centrifuge:
 
     pass
 
 class Fermenter(Tank):
 
-    def __init__(self, name, description="Fermenter"):
+    def __init__(self, name, description="Fermenter", property_package=None):
 
-        super().__init__(name)
+        super().__init__(name, description, property_package)
 
 class Valve(model.Model):
 
-    def __init__(self, name, description="Tank"):
+    def __init__(self, name, description="Valve", property_package=None):
 
-        super().__init__(name)
+        super().__init__(name, description, property_package)
 
         self.ndot_in  = self.createVariable("ndot_in", mol/s, "molar input flux", latex_text="\\dot{n}_{in}", is_exposed=True, type='input')
         self.ndot_out = self.createVariable("ndot_out", mol/s, "molar output flux", latex_text="\\dot{n}_{out}", is_exposed=True, type='output')
