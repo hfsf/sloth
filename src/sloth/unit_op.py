@@ -9,44 +9,51 @@ from .core.equation_operators import *
 from .core.template_units import *
 from .core.domain import *
 
-class _mechanicalEquilibrium(model.Model):
+class MaterialStream(model.Model):
 
-    def __init__(self, name, description=""):
+    """
+    Model for a simple material stream (homogeneous)
 
-        super().__init__(name,"Mechanical Equilibrium")
+    *INPUTS: -
+    *OUTPUTS: mdot_out, mdot_out, h_out, P_out
+    *PARAMETERS: mdot, ndot, P, H, T
 
-        self.P_In = self.createVariable("P_In", Pa, "p_in")
-        self.P_Out = self.createVariable("P_Out", Pa, "p_out")
+    *REQUIRES: PropertyPackage
+    """
 
-        _mechanical_equilibrium = self.P_In() - self.P_Out()
+    def __init__(self, name, description="Material stream", property_package=None):
 
-        self.createEquation("mechanical_equilibrium", "Mechanical Equilibrium", _mechanical_equilibrium)
+        super().__init__(name, description, property_package)
 
-class _molarFluxConservation(model.Model):
+        self.mdot = self.createParameter("mdot", kg/s, "Mass flux for stream")
+        self.ndot = self.createParameter("ndot", mol/s, "Molar flux for stream")
+        self.P = self.createParameter("P", Pa, "Pressure for stream")
+        self.H = self.createParameter("H", J/mol, "Molar enthalpy for stream")
+        self.T = self.createParameter("T", K, "Temperature for stream")
 
-    def __init__(self, name, description=""):
+        self.mdot_out = self.createVariable("mdot_out",kg/s, "Mass flux from stream", is_exposed=True, type="output")
+        self.ndot_out = self.createVariable("ndot_out",mol/s, "Molar flux from stream",is_exposed=True, type="output")
+        self.P_out = self.createParameter("P", Pa, "Pressure from stream",is_exposed=True, type="output")
+        self.H_out = self.createParameter("H", J/mol, "Molar enthalpy from stream",is_exposed=True, type="output")
+        self.T_out = self.createParameter("T", K, "Temperature from stream",is_exposed=True, type="output")
 
-        super().__init__(name,"Mass flux conservation")
+        #try to set values if the property_package was defined
 
-        self.N_In_Dot = self.createVariable("N_In_Dot", mol/s, "n_in_dot")
-        self.N_Out_Dot = self.createVariable("N_Out_Dot", mol/s, "n_out_dot")
+        #Create equations for output of streams using parameter values
 
-        _molar_conservation = self. self.N_In_Dot() - self.N_Out_Dot()
+        self.createEquation("mass_flux", self.mdot_out.description, self.mdot_out() - self.mdot() )
+        self.createEquation("molar_flux", self.ndot_out.description, self.ndot_out() - self.ndot() )
+        self.createEquation("pressure_output", self.P_out.description, self.P_out() - self.P() )
+        self.createEquation("enthalpy_output", self.H_out.description, self.H_out() - self.H())
+        self.createEquation("temperature_output", self.T_out.description, self.T_out() - self.T())
 
-        self.createEquation("molar_conservation", "Molar consevation", _molar_conservation)
+class BiphasicMaterialStream(model.Model):
 
-class _massFluxConservation(model.Model):
+    pass
 
-    def __init__(self, name, description=""):
+class MultiphasicMaterialStream(model.Model):
 
-        super().__init__(name,"Mass flux conservation")
-
-        self.M_In_Dot = self.createVariable("M_In_Dot", kg/s, "m_in_dot")
-        self.M_Out_Dot = self.createVariable("M_Out_Dot", kg/s, "m_out_dot")
-
-        _mass_conservation = self.M_In_Dot() - self.M_Out_Dot()
-
-        self.createEquation("mass_flux_conservation", "Molar flux consevation", _mass_conservation)
+    pass
 
 class Mixer(model.Model):
     """
@@ -92,9 +99,19 @@ class Tee(Mixer):
 class Tank(model.Model):
 
 
-    def __init__(self, name, description="Tank"):
+    def __init__(self, name, description="Tank", property_package=None):
 
-        super().__init__(name)
+        """
+        Defines a generic tank
+
+        *INPUTS: ndot_in, mdot_in, h_in, P_in
+        *OUTPUTS: mdot_out, mdot_out, h_out, P_out
+        *PARAMETERS: area_sec, Q
+
+        *REQUIRES: PropertyPackage
+        """
+
+        super().__init__(name, description, property_package)
 
         self.t = self.createVariable("t",s,"time",latex_text="t")
 
@@ -120,20 +137,26 @@ class Tank(model.Model):
 
         self.createEquation("mass_conservation", "Mass conservation", _mass_conservation)
 
-        self.h_in  = self.createVariable("h_in", J/mol, "molar enthalpy input", latex_text="h_{in}", is_exposed=True, type='input')
-        self.h_out = self.createVariable("h_out", J/mol, "molar enthalpy output", latex_text="h_{out}", is_exposed=True, type='output')
+        self.H_in  = self.createVariable("H_in", J/mol, "molar enthalpy input", latex_text="H_{in}", is_exposed=True, type='input')
+        self.H_out = self.createVariable("H_out", J/mol, "molar enthalpy output", latex_text="H_{out}", is_exposed=True, type='output')
         self.E = self.createVariable("E", J, "Internal energy", latex_text="E")
 
         self.Q = self.createParameter("Q", J, "Heat rate", latex_text="Q", value=0.)
 
         self.E.distributeOnDomain(self.time_domain)
 
-        _energy_balance = self.E.Diff(self.t) == self.n_dot_in*self.h_in() - self.n_dot_out*self.h_out() + self.Q()
+        _energy_balance = self.E.Diff(self.t) == self.n_dot_in()*self.H_in() - self.n_dot_out()*self.H_out() + self.Q()
 
         self.createEquation("energy_balance", "Energy balance", _energy_balance)
 
         self.level = self.createVariable("level", m, "liquid level", latex_text="L")
         self.area_sec = self.createParameter("area_sec", m**2, "squared section area", latex_text="{A}_{sec}")
+
+        self.level.distributeOnDomain(self.time_domain)
+
+        _level_balance = self.level.Diff(self.t) == (1./(self.property_package["*"].rho*self.area_sec()))*(self.mdot_in()-self.mdot_out())
+
+        self.createEquation("_level_balance", "Liquid level balance", _level_balance)
 
         self.P_In = self.createVariable("P_In", Pa, "p_in")
         self.P_Out = self.createVariable("P_Out", Pa, "p_out")
@@ -203,13 +226,100 @@ class HeatExchanger:
 
     pass
 
-class Heater:
+class Heater(model.Model):
 
-    pass
+    def __init__(self, name, description="Heater", property_package=None):
 
-class Cooler:
+        """
+        Defines a generic heater
 
-    pass
+        *INPUTS: ndot_in, mdot_in, h_in, P_in
+        *OUTPUTS: mdot_out, mdot_out, h_out, P_out
+        *PARAMETERS:  Q, Delta_P
+
+        *REQUIRES: PropertyPackage
+        """
+
+        super().__init__(name, description, property_package)
+
+        self.ndot_in  = self.createVariable("ndot_in", mol/s, "molar input flux", latex_text="\\dot{n}_{in}", is_exposed=True, type='input')
+        self.ndot_out = self.createVariable("ndot_out", mol/s, "molar output flux", latex_text="\\dot{n}_{out}", is_exposed=True, type='output')
+
+        _molar_conservation = self. self.ndot_in() - self.ndot_out()
+
+        self.createEquation("molar_conservation", "Molar consevation", _molar_conservation)
+
+        self.mdot_in  = self.createVariable("mdot_in", kg/s, "mass input flux", latex_text="\\dot{m}_{in}", is_exposed=True, type='input')
+        self.mdot_out = self.createVariable("mdot_out", kg/s, "mass output flux", latex_text="\\dot{m}_{out}", is_exposed=True, type='output')
+
+        _mass_conservation = self. self.mdot_in() - self.mdot_out()
+
+        self.createEquation("mass_conservation", "Mass conservation", _mass_conservation)
+
+        self.H_in  = self.createVariable("H_in", J/mol, "molar enthalpy input", latex_text="H_{in}", is_exposed=True, type='input')
+        self.H_out = self.createVariable("H_out", J/mol, "molar enthalpy output", latex_text="H_{out}", is_exposed=True, type='output')
+
+        self.Q = self.createParameter("Q", J, "Heat rate", latex_text="Q", value=0.)
+
+        _energy_balance = self.n_dot_out()*self.H_out() - self.n_dot_in()*self.H_in() - self.Q()
+
+        self.createEquation("energy_balance", "Energy balance", _energy_balance)
+
+        self.P_In = self.createVariable("P_In", Pa, "p_in")
+        self.P_Out = self.createVariable("P_Out", Pa, "p_out")
+        self.Delta_P = self.createParameter("Delta_P", Pa, "pressure drop", latex_text="{\\Delta P}")
+
+        _mechanical_equilibrium = self.P_out() - self.P_in() + self.Delta_P()
+
+        self.createEquation("mechanical_equilibrium", "Mechanical Equilibrium", _mechanical_equilibrium)
+
+
+class Cooler(model.Model):
+
+    def __init__(self, name, description="Heater", property_package=None):
+
+        """
+        Defines a generic cooler
+
+        *INPUTS: ndot_in, mdot_in, h_in, P_in
+        *OUTPUTS: mdot_out, mdot_out, h_out, P_out
+        *PARAMETERS:  Q, Delta_P
+
+        *REQUIRES: PropertyPackage
+        """
+
+        super().__init__(name, description, property_package)
+
+        self.ndot_in  = self.createVariable("ndot_in", mol/s, "molar input flux", latex_text="\\dot{n}_{in}", is_exposed=True, type='input')
+        self.ndot_out = self.createVariable("ndot_out", mol/s, "molar output flux", latex_text="\\dot{n}_{out}", is_exposed=True, type='output')
+
+        _molar_conservation = self. self.ndot_in() - self.ndot_out()
+
+        self.createEquation("molar_conservation", "Molar consevation", _molar_conservation)
+
+        self.mdot_in  = self.createVariable("mdot_in", kg/s, "mass input flux", latex_text="\\dot{m}_{in}", is_exposed=True, type='input')
+        self.mdot_out = self.createVariable("mdot_out", kg/s, "mass output flux", latex_text="\\dot{m}_{out}", is_exposed=True, type='output')
+
+        _mass_conservation = self. self.mdot_in() - self.mdot_out()
+
+        self.createEquation("mass_conservation", "Mass conservation", _mass_conservation)
+
+        self.H_in  = self.createVariable("H_in", J/mol, "molar enthalpy input", latex_text="H_{in}", is_exposed=True, type='input')
+        self.H_out = self.createVariable("H_out", J/mol, "molar enthalpy output", latex_text="H_{out}", is_exposed=True, type='output')
+
+        self.Q = self.createParameter("Q", J, "Heat rate", latex_text="Q", value=0.)
+
+        _energy_balance = self.n_dot_out()*self.H_out() - self.n_dot_in()*self.H_in() + self.Q()
+
+        self.createEquation("energy_balance", "Energy balance", _energy_balance)
+
+        self.P_In = self.createVariable("P_In", Pa, "p_in")
+        self.P_Out = self.createVariable("P_Out", Pa, "p_out")
+        self.Delta_P = self.createParameter("Delta_P", Pa, "pressure drop", latex_text="{\\Delta P}")
+
+        _mechanical_equilibrium = self.P_out() - self.P_in() + self.Delta_P()
+
+        self.createEquation("mechanical_equilibrium", "Mechanical Equilibrium", _mechanical_equilibrium)
 
 class Flash:
 

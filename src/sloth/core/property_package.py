@@ -5,7 +5,7 @@ Define ProperyPackage class, which holds the information about the species invol
 """
 
 import thermo
-from error_definitions import *
+from .error_definitions import *
 
 class PropertyPackage:
 
@@ -27,7 +27,7 @@ class PropertyPackage:
 
         self.P = 101325
 
-        self.phases = {phase_i: thermo.chemical.Chemical(phase_i, self.T, self.P) if phase_i is not None}
+        self.phases = {phase_i: thermo.chemical.Chemical(phase_i, self.T, self.P) for phase_i in phase_names if phase_i is not None}
 
         self.eos = {}
 
@@ -68,6 +68,10 @@ class PropertyPackage:
 
         """
         """
+
+        if phase_name == "*":
+
+            phase_name = list(self.phases.keys())[-1]
 
         return self.phases[phase_name]
 

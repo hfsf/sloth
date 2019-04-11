@@ -313,7 +313,16 @@ class Simulation:
 
             if return_type == 'list':
 
-                return [float(i) for i in list(self.output.values())]
+                try:
+
+                    return [float(i) for i in list(self.output.values())]
+
+                except:
+
+                    print("Output = ",self.output)
+                    print("Output values = ",self.output.values())
+
+                    raise TypeError("!")
 
             elif return_type == 'dict':
 
