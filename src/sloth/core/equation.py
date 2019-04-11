@@ -10,6 +10,18 @@ from .expression_evaluation import EquationNode
 from .error_definitions import UnexpectedValueError, AbsentRequiredObjectError, UnresolvedPanicError
 import sympy as sp
 
+import threading
+
+_uid = threading.local()
+
+def gen_rnd_str():
+
+    if getattr(_uid, "uid", None) is None:
+        _uid.tid = threading.current_thread().ident
+        _uid.uid = 0
+    _uid.uid += 1
+    return str((_uid.tid, _uid.uid)[1])
+
 class Equation:
 
     """
@@ -30,6 +42,10 @@ class Equation:
         :ivar EquationNode fast_expr:
         EquationNode object to declare for the current Equation object. Defaults to None.
         """
+
+        if name is "":
+
+            name = gen_rnd_str()
 
         self.name = name
 
@@ -137,7 +153,7 @@ class Equation:
         elif equation_form == 'elementary' and side is 'rhs':
 
             return self.elementary_equation_expression[1].symbolic_object
-        
+
         else:
 
             raise UnresolvedPanicError()
@@ -172,7 +188,7 @@ class Equation:
         elif equation_form == 'elementary' and side is 'rhs':
 
             return self.elementary_equation_expression[1].symbolic_map
-        
+
         else:
 
             raise UnresolvedPanicError()
@@ -180,7 +196,7 @@ class Equation:
     def _sweepObjects(self):
 
         """
-        Examines the symbolic objects declared in the current equation and store in the objects_declared atribute. 
+        Examines the symbolic objects declared in the current equation and store in the objects_declared atribute.
         Note: This function is intended to be internally executed.
         """
 
@@ -206,7 +222,7 @@ class Equation:
 
         """
         Convert the current equation expression into a function.
-        
+
         :param dict symbolic_map:
             Symbolic map for value reference to the variables. Defaults to the symbolic map currently defined for the Equation object.
 
@@ -222,7 +238,7 @@ class Equation:
         """
 
         if side == None:
-        
+
             equation_expression_ = self.equation_expression
 
         elif side == 'lhs' and self.elementary_equation_expression != None:
@@ -310,7 +326,7 @@ class Equation:
         """
 
         if side == None:
-        
+
             equation_expression_ = self.equation_expression
 
         elif side == 'lhs' and self.elementary_equation_expression != None:
@@ -375,7 +391,7 @@ class Connection(Equation):
 
         :param ExpressionTree fast_expr:
         ExpressionTree object to declare for the current Equation object.  If declared, the moethod '.setResidual' are executed as a shortcut. Defaults to None.
-        
+
         """
 
         self.connection_type = connection_type

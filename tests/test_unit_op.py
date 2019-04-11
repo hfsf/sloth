@@ -22,7 +22,7 @@ from src.sloth.core.domain import *
 
 
 @pytest.fixture
-def pp():
+def pp_water_tuelene():
     """
     Create a property package
     """
@@ -35,11 +35,32 @@ def pp():
 
     return pp_(phases=2, phase_names=['water', 'toluene'])
 
-
 @pytest.fixture
-def material_stream():
+def pp_water():
+    """
+    Create a property package
+    """
 
-    pass
+    class pp_(PropertyPackage):
+
+        def __init__(self, phases, phase_names):
+
+            super().__init__(phases, phase_names)
+
+    return pp_(phases=1, phase_names=['water'])
+
+'''
+def homogeneous_material_stream(pp_water, name):
+
+    """
+    Create a homogeneous material_stream model
+    """
+    class h_material_stream(MaterialStream):
+
+        def __init__(self, name, description="Homogeneous material stream", property_package=pp_water):
+
+            super().__init__(name, description, property_package)
+'''
 
 @pytest.fixture
 def mod_1():
@@ -88,6 +109,22 @@ def mod_1():
     m_mod()
 
     return m_mod
+
+@pytest.fixture
+def simple_mixer():
+
+    class mix_model(Mixer):
+
+        def __init__(self, name, description):
+
+            super().__init__(name, description)
+
+    m_mod = mix_model("M0","Model for simple stream mixer")
+
+    m_mod()
+
+    return m_mod
+
 
 @pytest.fixture
 def biphasic_mixer(pp):
@@ -212,14 +249,44 @@ def sim():
 
     return simul("simul", "generic simulation")
 
-
-def test_simulation_only_mixer(mod_1, prob, sim):
+def test_mixer_and_homogeneous_material_stream(simple_mixer, prob, sim, pp_water):
 
     """
-    Test for simulation of the mixer problem
+    Test for simulation of the mixer problem using models for material streams
     """
 
-    prob.addModels(mod_1)
+    #---------------------------------------------
+    #Create a homogeneous material_stream model
+
+    class homogeneous_material_stream(MaterialStream):
+
+        def __init__(self, name, mdot, description="Homogeneous material stream", property_package=pp_water):
+
+            super().__init__(name, description, property_package)
+
+            self.mdot.setValue(mdot)
+
+            self.T.setValue(298.15)
+
+            self.H.setValue(0.)
+
+            self.P.setValue(101325.)
+    #----------------------------------------------
+
+    hms1 = homogeneous_material_stream("HMS1", 100.)
+    hms1()
+    hms2 = homogeneous_material_stream("HMS2", 200.)
+    hms2()
+
+    prob.addModels([simple_mixer, hms1, hms2])
+
+    prob.createConnection("", simple_mixer, hms1.mdot_out()+hms2.mdot_out(), simple_mixer.mdot_in())
+
+    prob.createConnection("", simple_mixer, hms1.ndot_out()+hms2.ndot_out(), simple_mixer.ndot_in())
+
+    prob.createConnection("", simple_mixer, hms1.P_out(), simple_mixer.P_in())
+
+    prob.createConnection("", simple_mixer, hms1.H_out(), simple_mixer.H_in())
 
     prob.resolve()
 
@@ -231,71 +298,8 @@ def test_simulation_only_mixer(mod_1, prob, sim):
 
     results = sim.getResults( return_type='dict')
 
-    assert results["mdot_out_M0"] == pytest.approx(300.)
+    assert results["mdot_out_M0"] == pytest.approx(hms1.mdot.value+hms2.mdot.value)
 
     assert results["mdot_out_M0"] == pytest.approx(results["mdot_in_M0"])
 
-
-def test_simulation_mixer_and_valves(mod_1, valve_mod, prob, sim):
-
-    """
-    Test for simulation of the mixer problem, with one valve in the output stream
-    -1---> |M| <---2-
-            |
-           |V|
-            |
-            v
-           out
-    """
-
-    prob.addModels([mod_1, valve_mod])
-
-    prob.createConnection(mod_1, valve_mod, mod_1.mdot_out, valve_mod.mdot_in) # M_dot
-
-    prob.createConnection(mod_1, valve_mod, mod_1.ndot_out, valve_mod.ndot_in) #
-
-    prob.createConnection(mod_1, valve_mod, mod_1.P_out, valve_mod.P_in) # P
-
-    prob.createConnection(mod_1, valve_mod, mod_1.H_out, valve_mod.H_in) # h
-
-    prob.resolve()
-
-    sim.setProblem(prob)
-
-    sim.setConfigurations()
-
-    sim.runSimulation(show_output_msg=True)
-
-    results = sim.getResults( return_type='dict')
-
-    assert results["mdot_out_V0"] == pytest.approx(300.)
-    assert results["ndot_out_V0"] == pytest.approx(300/0.018)
-    assert results["mdot_out_V0"] == pytest.approx(results["mdot_in_M0"])
-    assert results["ndot_out_V0"] == pytest.approx(results["ndot_in_M0"])
-
-
-def test_simulation_only_mixer_biphasic(biphasic_mixer, prob, sim):
-
-    """
-    Test for simulation of the biphasic mixer problem
-    """
-
-    prob.addModels(biphasic_mixer)
-
-    prob.resolve()
-
-    sim.setProblem(prob)
-
-    sim.setConfigurations()
-
-    sim.runSimulation(show_output_msg=True)
-
-    results = sim.getResults( return_type='dict')
-
-    print("results =",results)
-
-    assert results["mdot_out_BFM0"] == pytest.approx(results["mdot_in_BFM0"])
-    assert results["ndot_out_BFM0"] == pytest.approx(results["ndot_in_BFM0"])
-
-    assert results["x_aout_BFM0"] + results["x_tout_BFM0"] == pytest.approx(1.)
-    assert results["x_aout_BFM0"]*results["ndot_out_BFM0"] + results["x_tout_BFM0"]*results["ndot_out_BFM0"] == pytest.approx(results["ndot_in_BFM0"])
+    assert results["ndot_out_M0"] == pytest.approx( results["ndot_out_HMS1"]+results["ndot_out_HMS2"]  )

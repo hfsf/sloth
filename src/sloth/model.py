@@ -289,7 +289,7 @@ class Model:
             raise UnexpectedValueError("list(Variable)")
 
 
-    def createEquation(self, name, description="", expr=None):
+    def createEquation(self, name, description="", expr=None, check_equation=True):
 
         """
         Function for creation of an Equation object. Mandatory interface for model equation creation in the specific declaratory section.
@@ -315,18 +315,25 @@ class Model:
 
         eq._sweepObjects()
 
-
         #Check if all objects used in the current equation were declared
 
-        if self._checkEquation_(eq) == True:
+        if check_equation is True:
+
+            if self._checkEquation_(eq) is True:
+
+                self.equations[eq.name] = eq
+
+                return eq
+
+            else:
+
+                pass
+
+        else:
 
             self.equations[eq.name] = eq
 
             return eq
-
-        else:
-
-            pass
 
     def createVariable(self, name, units , description = "", is_lower_bounded = False, is_upper_bounded = False, lower_bound = None, upper_bound = None, is_exposed = False, type = '', latex_text="", value = 0.):
 

@@ -6,10 +6,24 @@ Define Problem class. Unite several Model classes through Connections, forming o
 
 from .core.error_definitions import ExposedVariableError, AbsentRequiredObjectError
 from .core.equation_block import EquationBlock
+from .core.expression_evaluation import EquationNode
 from collections import OrderedDict
 from .core.variable import Variable
 from .core.parameter import Parameter
+from .model import Model
 import numpy as np
+
+import threading
+
+_uid = threading.local()
+
+def gen_rnd_str():
+
+    if getattr(_uid, "uid", None) is None:
+        _uid.tid = threading.current_thread().ident
+        _uid.uid = 0
+    _uid.uid += 1
+    return str((_uid.tid, _uid.uid)[1])
 
 class Problem:
 
@@ -162,58 +176,89 @@ class Problem:
 
         """
         Connect two Models creating a Connection for both models, linking the ouput variable of the former to the input variable of the later.
+
+        If only variables were provided, perform the regular check for input and output variables, and assemble one equation (connectin mode). If ENODES were provided directly, pass the euation directly (input mode)
         """
 
-        if isinstance(input_vars, list):
+        connection_mode, input_mode = False, False
 
-            input_var_is_declared= all(in_i in model_2.exposed_vars['input'] for in_i in input_vars)
+        if isinstance(output_vars, EquationNode) and isinstance(input_vars, EquationNode):
 
-        else:
-
-            input_var_is_declared= input_vars in model_2.exposed_vars['input']
-
-        if isinstance(output_vars, list):
-
-            output_var_is_declared= all(out_i in model_1.exposed_vars['output'] for out_i in output_vars)
+            input_mode = True
 
         else:
 
-            output_var_is_declared= output_vars in model_1.exposed_vars['output']
+            connection_mode = True
 
-        if output_var_is_declared and input_var_is_declared:
+        if connection_mode is True:
 
-           # Creating connection equation in the second Model object
+            if isinstance(input_vars, list):
 
-           #return self._createDirectConnection(model_1, output_var, model_2, input_var)
-
-
-            if not isinstance(output_vars, list):
-
-                output_var_ = [output_vars]
+                input_var_is_declared= all(in_i in model_2.exposed_vars['input'] for in_i in input_vars)
 
             else:
 
-                output_var_ = output_vars
+                input_var_is_declared= input_vars in model_2.exposed_vars['input']
 
-            if not isinstance(input_vars, list):
+            if isinstance(output_vars, list):
 
-                input_var_ = [input_vars]
+                output_var_is_declared= all(out_i in model_1.exposed_vars['output'] for out_i in output_vars)
 
             else:
 
-                input_var_ = input_vars
+                output_var_is_declared= output_vars in model_1.exposed_vars['output']
 
-            if expr is None:
+            if output_var_is_declared and input_var_is_declared:
 
-                expr = sum([in_var_i.__call__() for in_var_i in input_var_]) - sum([out_var_i.__call__() for out_var_i in output_var_])
+               # Creating connection equation in the second Model object
 
-            # The process of connection creation
+               #return self._createDirectConnection(model_1, output_var, model_2, input_var)
 
-            self._createDirectConnection(model_1, output_var_, model_2, input_var_, expr, description)
 
-        else:
+                if not isinstance(output_vars, list):
 
-            raise ExposedVariableError(model_1.exposed_vars['output'], model_2.exposed_vars['input'], output_vars, input_vars)
+                    output_var_ = [output_vars]
+
+                else:
+
+                    output_var_ = output_vars
+
+                if not isinstance(input_vars, list):
+
+                    input_var_ = [input_vars]
+
+                else:
+
+                    input_var_ = input_vars
+
+                if expr is None:
+
+                    expr = sum([in_var_i.__call__() for in_var_i in input_var_]) - sum([out_var_i.__call__() for out_var_i in output_var_])
+
+                # The process of connection creation
+
+                self._createDirectConnection(model_1, output_var_, model_2, input_var_, expr, description)
+
+            else:
+
+                raise ExposedVariableError(model_1.exposed_vars['output'], model_2.exposed_vars['input'], output_vars, input_vars)
+
+        if input_mode is True:
+
+            if isinstance(model_1, str) is True:
+
+                if model_1 is "":
+                    model_1 = gen_rnd_str()
+
+                model_2.createEquation("conn_"+model_1+"-->"+model_2.name, "Connection from "+model_1+" to "+model_2.name, input_vars - output_vars, check_equation=False)
+
+            elif isinstance(model_1, Model) is True:
+
+                model_2.createEquation("conn_"+model_1.name+"-->"+model_2.name, "Connection from "+model_1.name+" to "+model_2.name, input_vars - output_vars, check_equation=False)
+
+            else:
+
+                raise AbsentRequiredObjectError("[Model, str]")
 
 
     def _createDirectConnection(self, out_model, out_vars, in_model, in_vars, expr, description):

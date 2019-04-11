@@ -150,4 +150,3 @@ class DimensionalCoherenceError(Exception):
 def _addUnitContainingOperations(a,b):
 
     return(a._checkDimensionalCoherence(b))
-   
