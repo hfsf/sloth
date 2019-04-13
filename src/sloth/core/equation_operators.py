@@ -26,7 +26,7 @@ def wrapper(own_func, obj, base_func, latex_func_name=None, equation_type=None, 
 
             equation_type_ = {'is_linear':False, 'is_nonlinear':False, 'is_differential':False}
 
-            equation_type_.update(equation_type)            
+            equation_type_.update(equation_type)
 
         if latex_func_name == None:
 
@@ -40,11 +40,11 @@ def wrapper(own_func, obj, base_func, latex_func_name=None, equation_type=None, 
 
             # obj is a number
 
-            enode_ = EquationNode(name=f_name(own_func.__name__, str(obj)), 
-                                  symbolic_object=base_func(obj, evaluate=False), 
+            enode_ = EquationNode(name=f_name(own_func.__name__, str(obj)),
+                                  symbolic_object=base_func(obj, evaluate=False),
                                   symbolic_map={},
-                                  variable_map={}, 
-                                  unit_object=dimless, 
+                                  variable_map={},
+                                  unit_object=dimless,
                                   latex_text=f_name(latex_func_name, str(obj)),
                                   repr_symbolic=base_func(obj, evaluate=False)
                                 )
@@ -57,11 +57,11 @@ def wrapper(own_func, obj, base_func, latex_func_name=None, equation_type=None, 
 
                 # obj is an EquationNode
 
-                enode_ = EquationNode(name=f_name(own_func.__name__, obj.name), 
-                                symbolic_object=base_func(obj.symbolic_object, evaluate=False), 
+                enode_ = EquationNode(name=f_name(own_func.__name__, obj.name),
+                                symbolic_object=base_func(obj.symbolic_object, evaluate=False),
                                 symbolic_map={**obj.symbolic_map},
-                                variable_map={**obj.variable_map}, 
-                                unit_object=obj.unit_object, 
+                                variable_map={**obj.variable_map},
+                                unit_object=obj.unit_object,
                                 latex_text=f_name(latex_func_name, obj.latex_text),
                                 repr_symbolic=base_func(obj.repr_symbolic, evaluate=False)
                                 )
@@ -78,7 +78,8 @@ def wrapper(own_func, obj, base_func, latex_func_name=None, equation_type=None, 
 
             # Defined directly to avoid circular dependency error while importing expression_evaluation
 
-            raise TypeError("Unexpected value error. A (int, float, EquationNode) was expected, but one divergent type was supplied.")            
+            raise TypeError("Unexpected value error. A (int, float, EquationNode) was expected, but one divergent type was supplied.")
+
 def Log(obj):
 
     return wrapper(Log, obj, sp.log)
@@ -111,6 +112,189 @@ def Tan(obj):
 
     return wrapper(Tan, obj, sp.tan)
 
+def Min(*obj):
+
+    obj = list(obj)
+
+    latex_func_name = "min"
+
+    f_name = latex_func_name+"\\right ("
+
+    for i in obj:
+
+        if isinstance(obj, EquationNode):
+
+            obj_name = obj.name
+
+            try:
+
+                obj_latex_name = obj.obj_latex_name
+
+            except:
+
+                obj_latex_name = obj.name
+
+        else:
+
+            obj_name = str(obj)
+
+            obj_latex_name = str(obj)
+
+        f_name+=obj_name
+
+    f_name += ")"
+    latex_func_name+="\\right )"
+
+    if all(isinstance(obj_i, float) or isinstance(obj_i, int) for obj_i in obj):
+
+        obj_dims = dimless
+
+    elif all(isinstance(obj_i, EquationNode) for obj_i in obj):
+
+        if all(the_unit == obj[0].unit_object for the_unit in obj):
+
+            obj_dims = obj[0].unit_object
+
+        else:
+
+            raise UnexpectedValueError("A set of objects with equivalent dimensions")
+
+    else:
+
+        obj_dims = [obj_i.unit_object for obj_i in obj if hasattr(obj_i,'unit_object')][0]
+
+        if obj_dims is []:
+
+            obj_dims = dimless
+
+
+    obj_symb_map = {}
+    obj_var_map = {}
+    obj_symb_objcts = []
+
+    for i in obj:
+
+        #Check if the obj is an ENODE (thus, has a symbolic_object attribute) or its a number
+
+        if hasattr(i, 'symbolic_object'):
+
+            obj_symb_objcts.append(i.symbolic_object)
+
+        else:
+
+            obj_symb_objcts.append(i)
+
+        #Gather all the symbolic and variable map from the obj
+
+        try:
+
+            obj_symb_map = {**obj_symb_map, **i.symbolic_map}
+
+            obj_var_map = {**obj_var_map, **i.variable_map}
+
+        except:
+
+            pass
+
+    enode_ = EquationNode(name=f_name,
+                          symbolic_object=sp.Min(*obj_symb_objcts, evaluate=False),
+                          symbolic_map=obj_symb_map,
+                          variable_map=obj_var_map,
+                          unit_object=obj_dims,
+                          latex_text=latex_func_name,
+                          repr_symbolic=sp.Min(*obj_symb_objcts, evaluate=False)
+                        )
+
+    return enode_
+
+def Max(*obj):
+
+    latex_func_name = "max"
+
+    f_name = latex_func_name+"\\right ("
+
+    for i in obj:
+
+        if isinstance(obj, EquationNode):
+
+            obj_name = obj.name
+            try:
+                obj_latex_name = obj.obj_latex_name
+            except:
+                obj_latex_name = obj.name
+
+        else:
+
+            obj_name = str(obj)
+
+            obj_latex_name = str(obj)
+
+        f_name+=obj_name
+
+    f_name += ")"
+    latex_func_name+="\\right )"
+
+    if all(isinstance(obj_i, float) or isinstance(obj_i, int) for obj_i in obj):
+
+        obj_dims = dimless
+
+    elif all(isinstance(obj_i, EquationNode) for obj_i in obj):
+
+        if all(the_unit == obj[0].unit_object for the_unit in obj):
+
+            obj_dims = obj[0].unit_object
+
+        else:
+
+            raise UnexpectedValueError("A set of objects with equivalent dimensions")
+
+    else:
+
+        obj_dims = [obj_i.unit_object for obj_i in obj if hasattr(obj_i,'unit_object')][0]
+
+        if obj_dims is []:
+
+            obj_dims = dimless
+
+
+    obj_symb_map = {}
+    obj_var_map = {}
+    obj_symb_objcts = []
+
+    for i in obj:
+
+        #Check if the obj is an ENODE (thus, has a symbolic_object attribute) or its a number
+
+        if hasattr(i, 'symbolic_object'):
+
+            obj_symb_objcts.append(i.symbolic_object)
+
+        else:
+
+            obj_symb_objcts.append(i)
+
+        #Gather all the symbolic and variable map from the obj
+
+        try:
+
+            obj_symb_map = {**obj_symb_map, **i.symbolic_map}
+
+            obj_var_map = {**obj_var_map, **i.variable_map}
+
+        except:
+
+            pass
+    enode_ = EquationNode(name=f_name,
+                          symbolic_object=sp.Max(*obj_symb_objcts, evaluate=False),
+                          symbolic_map=obj_symb_map,
+                          variable_map=obj_var_map,
+                          unit_object=obj_dims,
+                          latex_text=latex_func_name,
+                          repr_symbolic=sp.Max(*obj_symb_objcts, evaluate=False)
+                        )
+
+    return enode_
+
 def _Diff(obj, ind_var_):
 
     #return wrapper(Diff, obj, sp.diff, equation_type={'is_differential':True}, dim_check=False, ind_var=ind_var_)
@@ -123,11 +307,11 @@ def _Diff(obj, ind_var_):
 
         # obj is not an Variable instance (Dt method is absent)
 
-        enode_ = EquationNode(name="Diff("+str(obj_)+")", 
+        enode_ = EquationNode(name="Diff("+str(obj_)+")",
                               symbolic_object=0,
                               symbolic_map={},
-                              variable_map={}, 
-                              unit_object=dimless, 
+                              variable_map={},
+                              unit_object=dimless,
                               latex_text="Diff("+str(obj_)+")",
                               repr_symbolic=sp.diff(obj_, evaluate=False)
                             )
@@ -140,10 +324,10 @@ def _Diff(obj, ind_var_):
 
         if ind_var_ == None:
 
-            symbolic_object_ = sp.diff(obj_.symbolic_object, 
+            symbolic_object_ = sp.diff(obj_.symbolic_object,
                               evaluate=False)
             repr_symbolic_ = sp.diff(obj_.repr_symbolic, evaluate=False)
-            
+
             unit_object_ = dimless
 
         else:
@@ -156,11 +340,11 @@ def _Diff(obj, ind_var_):
             unit_object_ = obj_.unit_object/ind_var_.__call__().unit_object
 
 
-        enode_ = EquationNode(name="Diff("+str(obj_)+")",  
-                              symbolic_object=symbolic_object_, 
+        enode_ = EquationNode(name="Diff("+str(obj_)+")",
+                              symbolic_object=symbolic_object_,
                               symbolic_map={**obj_.symbolic_map},
-                              variable_map={**obj_.variable_map}, 
-                              unit_object=unit_object_, 
+                              variable_map={**obj_.variable_map},
+                              unit_object=unit_object_,
                               latex_text="Diff("+str(obj_)+")",
                               repr_symbolic=repr_symbolic_
                             )

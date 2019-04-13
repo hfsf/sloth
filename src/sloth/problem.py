@@ -175,7 +175,7 @@ class Problem:
     def createConnection(self, model_1, model_2, output_vars, input_vars, expr=None, description=""):
 
         """
-        Connect two Models creating a Connection for both models, linking the ouput variable of the former to the input variable of the later.
+        Connect two Model objects creating a Connection for both models, linking the ouput variable of the former to the input variable of the later.
 
         If only variables were provided, perform the regular check for input and output variables, and assemble one equation (connectin mode). If ENODES were provided directly, pass the euation directly (input mode)
         """

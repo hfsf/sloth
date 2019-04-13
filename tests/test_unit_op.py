@@ -125,87 +125,25 @@ def simple_mixer():
 
     return m_mod
 
-
 @pytest.fixture
-def biphasic_mixer(pp):
-    """
-    Create a mass conversation model for a case of two streams being mixed
-    -1(w,t)--> |M| <--2(w,t)-
-                |
-                v
-               out(w,t)
-    """
+def biphasic_mixer_class(pp_water_toluene):
 
-    class biphasic_mixer(Mixer):
+    class mix_model(Mixer):
 
         def __init__(self, name, description, property_package):
 
             super().__init__(name, description, property_package)
 
-            self.P_1 =  self.createParameter("P_1", Pa, "Pressure from stream 1")
-            self.P_2 =  self.createParameter("P_2", Pa, "Pressure from from stream 2")
+            for phase_i in self.property_package.phase_names:
 
-            self.x_a1 =  self.createParameter("x_a1", dimless, "Water molar fraction from stream 1")
-            self.x_t1 =  self.createParameter("x_t1", dimless, "Tolune molar fraction from stream 1")
+                exec("self.x_{}=createVariable('x_{}_out',dimless,'Molar fraction for {} phase in the output',is_exposed=True, type='output')".format(phase_i))
+                exec("self.w_{}=createVariable('w_{}_out',dimless,'Mass fraction for {} phase in the output',is_exposed=True, type='output')".format(phase_i))
 
-            self.x_a2 =  self.createParameter("x_a2", dimless, "Water molar fraction from stream 2")
-            self.x_t2 =  self.createParameter("x_t2", dimless, "Toluene molar fraction from stream 2")
+    #m_mod = mix_model("BFM0","Model for biphasic mixer", pp_water_toluene)
 
-            self.mdot_1 =  self.createParameter("mdot_1", kg/s, "mass flux from stream 1")
-            self.mdot_2 =  self.createParameter("mdot_2", kg/s, "mass flux from stream 2")
+    #m_mod()
 
-            self.MW_water = self.createParameter("mw_water", kg/mol,"mass weigth for water")
-            self.MW_toluene = self.createParameter("mw_toluene", kg/mol, "mass weigth for toluene")
-
-            self.mdot_out =  self.createVariable("mdot_out", kg/s, "mass flux from output stream", is_exposed=True, type='output')
-
-            self.H_out =  self.createVariable("H_out", J/mol,"molar enthalpy for output stream", latex_text="H_{out}", is_exposed=True, type='output')
-
-            self.x_aout =  self.createVariable("x_aout", dimless, "Water molar fraction from output stream", is_exposed=True, type="output")
-            self.x_tout =  self.createVariable("x_tout", dimless, "Tolune molar fraction from output stream", is_exposed=True, type="output")
-
-        def DeclareParameters(self):
-
-            self.MW_water.setValue(self.property_package["water"].MW*1e-3)
-            self.MW_toluene.setValue(self.property_package["toluene"].MW*1e-3)
-
-            self.mdot_1.setValue(100.)
-            self.mdot_2.setValue(200.)
-
-            self.P_1.setValue(1.)
-            self.P_2.setValue(.8)
-
-            self.x_a1.setValue(.4)
-            self.x_a2.setValue(.8)
-            self.x_t1.setValue(.6)
-            self.x_t2.setValue(.2)
-
-        def DeclareEquations(self):
-
-
-            _fraction_sum_output = self.x_aout() + self.x_tout() - 1.
-            self.eq1 = self.createEquation("eq1", "Fraction sum", _fraction_sum_output)
-
-            _water_input = (self.mdot_in()/self.MW_water())*self.x_aout()  - ( self.x_a1()* self.mdot_1() + self.x_a2()*self.mdot_2() )/self.MW_water()
-            #_toluene_input = (self.mdot_in()/self.MW_toluene())*self.x_tout() - ( self.x_t1()* self.mdot_1() + self.x_t2()*self.mdot_2() )/self.MW_toluene()
-            self.eq2 = self.createEquation("eq2", "Water input molar flow", _water_input )
-            #self.eq2 = self.createEquation("eq3", "Toluene input molar flow", _toluene_input )
-
-            self.eq2 = self.createEquation("eq4", "Total mass input flow", self.mdot_in() - (self.mdot_1() + self.mdot_2()) )
-
-            _molar_input = self.ndot_in() - ( self.x_a1()* self.mdot_1() + self.x_a2()*self.mdot_2() )/self.MW_water() + ( self.x_t1()* self.mdot_1() + self.x_t2()*self.mdot_2() )/self.MW_toluene()
-
-            self.eq2 = self.createEquation("eq5", "Total molar input flow", _molar_input)
-
-            self.eq3 = self.createEquation("eq6", "Pressure input", self.P_in() - min(self.P_1.value, self.P_2.value))
-
-            self.eq4 = self.createEquation("eq7", "Enthalpy output", self.H_out() )
-
-    bfm_mod = biphasic_mixer("BFM0","Model for biphasic stream mixer", pp)
-
-    bfm_mod()
-
-    return bfm_mod
+    return mix_model #m_mod
 
 @pytest.fixture
 def valve_mod():
@@ -265,6 +203,76 @@ def test_mixer_and_homogeneous_material_stream(simple_mixer, prob, sim, pp_water
             super().__init__(name, description, property_package)
 
             self.mdot.setValue(mdot)
+
+            self.T.setValue(298.15)
+
+            self.H.setValue(0.)
+
+            self.P.setValue(101325.)
+    #----------------------------------------------
+
+    hms1 = homogeneous_material_stream("HMS1", 100.)
+    hms1.P.setValue(120e3)
+    hms1()
+    hms2 = homogeneous_material_stream("HMS2", 200.)
+    hms2()
+
+    prob.addModels([simple_mixer, hms1, hms2])
+
+    prob.createConnection("", simple_mixer, hms1.mdot_out()+hms2.mdot_out(), simple_mixer.mdot_in())
+
+    prob.createConnection("", simple_mixer, hms1.ndot_out()+hms2.ndot_out(), simple_mixer.ndot_in())
+
+    prob.createConnection("", simple_mixer, Min(hms1.P_out(), hms2.P_out()), simple_mixer.P_in())
+
+    prob.createConnection("", simple_mixer, hms1.H_out(), simple_mixer.H_in())
+
+    prob.resolve()
+
+    sim.setProblem(prob)
+
+    sim.setConfigurations()
+
+    sim.runSimulation(show_output_msg=True)
+
+    results = sim.getResults( return_type='dict')
+
+    print(results)
+
+    assert results["mdot_out_M0"] == pytest.approx(hms1.mdot.value+hms2.mdot.value)
+
+    assert results["mdot_out_M0"] == pytest.approx(results["mdot_in_M0"])
+
+    assert results["ndot_out_M0"] == pytest.approx( results["ndot_out_HMS1"]+results["ndot_out_HMS2"]  )
+
+
+def donot_test_biphasic_mixer_and_biphasic_material_stream(biphasic_mixer_class, prob, sim, pp_water_toluene):
+
+    """
+    Test for simulation of the mixer problem using models for material streams
+    """
+
+    biphasic_mixer = biphasic_mixer_class("BFM0", "Model for biphasic mixer", pp_water_toluene)
+    biphasic_mixer()
+
+    #---------------------------------------------
+    #Create a homogeneous material_stream model
+
+    class biphasic_material_stream(MultiphasicMaterialStream):
+
+        def __init__(self, name, mdot, x1, description="Biphasic material stream", property_package=pp_water_toluene):
+
+            super().__init__(name, description, property_package)
+
+            self.mdot.setValue(mdot)
+
+            self.x_water.setValue(x1)
+
+            self.x_toluene.setValue(1. - x1)
+
+            self.w_water.setValue(self.x_water*self.property_package["toluene"]/self.property_package["water"])
+
+            self.w_toluene.setValue(1. - self.w_water)
 
             self.T.setValue(298.15)
 
