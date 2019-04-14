@@ -13,6 +13,7 @@ from src.sloth.model import Model
 from src.sloth.problem import Problem
 from src.sloth.simulation import Simulation
 from src.sloth.core.property_package import PropertyPackage
+from src.sloth.analysis import Analysis
 
 from src.sloth.unit_op import *
 
@@ -22,7 +23,7 @@ from src.sloth.core.domain import *
 
 
 @pytest.fixture
-def pp_water_tuelene():
+def pp_water_toluene():
     """
     Create a property package
     """
@@ -134,10 +135,12 @@ def biphasic_mixer_class(pp_water_toluene):
 
             super().__init__(name, description, property_package)
 
+            '''
             for phase_i in self.property_package.phase_names:
 
                 exec("self.x_{}=createVariable('x_{}_out',dimless,'Molar fraction for {} phase in the output',is_exposed=True, type='output')".format(phase_i))
                 exec("self.w_{}=createVariable('w_{}_out',dimless,'Mass fraction for {} phase in the output',is_exposed=True, type='output')".format(phase_i))
+            '''
 
     #m_mod = mix_model("BFM0","Model for biphasic mixer", pp_water_toluene)
 
@@ -187,7 +190,7 @@ def sim():
 
     return simul("simul", "generic simulation")
 
-def test_mixer_and_homogeneous_material_stream(simple_mixer, prob, sim, pp_water):
+def donot_test_mixer_and_homogeneous_material_stream(simple_mixer, prob, sim, pp_water):
 
     """
     Test for simulation of the mixer problem using models for material streams
@@ -246,7 +249,7 @@ def test_mixer_and_homogeneous_material_stream(simple_mixer, prob, sim, pp_water
     assert results["ndot_out_M0"] == pytest.approx( results["ndot_out_HMS1"]+results["ndot_out_HMS2"]  )
 
 
-def donot_test_biphasic_mixer_and_biphasic_material_stream(biphasic_mixer_class, prob, sim, pp_water_toluene):
+def test_biphasic_mixer_and_biphasic_material_stream(biphasic_mixer_class, prob, sim, pp_water_toluene):
 
     """
     Test for simulation of the mixer problem using models for material streams
@@ -260,19 +263,27 @@ def donot_test_biphasic_mixer_and_biphasic_material_stream(biphasic_mixer_class,
 
     class biphasic_material_stream(MultiphasicMaterialStream):
 
-        def __init__(self, name, mdot, x1, description="Biphasic material stream", property_package=pp_water_toluene):
+        def __init__(self, name, ndot, x1, description="Biphasic material stream", property_package=pp_water_toluene):
 
             super().__init__(name, description, property_package)
 
-            self.mdot.setValue(mdot)
+            self.ndot.setValue(ndot)
 
             self.x_water.setValue(x1)
 
             self.x_toluene.setValue(1. - x1)
 
-            self.w_water.setValue(self.x_water*self.property_package["toluene"]/self.property_package["water"])
+            n_mols_water = self.x_water.value*self.ndot.value
 
-            self.w_toluene.setValue(1. - self.w_water)
+            n_mols_toluene = self.x_toluene.value*self.ndot.value
+
+            MW_water = self.property_package["water"].MW
+
+            MW_toluene = self.property_package["toluene"].MW
+
+            self.w_water.setValue((n_mols_water*MW_water*1e-3)/((n_mols_water*MW_water*1e-3)+(n_mols_toluene*MW_toluene*1e-3)))
+
+            self.w_toluene.setValue(1. - self.w_water.value)
 
             self.T.setValue(298.15)
 
@@ -281,22 +292,30 @@ def donot_test_biphasic_mixer_and_biphasic_material_stream(biphasic_mixer_class,
             self.P.setValue(101325.)
     #----------------------------------------------
 
-    hms1 = homogeneous_material_stream("HMS1", 100.)
-    hms1()
-    hms2 = homogeneous_material_stream("HMS2", 200.)
-    hms2()
+    bfms1 = biphasic_material_stream("BFMS1", 100., .6)
+    bfms1()
+    bfms2 = biphasic_material_stream("BFMS2", 200., .4)
+    bfms2()
 
-    prob.addModels([simple_mixer, hms1, hms2])
+    prob.addModels([biphasic_mixer, bfms1, bfms2])
 
-    prob.createConnection("", simple_mixer, hms1.mdot_out()+hms2.mdot_out(), simple_mixer.mdot_in())
+    prob.createConnection("", biphasic_mixer, bfms1.mdot_out()+bfms2.mdot_out(), biphasic_mixer.mdot_in())
 
-    prob.createConnection("", simple_mixer, hms1.ndot_out()+hms2.ndot_out(), simple_mixer.ndot_in())
+    prob.createConnection("", biphasic_mixer, bfms1.ndot_out()+bfms2.ndot_out(), biphasic_mixer.ndot_in())
 
-    prob.createConnection("", simple_mixer, hms1.P_out(), simple_mixer.P_in())
+    prob.createConnection("", biphasic_mixer, Min(bfms1.P_out(),bfms2.P_out()), biphasic_mixer.P_in())
 
-    prob.createConnection("", simple_mixer, hms1.H_out(), simple_mixer.H_in())
+    prob.createConnection("", biphasic_mixer, bfms1.H_out(), biphasic_mixer.H_in())
+
+    prob.createConnection("", biphasic_mixer, bfms1.x_water_out()*bfms1.ndot_out() + bfms2.x_water_out()*bfms2.ndot_out(), biphasic_mixer.x_water_in()*biphasic_mixer.ndot_in())
+
+    prob.createConnection("", biphasic_mixer, bfms1.w_water_out()*bfms1.mdot_out() + bfms2.w_water_out()*bfms2.mdot_out(), biphasic_mixer.w_water_in()*biphasic_mixer.mdot_in())
 
     prob.resolve()
+
+    print(Analysis().problemReport(prob))
+
+    #tty = input("...")
 
     sim.setProblem(prob)
 
