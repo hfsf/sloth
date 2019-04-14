@@ -190,7 +190,7 @@ def sim():
 
     return simul("simul", "generic simulation")
 
-def donot_test_mixer_and_homogeneous_material_stream(simple_mixer, prob, sim, pp_water):
+def test_mixer_and_homogeneous_material_stream(simple_mixer, prob, sim, pp_water):
 
     """
     Test for simulation of the mixer problem using models for material streams
@@ -222,13 +222,13 @@ def donot_test_mixer_and_homogeneous_material_stream(simple_mixer, prob, sim, pp
 
     prob.addModels([simple_mixer, hms1, hms2])
 
-    prob.createConnection("", simple_mixer, hms1.mdot_out()+hms2.mdot_out(), simple_mixer.mdot_in())
+    prob.createConnection("", simple_mixer, hms1.mdot()+hms2.mdot(), simple_mixer.mdot_in())
 
-    prob.createConnection("", simple_mixer, hms1.ndot_out()+hms2.ndot_out(), simple_mixer.ndot_in())
+    prob.createConnection("", simple_mixer, hms1.ndot()+hms2.ndot(), simple_mixer.ndot_in())
 
-    prob.createConnection("", simple_mixer, Min(hms1.P_out(), hms2.P_out()), simple_mixer.P_in())
+    prob.createConnection("", simple_mixer, Min(hms1.P(), hms2.P()), simple_mixer.P_in())
 
-    prob.createConnection("", simple_mixer, hms1.H_out(), simple_mixer.H_in())
+    prob.createConnection("", simple_mixer, hms1.ndot()*hms1.H() + hms2.ndot()*hms1.H(), simple_mixer.ndot_in()*simple_mixer.H_in())
 
     prob.resolve()
 
@@ -246,7 +246,7 @@ def donot_test_mixer_and_homogeneous_material_stream(simple_mixer, prob, sim, pp
 
     assert results["mdot_out_M0"] == pytest.approx(results["mdot_in_M0"])
 
-    assert results["ndot_out_M0"] == pytest.approx( results["ndot_out_HMS1"]+results["ndot_out_HMS2"]  )
+    assert results["ndot_out_M0"] == pytest.approx( hms1.ndot.value + hms2.ndot.value  )
 
 
 def test_biphasic_mixer_and_biphasic_material_stream(biphasic_mixer_class, prob, sim, pp_water_toluene):
@@ -296,20 +296,22 @@ def test_biphasic_mixer_and_biphasic_material_stream(biphasic_mixer_class, prob,
     bfms1()
     bfms2 = biphasic_material_stream("BFMS2", 200., .4)
     bfms2()
+    bfms3 = biphasic_material_stream("BFMS3", 500., .8)
+    bfms3()
 
-    prob.addModels([biphasic_mixer, bfms1, bfms2])
+    prob.addModels([biphasic_mixer, bfms1, bfms2, bfms3])
 
-    prob.createConnection("", biphasic_mixer, bfms1.mdot_out()+bfms2.mdot_out(), biphasic_mixer.mdot_in())
+    prob.createConnection("", biphasic_mixer, bfms1.mdot()+bfms2.mdot()+bfms3.mdot(), biphasic_mixer.mdot_in())
 
-    prob.createConnection("", biphasic_mixer, bfms1.ndot_out()+bfms2.ndot_out(), biphasic_mixer.ndot_in())
+    prob.createConnection("", biphasic_mixer, bfms1.ndot()+bfms2.ndot()+bfms3.ndot(), biphasic_mixer.ndot_in())
 
-    prob.createConnection("", biphasic_mixer, Min(bfms1.P_out(),bfms2.P_out()), biphasic_mixer.P_in())
+    prob.createConnection("", biphasic_mixer, Min(bfms1.P(),bfms2.P(),bfms3.P()), biphasic_mixer.P_in())
 
-    prob.createConnection("", biphasic_mixer, bfms1.H_out(), biphasic_mixer.H_in())
+    prob.createConnection("", biphasic_mixer, bfms1.H()*bfms1.ndot() + bfms2.H()*bfms2.ndot() + bfms3.H()*bfms3.ndot(), biphasic_mixer.ndot_in()*biphasic_mixer.H_in())
 
-    prob.createConnection("", biphasic_mixer, bfms1.x_water_out()*bfms1.ndot_out() + bfms2.x_water_out()*bfms2.ndot_out(), biphasic_mixer.x_water_in()*biphasic_mixer.ndot_in())
+    prob.createConnection("", biphasic_mixer, bfms1.x_water()*bfms1.ndot() + bfms2.x_water()*bfms2.ndot() + bfms3.x_water()*bfms3.ndot(), biphasic_mixer.x_water_in()*biphasic_mixer.ndot_in())
 
-    prob.createConnection("", biphasic_mixer, bfms1.w_water_out()*bfms1.mdot_out() + bfms2.w_water_out()*bfms2.mdot_out(), biphasic_mixer.w_water_in()*biphasic_mixer.mdot_in())
+    prob.createConnection("", biphasic_mixer, bfms1.w_water()*bfms1.mdot() + bfms2.w_water()*bfms2.mdot() + bfms3.w_water()*bfms3.mdot(), biphasic_mixer.w_water_in()*biphasic_mixer.mdot_in())
 
     prob.resolve()
 
@@ -325,8 +327,12 @@ def test_biphasic_mixer_and_biphasic_material_stream(biphasic_mixer_class, prob,
 
     results = sim.getResults( return_type='dict')
 
-    assert results["mdot_out_M0"] == pytest.approx(hms1.mdot.value+hms2.mdot.value)
+    print("Results = ",results)
 
-    assert results["mdot_out_M0"] == pytest.approx(results["mdot_in_M0"])
+    assert results["mdot_out_BFM0"] == pytest.approx( bfms1.mdot.value + bfms2.mdot.value + bfms3.mdot.value )
 
-    assert results["ndot_out_M0"] == pytest.approx( results["ndot_out_HMS1"]+results["ndot_out_HMS2"]  )
+    assert results["mdot_out_BFM0"] == pytest.approx(results["mdot_in_BFM0"])
+
+    assert results["ndot_out_BFM0"] == pytest.approx(results["ndot_in_BFM0"])
+
+    assert results["ndot_out_BFM0"] == pytest.approx( bfms1.ndot.value + bfms2.ndot.value + bfms3.ndot.value )

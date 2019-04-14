@@ -215,7 +215,7 @@ class Simulation:
 
             if exit_status == 0:
 
-                print("Simulation ended sucessfully with status=",exit_status,".")
+                print("Simulation ended sucessfully with status ",exit_status,".")
 
             if exit_status is not 0:
 

@@ -96,6 +96,10 @@ class Model:
 
         self.objects_info = {}
 
+        self.ignore_equation_warning = False
+
+        self.ignore_variable_warning = False
+
     def _gatherObjectsInfo_(self):
 
         """
@@ -227,11 +231,11 @@ class Model:
 
         self.DeclareEquations()
 
-        if len(self.variables) == 0:
+        if len(self.variables) == 0 and self.ignore_variable_warning is False:
 
             print("Warning: No variables were declared.")
 
-        if len(self.equations) == 0:
+        if len(self.equations) == 0 and self.ignore_equation_warning is False:
 
             print("Warning: No equations were declared.")
 

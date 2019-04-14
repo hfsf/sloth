@@ -15,7 +15,7 @@ class MaterialStream(model.Model):
     Model for a simple material stream (homogeneous)
 
     *INPUTS: -
-    *OUTPUTS: mdot_out, mdot_out, h_out, P_out
+    *OUTPUTS: - mdot_out, mdot_out, h_out, P_out
     *PARAMETERS: mdot, ndot, P, H, T
 
     *REQUIRES: PropertyPackage
@@ -31,11 +31,14 @@ class MaterialStream(model.Model):
         self.H = self.createParameter("H", J/mol, "Molar enthalpy for stream")
         self.T = self.createParameter("T", K, "Temperature for stream")
 
-        self.mdot_out = self.createVariable("mdot_out",kg/s, "Mass flux from stream", is_exposed=True, type="output")
-        self.ndot_out = self.createVariable("ndot_out",mol/s, "Molar flux from stream",is_exposed=True, type="output")
-        self.P_out = self.createVariable("P_out", Pa, "Pressure from stream",is_exposed=True, type="output")
-        self.H_out = self.createVariable("H_out", J/mol, "Molar enthalpy from stream",is_exposed=True, type="output")
-        self.T_out = self.createVariable("T_out", K, "Temperature from stream",is_exposed=True, type="output")
+        #self.mdot_out = self.createVariable("mdot_out",kg/s, "Mass flux from stream", is_exposed=True, type="output")
+        #self.ndot_out = self.createVariable("ndot_out",mol/s, "Molar flux from stream",is_exposed=True, type="output")
+        #self.P_out = self.createVariable("P_out", Pa, "Pressure from stream",is_exposed=True, type="output")
+        #self.H_out = self.createVariable("H_out", J/mol, "Molar enthalpy from stream",is_exposed=True, type="output")
+        #self.T_out = self.createVariable("T_out", K, "Temperature from stream",is_exposed=True, type="output")
+
+        self.ignore_equation_warning = True
+        self.ignore_variable_warning = True
 
     def DeclareParameters(self):
 
@@ -64,6 +67,7 @@ class MaterialStream(model.Model):
 
             self.property_package.calculate(T=self.T.value, P=self.P.value)
 
+    '''
     def DeclareEquations(self):
 
         #Create equations for output of streams using parameter values
@@ -73,6 +77,7 @@ class MaterialStream(model.Model):
         self.createEquation("pressure_output", self.P_out.description, self.P_out() - self.P() )
         self.createEquation("enthalpy_output", self.H_out.description, self.H_out() - self.H())
         self.createEquation("temperature_output", self.T_out.description, self.T_out() - self.T())
+    '''
 
 class MultiphasicMaterialStream(model.Model):
 
@@ -81,10 +86,10 @@ class MultiphasicMaterialStream(model.Model):
     Model for a biphasic material stream
 
     *INPUTS: -
-    *OUTPUTS: mdot_out, mdot_out, h_out, P_out
-    *PARAMETERS: mdot, ndot, P, H, T, x_<phase1_name>, x_<phase2_name>, w_<phase1_name>, w_<phase2_name>
+    *OUTPUTS: (Parameters are directly)
+    *PARAMETERS: mdot, ndot, P, H, T, x_<phase1_name>, x_<phase2_name>, w_<phase1_name>, w_<phase2_name>, ..., x_<phaseN_name>, w_<phaseN_name>
 
-    *REQUIRES: PropertyPackage[phase1, phase2]
+    *REQUIRES: PropertyPackage[phase1, phase2, ... phaseN]
     """
 
     def __init__(self, name, description="Biphasic material stream", property_package=None):
@@ -102,9 +107,10 @@ class MultiphasicMaterialStream(model.Model):
             exec("self.x_{} = self.createParameter('x_{}',dimless,'Molar fraction for {} phase')".format(phase_i, phase_i, phase_i))
             exec("self.w_{} = self.createParameter('w_{}',dimless,'Mass fraction for {} phase')".format(phase_i, phase_i, phase_i))
 
-            exec("self.x_{}_out = self.createVariable('x_{}_out',dimless,'Molar fraction for {} phase', is_exposed='True', type='output')".format(phase_i, phase_i, phase_i))
-            exec("self.w_{}_out = self.createVariable('w_{}_out',dimless,'Mass fraction for {} phase', is_exposed='True', type='output')".format(phase_i, phase_i, phase_i))
+            #exec("self.x_{}_out = self.createVariable('x_{}_out',dimless,'Molar fraction for {} phase', is_exposed='True', type='output')".format(phase_i, phase_i, phase_i))
+            #exec("self.w_{}_out = self.createVariable('w_{}_out',dimless,'Mass fraction for {} phase', is_exposed='True', type='output')".format(phase_i, phase_i, phase_i))
 
+        '''
         self.mdot_out = self.createVariable("mdot_out",kg/s, "Mass flux from stream", is_exposed=True, type="output")
         self.ndot_out = self.createVariable("ndot_out",mol/s, "Molar flux from stream",is_exposed=True, type="output")
         self.P_out = self.createVariable("P_out", Pa, "Pressure from stream",is_exposed=True, type="output")
@@ -115,6 +121,10 @@ class MultiphasicMaterialStream(model.Model):
 
             exec("self.createEquation('','Molar fraction for {} phase', self.x_{}_out()-self.x_{}())".format(phase_i, phase_i, phase_i, phase_i))
             exec("self.createEquation('','Mass fraction for {} phase', self.w_{}_out()-self.w_{}())".format(phase_i, phase_i, phase_i, phase_i))
+        '''
+
+        self.ignore_equation_warning = True
+        self.ignore_variable_warning = True
 
     def DeclareParameters(self):
 
@@ -143,6 +153,7 @@ class MultiphasicMaterialStream(model.Model):
 
             self.property_package.calculate(T=self.T.value, P=self.P.value)
 
+    '''
     def DeclareEquations(self):
 
         #Create equations for output of streams using parameter values
@@ -152,6 +163,7 @@ class MultiphasicMaterialStream(model.Model):
         self.createEquation("pressure_output", self.P_out.description, self.P_out() - self.P() )
         self.createEquation("enthalpy_output", self.H_out.description, self.H_out() - self.H())
         self.createEquation("temperature_output", self.T_out.description, self.T_out() - self.T())
+    '''
 
 class Mixer(model.Model):
     """
@@ -232,13 +244,13 @@ class Mixer(model.Model):
 
                     #Create molar conservation for each component
 
-                    exec("_molar_conservation_i = self.ndot_in()*self.x_{}_in() - self.ndot_out()*self.x_{}_out()".format(phase_i, phase_i))
+                    exec("_molar_conservation_i = self.x_{}_out() - self.x_{}_in()".format(phase_i, phase_i))
 
                     exec("self.createEquation('molar_conservation_for_{}', 'Molar conservation for {} phase', _molar_conservation_i)".format(phase_i, phase_i))
 
                     #Create mass conservation for each component
 
-                    exec("_mass_conservation_i = self.mdot_in()*self.w_{}_in() - self.mdot_out()*self.w_{}_out()".format(phase_i, phase_i))
+                    exec("_mass_conservation_i = self.w_{}_out() - self.w_{}_in()".format(phase_i, phase_i))
 
                     exec("self.createEquation('mass_conservation_for_{}', 'Mass conservation for {} phase', _mass_conservation_i)".format(phase_i, phase_i))
 

@@ -20,7 +20,7 @@ URL = 'https://github.com/hfsf/sloth'
 EMAIL = 'freitas.hfs@gmail.com'
 AUTHOR = 'Hanniel Freitas'
 REQUIRES_PYTHON = '>=3.6'  # Put your required Python version
-VERSION = '0.1'  # Put the package version as a string (ex.: '1.0.0')
+VERSION = '0.3'  # Put the package version as a string (ex.: '1.0.0')
 
 # What packages are required for this module to be executed?
 REQUIRED = [
