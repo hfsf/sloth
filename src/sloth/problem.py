@@ -12,6 +12,7 @@ from .core.variable import Variable
 from .core.parameter import Parameter
 from .model import Model
 import numpy as np
+from .graph_creator import ConnectionGraph
 
 import threading
 
@@ -60,6 +61,8 @@ class Problem:
         self.variable_dict = OrderedDict(variable_dict)
 
         self.parameter_dict = OrderedDict(parameter_dict)
+
+        self.connection_graph = ConnectionGraph()
 
     def setInitialConditions(self, condition):
 
@@ -239,6 +242,10 @@ class Problem:
 
                 self._createDirectConnection(model_1, output_var_, model_2, input_var_, expr, description)
 
+                #Create connection beetween Model objects
+
+                self.createGraphModelConnection(model_1, model_2)
+
             else:
 
                 raise ExposedVariableError(model_1.exposed_vars['output'], model_2.exposed_vars['input'], output_vars, input_vars)
@@ -292,6 +299,35 @@ class Problem:
         else:
 
             _ = [mod_i() for mod_i in self.models.values() if mod_i.name in models_name]
+
+    def createGraphModelConnection(self, model_input, model_output):
+
+        """
+        Create a connection beetween two Model objects
+        """
+
+        self.connection_graph.add_edge(model_input.name, model_output.name)
+
+
+    def drawConnectionGraph(self, file_name='output.png', show_model_headings=True):
+
+        """
+        Draw connection graph beetween models of the current problem, indicating the name of variables used to connect them
+        """
+
+        # Iterate through models and add heading as label if needed
+
+        for model_i in list(self.models.values()):
+
+            if show_model_headings is True:
+
+                self.connection_graph.add_node(id_name = model_i.name, label = model_i._getModelOverviewForGraph())
+
+            else:
+
+                self.connection_graph.add_node(id_name = model_i.name)
+
+        self.connection_graph.draw(file_name, show_model_headings)
 
     def addModels(self, model_list):
 

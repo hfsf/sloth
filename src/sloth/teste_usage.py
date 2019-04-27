@@ -39,7 +39,7 @@ class modelTest0(model.Model):
 
         expr2 = self.y2.Diff(self.t) - self.y4()
 
-        expr3 = self.y3.Diff(self.t) + self.y5()*self.y1()        
+        expr3 = self.y3.Diff(self.t) + self.y5()*self.y1()
 
         expr4 = self.y4.Diff(self.t) + self.y5()*self.y2() + 9.82
 
@@ -106,7 +106,7 @@ class opt_prob(optimization.OptimizationProblem):
 
         #Reload problem definitions (Equation symbolic objects etc)
 
-        self.simulation_instance.problem.resolve() 
+        self.simulation_instance.problem.resolve()
 
         self.simulation_instance.setConfigurations(
                                     definition_dict=self.simulation_configuration
@@ -141,28 +141,30 @@ def xec():
     prob.resolve()
 
     print(analist.problemReport(prob))
-    
+
     s = solvers.createSolver(prob,LA_solver='simpySolve')
 
     rtrn = s.solve()
-   
+
     print("=>: %s"%(rtrn))
     """
 
-    #mod0()
+    mod0()
 
     mod1()
 
-    #prob.addModels([mod0, mod1])
-    #prob.addModels(mod0)
+    prob.addModels([mod0, mod1])
+    prob.addModels(mod0)
     prob.addModels(mod1)
 
     prob.resolve()
 
+    prob.drawConnectionGraph()
+
     analist = analysis.Analysis()
     print(analist.problemReport(prob))
 
-    #prob.createConnection(mod0, mod1, mod0.a, mod1.c)
+    prob.createConnection(mod0, mod1, mod0.a, mod1.c)
 
     #prob.equation_block._getMapForRewriteSystemAsResidual()
 
@@ -177,7 +179,7 @@ def xec():
                                'y3_M0':0.,
                                'y2_M0':0.,
                                'y1_M0':1.,
-                               't_M0':0.     
+                               't_M0':0.
                             }
                         )
     '''
@@ -187,28 +189,29 @@ def xec():
     #sim.report(prob)
 
     sim.setConfigurations(is_dynamic=False,
-                          print_output=True  
+                          print_output=True
                     )
-    
+
     #sim.dumpConfigurations('sim_conf.json')
 
     sss=input("\n\n Press any key to continue ...")
 
-    opt_prob()
+    #opt_prob()
 
     #ipdb.set_trace()
-    opt = optimization.Optimization(simulation=sim, 
+    '''
+    opt = optimization.Optimization(simulation=sim,
                                     optimization_problem=opt_prob,
-                                    optimization_parameters=[mod1.v], 
-                                    simulation_configuration=None, 
+                                    optimization_parameters=[mod1.v],
+                                    simulation_configuration=None,
                                     constraints=[-5.12,5.12],
                                     optimization_configuration=None
                         )
 
-    opt.runOptimization(True, 1) 
+    opt.runOptimization(True, 1)
 
     '''
-    sim.runSimulation(initial_time=0., 
+    sim.runSimulation(initial_time=0.,
                       end_time=5.,
                       is_dynamic=False,
                       #domain=mod0.dom,
@@ -217,10 +220,10 @@ def xec():
                       compile_equations=True,
                       print_output=True,
                       #output_headers=["Time","y1","y2","y3","y4","y5"]#,
-                      #variable_name_map={"t_M1":"Time(t)", 
-                      #                   "u_M1":"Preys(u)", 
+                      #variable_name_map={"t_M1":"Time(t)",
+                      #                   "u_M1":"Preys(u)",
                       #                   "v_M1":"Predators(v)"
-                      #                  } 
+                      #                  }
                       )
     '''
 
@@ -239,11 +242,11 @@ def xec():
     """
 
     """
-    sim.plotResults(x_data=[sim.domain[('t_M1','Time(t)')]], 
-                    y_data=sim.domain[('t_M1',['Preys(u)','Predators(v)'])], 
-                    save_file='test_plot.png', 
-                    labels=['Preys($u$)','Predators($v$)'], 
-                    x_label=r'Time$\,(s)$', 
+    sim.plotResults(x_data=[sim.domain[('t_M1','Time(t)')]],
+                    y_data=sim.domain[('t_M1',['Preys(u)','Predators(v)'])],
+                    save_file='test_plot.png',
+                    labels=['Preys($u$)','Predators($v$)'],
+                    x_label=r'Time$\,(s)$',
                     y_label=r'Individuals$\,(\#)$',
                     grid=True,
                     legend=True
@@ -263,3 +266,4 @@ def xec():
     # print("\n=>%s"%f(10.,5.,1.,0.1,1.5,0.75))
 
     # print("=>%s"%mod0.eq1.elementary_equation_expression[1].symbolic_object)
+    '''

@@ -120,12 +120,24 @@ class Model:
 
         self.objects_info[ 'exposed_vars' ] = self.exposed_vars
 
-    def _infoInputOutputVariables(self, return_output=True):
+    def _getModelOverviewForGraph(self):
+
+        input_var_names, output_var_names = self._infoInputOutputVariables(False)
+
+        self._gatherObjectsInfo_()
+
+        parameter_names = self.objects_info['parameters']
+
+        return self.name+"\n\n ->input: " + ", ".join(input_var_names) + \
+                        "\n\n ->output: " + ", ".join(output_var_names) + \
+                        "\n\n ->parameters: " + ", ".join(parameter_names)
+
+    def _infoInputOutputVariables(self, print_output=True):
 
         """
         Return information about the name of variables exposed as input and output for the current model
 
-        :param bool return_output:
+        :param bool print_output:
             Whether the function should print to stdout the output information or not
 
         :return:
@@ -134,11 +146,13 @@ class Model:
         :rtype tuple(list(str), list(str))
         """
 
-        input_var_names = [i_var.name for i_var in list(self.exposed_vars['input'].items())]
 
-        output_var_names = [o_var.name for o_var in list(self.exposed_vars['output'].items())]
 
-        if return_output is True:
+        input_var_names = [i_var.name for i_var in self.exposed_vars['input']]
+
+        output_var_names = [o_var.name for o_var in self.exposed_vars['output']]
+
+        if print_output is True:
 
             print("\nModel: {}\n\tInput var. names: {}\n\tOutput var. names:{}".format(self.name, input_var_names, output_var_names))
 
