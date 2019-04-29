@@ -1,0 +1,73 @@
+strict digraph {
+	graph [bb="0,0,1116,572",
+		ranksep=0.5
+	];
+	node [label="\N"];
+	SP0	 [color=black,
+		height=1.6111,
+		label="SP0
+
+ ->input: ndot_in_SP0, mdot_in_SP0, H_in_SP0, P_in_SP0, T_in_SP0
+
+ ->output: ndot_out_SP0, mdot_out_SP0, H_out_SP0, P_out_SP0, \
+T_out_SP0
+
+ ->parameters: Delta_P_SP0",
+		pos="833.5,362",
+		shape=box,
+		width=7.8472];
+	M0	 [color=black,
+		height=1.6111,
+		label="M0
+
+ ->input: ndot_in_M0, mdot_in_M0, T_in_M0, P_in_M0, H_in_M0
+
+ ->output: ndot_out_M0, mdot_out_M0, T_out_M0, P_out_M0, H_out_\
+M0
+
+ ->parameters: ",
+		pos="549.5,210",
+		shape=box,
+		width=7.4861];
+	SP0 -> M0	 [pos="e,657.85,268.23 725.32,303.86 706.15,293.74 686.11,283.16 666.71,272.91"];
+	H0	 [color=black,
+		height=1.6111,
+		label="H0
+
+ ->input: ndot_in_H0, mdot_in_H0, P_in_H0, H_in_H0, T_in_H0
+
+ ->output: ndot_out_H0, mdot_out_H0, P_out_H0, H_out_H0, T_out_\
+H0
+
+ ->parameters: Delta_P_H0, Q_H0, cp_mix_H0",
+		pos="549.5,58",
+		shape=box,
+		width=7.375];
+	M0 -> H0	 [pos="e,549.5,116.47 549.5,151.86 549.5,143.62 549.5,135.08 549.5,126.66"];
+	HMS1	 [color=black,
+		height=1.6111,
+		label="HMS1
+
+ ->input: 
+
+ ->output: 
+
+ ->parameters: mdot_HMS1, ndot_HMS1, P_HMS1, H_HMS1, T_HMS1",
+		pos="833.5,514",
+		shape=box,
+		width=7.4028];
+	HMS1 -> SP0	 [pos="e,833.5,420.47 833.5,455.86 833.5,447.62 833.5,439.08 833.5,430.66"];
+	HMS2	 [color=black,
+		height=1.6111,
+		label="HMS2
+
+ ->input: 
+
+ ->output: 
+
+ ->parameters: mdot_HMS2, ndot_HMS2, P_HMS2, H_HMS2, T_HMS2",
+		pos="266.5,362",
+		shape=box,
+		width=7.4028];
+	HMS2 -> M0	 [pos="e,441.53,268.23 374.3,303.86 393.31,293.79 413.19,283.25 432.44,273.05"];
+}
