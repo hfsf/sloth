@@ -120,29 +120,56 @@ def Min(*obj):
 
     f_name = latex_func_name+"\\right ("
 
-    for i in obj:
+    obj_symb_map = {}
 
-        if isinstance(obj, EquationNode):
+    obj_var_map = {}
 
-            obj_name = obj.name
+    obj_symb_objcts = []
 
-            try:
+    for obj_i in obj:
 
-                obj_latex_name = obj.obj_latex_name
+        if hasattr(obj_i,'obj_latex_name'):
 
-            except:
-
-                obj_latex_name = obj.name
+            obj_latex_name = obj_i.obj_latex_name
 
         else:
 
-            obj_name = str(obj)
+            obj_latex_name = obj_i.name
 
-            obj_latex_name = str(obj)
+        if isinstance(obj_i, EquationNode):
+
+            obj_name = obj_i.name
+
+        else:
+
+            obj_name = str(obj_i)
+
+            obj_latex_name = str(obj_i)
 
         f_name+=obj_name
 
+        if hasattr(obj_i, 'symbolic_object'):
+
+            obj_symb_objcts.append(obj_i.symbolic_object)
+
+        else:
+
+            obj_symb_objcts.append(obj_i)
+
+        #Gather all the symbolic and variable map from the obj
+
+        try:
+
+            obj_symb_map = {**obj_symb_map, **obj_i.symbolic_map}
+
+            obj_var_map = {**obj_var_map, **obj_i.variable_map}
+
+        except:
+
+            pass
+
     f_name += ")"
+
     latex_func_name+="\\right )"
 
     if all(isinstance(obj_i, float) or isinstance(obj_i, int) for obj_i in obj):
@@ -166,35 +193,6 @@ def Min(*obj):
         if obj_dims is []:
 
             obj_dims = dimless
-
-
-    obj_symb_map = {}
-    obj_var_map = {}
-    obj_symb_objcts = []
-
-    for i in obj:
-
-        #Check if the obj is an ENODE (thus, has a symbolic_object attribute) or its a number
-
-        if hasattr(i, 'symbolic_object'):
-
-            obj_symb_objcts.append(i.symbolic_object)
-
-        else:
-
-            obj_symb_objcts.append(i)
-
-        #Gather all the symbolic and variable map from the obj
-
-        try:
-
-            obj_symb_map = {**obj_symb_map, **i.symbolic_map}
-
-            obj_var_map = {**obj_var_map, **i.variable_map}
-
-        except:
-
-            pass
 
     enode_ = EquationNode(name=f_name,
                           symbolic_object=sp.Min(*obj_symb_objcts, evaluate=False),
@@ -209,27 +207,59 @@ def Min(*obj):
 
 def Max(*obj):
 
+    obj = list(obj)
+
     latex_func_name = "max"
 
     f_name = latex_func_name+"\\right ("
 
-    for i in obj:
+    obj_symb_map = {}
 
-        if isinstance(obj, EquationNode):
+    obj_var_map = {}
 
-            obj_name = obj.name
-            try:
-                obj_latex_name = obj.obj_latex_name
-            except:
-                obj_latex_name = obj.name
+    obj_symb_objcts = []
+
+    for obj_i in obj:
+
+        if hasattr(obj_i,'obj_latex_name'):
+
+            obj_latex_name = obj_i.obj_latex_name
 
         else:
 
-            obj_name = str(obj)
+            obj_latex_name = obj_i.name
 
-            obj_latex_name = str(obj)
+        if isinstance(obj_i, EquationNode):
+
+            obj_name = obj_i.name
+
+        else:
+
+            obj_name = str(obj_i)
+
+            obj_latex_name = str(obj_i)
 
         f_name+=obj_name
+
+        if hasattr(obj_i, 'symbolic_object'):
+
+            obj_symb_objcts.append(obj_i.symbolic_object)
+
+        else:
+
+            obj_symb_objcts.append(obj_i)
+
+        #Gather all the symbolic and variable map from the obj
+
+        try:
+
+            obj_symb_map = {**obj_symb_map, **obj_i.symbolic_map}
+
+            obj_var_map = {**obj_var_map, **obj_i.variable_map}
+
+        except:
+
+            pass
 
     f_name += ")"
     latex_func_name+="\\right )"
@@ -256,34 +286,6 @@ def Max(*obj):
 
             obj_dims = dimless
 
-
-    obj_symb_map = {}
-    obj_var_map = {}
-    obj_symb_objcts = []
-
-    for i in obj:
-
-        #Check if the obj is an ENODE (thus, has a symbolic_object attribute) or its a number
-
-        if hasattr(i, 'symbolic_object'):
-
-            obj_symb_objcts.append(i.symbolic_object)
-
-        else:
-
-            obj_symb_objcts.append(i)
-
-        #Gather all the symbolic and variable map from the obj
-
-        try:
-
-            obj_symb_map = {**obj_symb_map, **i.symbolic_map}
-
-            obj_var_map = {**obj_var_map, **i.variable_map}
-
-        except:
-
-            pass
     enode_ = EquationNode(name=f_name,
                           symbolic_object=sp.Max(*obj_symb_objcts, evaluate=False),
                           symbolic_map=obj_symb_map,

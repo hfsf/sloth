@@ -13,7 +13,7 @@ class PropertyPackage:
     Class that defines the PropertyPackage object, which constains information about the species involved in the simulation and their properties
     """
 
-    def __init__(self, phases=1, phase_names=['water']):
+    def __init__(self, phases=1, phase_names=['water'], ws=[.1], zs=None):
 
         """
         Instantiate PropertyPackage
@@ -29,7 +29,44 @@ class PropertyPackage:
 
         self.phases = {phase_i: thermo.chemical.Chemical(phase_i, self.T, self.P) for phase_i in phase_names if phase_i is not None}
 
+        self.ws = ws
+
+        self.zs = zs
+
+        self.mixture = None
+
         self.eos = {}
+
+    def resolve_mixture(self):
+
+        self.mixture = thermo.mixture.Mixture(phase_names, ws, zs)
+
+        self.zs = self.mixture.zs
+
+        self.ws = self.mixture.ws
+
+    def __add__(self, pp):
+
+        """
+        Overloaded function for inclusion of property packages into one resultant object
+        """
+
+        if isinstance(pp, self.__class__):
+
+            for phase_i in pp.phase_names:
+
+                if phase_i not in self.phase_names:
+
+                    self.phase_names.append(phase_i)
+
+                    self.phases.update({phase_i: pp.phases[phase_i]})
+
+            return self
+
+        else:
+
+            raise UnexpectedValueError("PropertyPackage")
+
 
     def set_T(self, T):
 

@@ -28,7 +28,7 @@ class mod1(Model):
 
         super().__init__(name, description)
 
-        self.d = self.createVariable("d",dimless,"e")
+        self.d = self.createVariable("d",dimless,"d")
         self.f = self.createParameter("f",dimless,"f")
         self.f.setValue(3.)
 
@@ -77,6 +77,7 @@ def mod2():
     return mod
 
 
+
 @pytest.fixture
 def mod3():
 
@@ -105,6 +106,54 @@ def mod3():
             self.createEquation("eq33", "Generic equation 3.3", eq23)
 
     mod = mod3("M3", "Model 3")
+
+    mod()
+
+    return mod
+
+@pytest.fixture
+def mod_():
+
+    """
+    Create a simple model for multiple incorporation tests
+    """
+
+    class mod_(Model):
+
+        def __init__(self, name, description):
+
+            super().__init__(name, "Model 3")
+
+            m1 = mod1("M1","Model 1")
+            m1()
+            m1b =mod1b("M1b", "Model 1b")
+            m1b()
+
+            self._incorporateFromModel(m1)
+            self._incorporateFromModel(m1b)
+
+        def DeclareVariables(self):
+
+            self.a = self.createVariable("a",dimless,"a")
+            self.b = self.createVariable("b",dimless,"b")
+            self.k = self.createVariable("k",dimless,"k")
+
+        def DeclareParameters(self):
+
+            self.c = self.createParameter("c",dimless,"c")
+            self.c.setValue(2.)
+
+        def DeclareEquations(self):
+
+            eq21 = self.a() + self.b() + self.c()
+            eq22 = self.b() - self.f()
+            eq23 = self.k() - self.g() - self.h()
+
+            self.createEquation("eq31", "Generic equation 3.1", eq21)
+            self.createEquation("eq32", "Generic equation 3.2", eq22)
+            self.createEquation("eq33", "Generic equation 3.3", eq23)
+
+    mod = mod_("M3", "Model 3")
 
     mod()
 
@@ -217,4 +266,29 @@ def test_multiple_incorporated_model_solution(prob, mod3, sim):
     expected = {'a_M3':-5., 'b_M3':3., 'd_M3':-3., 'g_M3':-7., 'k_M3':0.}
 
     assert results == pytest.approx(expected)
+
+def donot_test_incorporateFromModel_feature(prob, mod_, sim):
+
+    mod_._infoModelReport_()
+
+    prob.addModels(mod_)
+
+    prob.resolve()
+
+    sim.setProblem(prob)
+
+    sim.setConfigurations()
+
+    sim.runSimulation()
+
+    results = sim.getResults('dict')
+
+    print("\n\n==>Results = ",results)
+
+    expected = {'a_M3':-5., 'b_M3':3., 'd_M3':-3., 'g_M3':-7., 'k_M3':0.}
+
+    assert results == pytest.approx(expected)
+
+
+
 

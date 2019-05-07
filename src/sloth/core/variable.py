@@ -17,7 +17,7 @@ class Variable(Quantity):
 
     """
 
-    def __init__(self, name, units , description = "", is_lower_bounded = False, is_upper_bounded = False, lower_bound = None, upper_bound = None,  value = 0, latex_text="", domain=None):
+    def __init__(self, name, units , description = "", is_exposed=False, type=None, is_lower_bounded = False, is_upper_bounded = False, lower_bound = None, upper_bound = None,  value = 0, latex_text="", domain=None):
 
         super().__init__(name, units, description, value, latex_text)
 
@@ -32,6 +32,12 @@ class Variable(Quantity):
 
         :param str description:
         Description for the present variable. Defauls to ""
+
+        :param bool is_exposed:
+        Define if the Variable object will be treated as an exposed variable for a Model object
+
+        :param str type:
+        Determines the exposure type of the variable object. Can be 'input', 'output' or None, for non-exposed objects.
 
         :param bool isLower_bounded:
         Define if the Variable object has some minimum value restriction.
@@ -52,7 +58,7 @@ class Variable(Quantity):
 
         :param str latex_text:
 
-        :param Domain domain:       
+        :param Domain domain:
 
         === Coming from base class ===
 
@@ -66,7 +72,11 @@ class Variable(Quantity):
 
         """
 
-        self.is_lower_bounded = ( lower_bound != None ) 
+        self.is_exposed = is_exposed
+
+        self.type = type
+
+        self.is_lower_bounded = ( lower_bound != None )
 
         self.is_upper_bounded = ( upper_bound != None )
 

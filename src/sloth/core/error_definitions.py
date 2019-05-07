@@ -82,7 +82,6 @@ class UnexpectedValueError(Exception):
 
         return(msg)
 
-
 class UnresolvedPanicError(Exception):
 
     """
@@ -95,7 +94,7 @@ class UnresolvedPanicError(Exception):
 
     def __str__(self):
 
-        err_msg = "Unresolved Panic Error.%sThis should not have ocurrred. \n Perhaps you should debug your code."%self.msg
+        err_msg = "Unresolved Panic Error.%s\n This should not have ocurrred. \n Perhaps you should debug your code."%self.msg
 
         return(err_msg)
 
@@ -146,6 +145,23 @@ class DimensionalCoherenceError(Exception):
 
         return(msg)
 
+class UnitOperationError(Exception):
+
+    """
+    Error raised by error in definitions of UnitOp objects
+    """
+
+    def __init__(self, port, n, elem):
+
+        self.n = n
+
+        self.port = port
+
+        self.elem = elem
+
+    def __str__(self):
+
+        msg = "UnitOp object was defined for port {} with lenght {}, but a element of size {} was supplied.".format(self.port, self.n, len(self.elem))
 
 def _addUnitContainingOperations(a,b):
 

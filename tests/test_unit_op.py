@@ -216,21 +216,21 @@ def test_biphasic_mixer_biphasic_material_stream(biphasic_mixer_class, prob, sim
     #---------------------------------------------
     #Create biphasic material_stream model
 
-    class biphasic_material_stream(MultiphasicMaterialStream):
+    class biphasic_material_stream(MaterialStream):
 
-        def __init__(self, name, ndot, x1, description="Biphasic material stream", property_package=pp_water_toluene):
+        def __init__(self, name, ndot, z1, description="Biphasic material stream", property_package=pp_water_toluene):
 
             super().__init__(name, description, property_package)
 
             self.ndot.setValue(ndot)
 
-            self.x_water.setValue(x1)
+            self.z_water.setValue(z1)
 
-            self.x_toluene.setValue(1. - x1)
+            self.z_toluene.setValue(1. - z1)
 
-            n_mols_water = self.x_water.value*self.ndot.value
+            n_mols_water = self.z_water.value*self.ndot.value
 
-            n_mols_toluene = self.x_toluene.value*self.ndot.value
+            n_mols_toluene = self.z_toluene.value*self.ndot.value
 
             MW_water = self.property_package["water"].MW
 
@@ -266,15 +266,11 @@ def test_biphasic_mixer_biphasic_material_stream(biphasic_mixer_class, prob, sim
 
     prob.createConnection("", biphasic_mixer, bfms1.H()*bfms1.ndot() + bfms2.H()*bfms2.ndot() + bfms3.H()*bfms3.ndot(), biphasic_mixer.ndot_in()*biphasic_mixer.H_in())
 
-    prob.createConnection("", biphasic_mixer, bfms1.x_water()*bfms1.ndot() + bfms2.x_water()*bfms2.ndot() + bfms3.x_water()*bfms3.ndot(), biphasic_mixer.x_water_in()*biphasic_mixer.ndot_in())
+    prob.createConnection("", biphasic_mixer, bfms1.z_water()*bfms1.ndot() + bfms2.z_water()*bfms2.ndot() + bfms3.z_water()*bfms3.ndot(), biphasic_mixer.z_water_in()*biphasic_mixer.ndot_in())
 
     prob.createConnection("", biphasic_mixer, bfms1.w_water()*bfms1.mdot() + bfms2.w_water()*bfms2.mdot() + bfms3.w_water()*bfms3.mdot(), biphasic_mixer.w_water_in()*biphasic_mixer.mdot_in())
 
     prob.resolve()
-
-    print(Analysis().problemReport(prob))
-
-    #tty = input("...")
 
     sim.setProblem(prob)
 
@@ -529,7 +525,132 @@ def test_pump_mixer_heater_homogeneous_material_stream_heater(simple_mixer, simp
 
     prob.createConnection("", simple_mixer, Min(spmp.P_out(), hms2.P()), simple_mixer.P_in())
 
-    #prob.createConnection("", simple_mixer, hms2.P(), simple_mixer.P_in())
+    prob.createConnection("", simple_mixer, spmp.ndot_out()*spmp.H_out() + hms2.ndot()*hms1.H(), simple_mixer.ndot_in()*simple_mixer.H_in())
+
+    prob.createConnection("", spmp, hms1.T(), spmp.T_in())
+
+    prob.createConnection("", spmp, hms1.P(), spmp.P_in())
+
+    prob.createConnection("", spmp, hms1.H(), spmp.H_in())
+
+    prob.createConnection("", spmp, hms1.mdot(), spmp.mdot_in())
+
+    prob.createConnection("", spmp, hms1.ndot(), spmp.ndot_in())
+
+    prob.createConnection(simple_mixer, simple_heater, simple_mixer.T_out, simple_heater.T_in)
+
+    prob.createConnection(simple_mixer, simple_heater, simple_mixer.P_out, simple_heater.P_in)
+
+    prob.createConnection(simple_mixer, simple_heater, simple_mixer.mdot_out, simple_heater.mdot_in)
+
+    prob.createConnection(simple_mixer, simple_heater, simple_mixer.ndot_out, simple_heater.ndot_in)
+
+    prob.createConnection(simple_mixer, simple_heater, simple_mixer.H_out, simple_heater.H_in)
+
+    prob.resolve()
+
+    '''
+    prob.createGraphModelConnection(hms1, spmp)
+
+    prob.createGraphModelConnection(hms2, simple_mixer)
+
+    prob.createGraphModelConnection(spmp, simple_mixer)
+
+    prob.drawConnectionGraph('/home/hfsf/out.png', show_model_headings=False)
+    '''
+
+    sim.setProblem(prob)
+
+    sim.setConfigurations()
+
+    #print(Analysis().problemReport(prob))
+
+    sim.runSimulation(show_output_msg=True)
+
+    results = sim.getResults( return_type='dict')
+
+    print("\nResults = ",results)
+
+    assert results["mdot_out_M0"] == pytest.approx(results["mdot_in_M0"])
+
+    assert results["mdot_out_M0"] == pytest.approx(hms1.mdot.value+hms2.mdot.value)
+
+    assert results["ndot_out_M0"] == pytest.approx( hms1.ndot.value + hms2.ndot.value  )
+
+    assert results["P_out_SP0"] == pytest.approx(hms1.P.value+2*101325.)
+
+    assert results["mdot_out_SP0"] == pytest.approx(hms1.mdot.value)
+
+    assert results["ndot_out_SP0"] == pytest.approx(hms1.ndot.value)
+
+    assert results["P_out_SP0"] > results["P_in_SP0"]
+
+    assert results["ndot_out_M0"] == pytest.approx( hms1.ndot.value + hms2.ndot.value  )
+
+    assert results["T_out_H0"] > results["T_in_H0"]
+
+
+def test_pump_mixer_heater_hms(simple_mixer, simple_heater, prob, sim, pp_water):
+
+    """
+    Test for simulation of the mixer problem using models for material streams, a pump and a heater
+    """
+
+    simple_mixer = simple_mixer("M0", "Simple mixer", pp_water)
+    simple_mixer()
+
+    simple_heater = simple_heater("H0", "Simple heater", pp_water)
+    simple_heater.Q.setValue(1e8) #100 GW
+    simple_heater.Delta_P.setValue(0.)
+    simple_heater()
+
+    #---------------------------------------------
+    #Create a homogeneous material_stream model
+
+    class homogeneous_material_stream(MaterialStream):
+
+        def __init__(self, name, mdot, description="Homogeneous material stream", property_package=pp_water):
+
+            super().__init__(name, description, property_package)
+
+            self.mdot.setValue(mdot)
+
+            self.T.setValue(298.15)
+
+            self.H.setValue(0.)
+
+            self.P.setValue(101325.)
+    #----------------------------------------------
+
+    hms1 = homogeneous_material_stream("HMS1", 100.)
+    hms1.P.setValue(120e3)
+    hms1()
+    hms2 = homogeneous_material_stream("HMS2", 200.)
+    hms2()
+
+    #-----------------------------------------------
+    #Create a damn simple pump
+    class simple_pump(SimplePump):
+
+        def __init__(self, name, Delta_P, description="A simple pump", property_package=pp_water):
+
+            super().__init__(name, description, property_package)
+
+            self.Delta_P.setValue(Delta_P)
+    #-----------------------------------------------
+
+    spmp = simple_pump("SP0",2*101325.)
+    spmp()
+
+    prob.addModels([spmp, simple_mixer, simple_heater, hms1, hms2])
+
+    prob.createConnection("", simple_mixer, Min(spmp.T_out(), hms2.T()), simple_mixer.T_in())
+
+    prob.createConnection("", simple_mixer, spmp.mdot_out()+hms2.mdot(), simple_mixer.mdot_in())
+
+    prob.createConnection("", simple_mixer, spmp.ndot_out()+hms2.ndot(), simple_mixer.ndot_in())
+
+    prob.createConnection("", simple_mixer, Min(spmp.P_out(), hms2.P()), simple_mixer.P_in())
 
     prob.createConnection("", simple_mixer, spmp.ndot_out()*spmp.H_out() + hms2.ndot()*hms1.H(), simple_mixer.ndot_in()*simple_mixer.H_in())
 
@@ -555,6 +676,7 @@ def test_pump_mixer_heater_homogeneous_material_stream_heater(simple_mixer, simp
 
     prob.resolve()
 
+    '''
     prob.createGraphModelConnection(hms1, spmp)
 
     prob.createGraphModelConnection(hms2, simple_mixer)
@@ -562,6 +684,7 @@ def test_pump_mixer_heater_homogeneous_material_stream_heater(simple_mixer, simp
     prob.createGraphModelConnection(spmp, simple_mixer)
 
     prob.drawConnectionGraph('/home/hfsf/out.png', show_model_headings=False)
+    '''
 
     sim.setProblem(prob)
 

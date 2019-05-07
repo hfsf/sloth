@@ -10,8 +10,11 @@ from .core.equation_operators import Log, Log10, Sqrt, Abs, Exp, Sin, Cos, Tan
 from .core.variable import Variable
 from .core.constant import Constant
 from .core.parameter import Parameter
+from . import analysis
 from . import connection
 import prettytable
+
+from copy import deepcopy
 
 class Model:
 
@@ -72,27 +75,27 @@ class Model:
         try:
             len(self.parameters)
         except:
-            self.parameters = collections.OrderedDict({})
+            self.parameters = {}#collections.OrderedDict({})
 
         try:
             len(self.variables)
         except:
-            self.variables = collections.OrderedDict({})
+            self.variables = {}#collections.OrderedDict({})
 
         try:
             len(self.constants)
         except:
-            self.constants = collections.OrderedDict({})
+            self.constants = {}#collections.OrderedDict({})
 
         try:
             len(self.equations)
         except:
-            self.equations = collections.OrderedDict({})
+            self.equations = {}#collections.OrderedDict({})
 
         try:
             len(self.connections)
         except:
-            self.connections = collections.OrderedDict({})
+            self.connections = {}#collections.OrderedDict({})
 
         self.objects_info = {}
 
@@ -158,6 +161,10 @@ class Model:
 
         return input_var_names, output_var_names
 
+    def _infoModelReport_(self):
+
+        print(analysis.Analysis().modelReport(self))
+
     def _infoDegreesOfFreedom_(self):
 
         """
@@ -180,7 +187,7 @@ class Model:
 
         rtrn_tab = prettytable.PrettyTable()
 
-        rtrn_tab.column_headers = ['Nb. Components','Nb. Phases']
+        rtrn_tab.field_names = ['Nb. Components','Nb. Phases']
         rtrn_tab.add_row([ str(0), str(0) ])
 
         print(rtrn_tab)
@@ -188,8 +195,8 @@ class Model:
 
         rtrn_tab = prettytable.PrettyTable()
 
-        rtrn_tab.column_headers = ['Nb. M.V.']
-        rtrn_tab.addend_row([ str(0)])
+        rtrn_tab.field_names = ['Nb. M.V.']
+        rtrn_tab.add_row([ str(0)])
 
         print(rtrn_tab)
 
@@ -201,7 +208,7 @@ class Model:
 
         rtrn_tab = prettytable.PrettyTable()
 
-        rtrn_tab.column_headers = ['Nb. DF. Design','Nb. DF. Control', 'Nb. DF. Chemical']
+        rtrn_tab.field_names = ['Nb. DF. Design','Nb. DF. Control', 'Nb. DF. Chemical']
         rtrn_tab.add_row([ str(df_design), str(df_control), str(df_chemical) ])
 
         print(rtrn_tab)
@@ -307,6 +314,109 @@ class Model:
             raise UnexpectedValueError("list(Variable)")
 
 
+    def _ownObjectFromModel(self, obj, model):
+
+        """
+        Function for copying an object from another model and changing its ownership (eg:_<MODEL_NAME> name convention)
+        """
+
+        print("\n\t Re-owning object ",obj.name, "fom model ",model.name)
+
+        obj_ = deepcopy(obj)
+
+        obj_.name = obj.name[:-(1+len(model.name))] +'_'+self.name
+
+        print("\n\t\t Re-naming object fom ",obj.name, "to ", obj_.name)
+
+        print("\n\t\t Its new __dict__ is: ",obj_.__dict__)
+
+        return(obj_)
+
+
+    def _incorporateFromModel(self, model, copy_objects=True, register_variables=True, register_parameters=True, register_constants=True, register_equations=True, register_connections=True, print_debug_msg=False):
+
+        """
+        Function for incorporation of another model in the current one, copying its variables, parameters, equations, etc.
+
+        :ivar model:
+            Model form which desired objects should be incorporated
+
+        :param bool copy_objects:
+            If the atributes of the python object should be copied, allowign them to be acessed directly in the current Model object as if they were declared natively (eg:equation definition)
+
+        :param bool register_variables:
+            If the variables should be copied from the donor model to the one that will incorporate. Defaults to True.
+
+        :param bool register_parameters:
+            If the parameters should be copied from the donor model to the one that will incorporate. Defaults to True.
+
+        :param bool register_constants:
+            If the constants should be copied from the donor model to the one that will incorporate. Defaults to True.
+
+        :param bool register_equations:
+            If the equations should be copied from the donor model to the one that will incorporate. Defaults to True.
+
+        :param bool registerister_connections:
+            If the connections should be copied from the donor model to the one that will incorporate. Defaults to True.
+        """
+
+        if print_debug_msg is True:
+            print("==> Copying directly objects from model ", model.name,": ")
+
+        if copy_objects is True:
+
+            #Copy atributes from donor model as if they were declared natively for the current one
+
+            fixed_elements = ['variables', 'parameters', 'constants', 'equations', 'name', 'description', 'property_package', 'exposed_vars', 'connections', 'objects_info', 'ignore_equation_warning', 'ignore_variable_warning']
+
+            self.__dict__.update( { k: self._ownObjectFromModel(model.__dict__[k], model) for k in model.__dict__.keys() if k not in fixed_elements } )
+
+            if print_debug_msg is True:
+                print("\n ==>Registering objects from donor model dictionaries")
+
+        if register_variables is True:
+
+            if print_debug_msg is True:
+                print("\n \t\t Old variables dict for current model: ", self.variables)
+
+            _ = [ self._registerVariableDirectly(var_i[1], model) for var_i in list(model.variables.items()) ]
+
+            if print_debug_msg is True:
+                print("\n \t\t New variables dict for current model: ", self.variables)
+
+        if register_parameters is True:
+
+            if print_debug_msg is True:
+                print("\n \t\t Old parameters dict for current model: ", self.parameters)
+
+            _ = [ self._registerParameterDirectly(par_i[1], model) for par_i in list(model.parameters.items()) ]
+
+            if print_debug_msg is True:
+                print("\n \t\t New parameters dict for current model: ", self.parameters)
+
+        if register_constants is True:
+
+            if print_debug_msg is True:
+                print("\n \t\t Old constants dict for current model: ", self.constants)
+
+            _ = [ self._registerParameterDirectly(con_i[1], model) for con_i in list(model.constants.items()) ]
+
+            if print_debug_msg is True:
+                print("\n \t\t New constants dict for current model: ", self.constants)
+
+        if register_equations is True:
+
+            if print_debug_msg is True:
+                print("\n \t\t Old equations dict for current model: ", self.equations)
+
+            _ = [ self._registerEquationDirectly(eq_i[1], model) for eq_i in list(model.equations.items()) ]
+
+            if print_debug_msg is True:
+                print("\n \t\t New equations dict for current model: ", self.equations)
+
+        if print_debug_msg is True:
+            print("\n==>New __dict__ for current object is: ", self.__dict__)
+
     def createEquation(self, name, description="", expr=None, check_equation=True):
 
         """
@@ -353,6 +463,89 @@ class Model:
 
             return eq
 
+    def _registerVariableDirectly(self, var, model_to_incorporate):
+
+        """
+        Create a Variable object directly, and register it. Intended only for internal use when incorporating other models
+
+        :ivar var:
+            Variable object that will be registered in the current Model object
+
+        :ivar model_to_incorporate:
+            Model from which the object will be incorporated
+        """
+
+        print ("")
+
+        var = deepcopy(var)
+
+        var.name = var.name[:-(1+len(model_to_incorporate.name))] +'_'+self.name
+
+        self.variables[var.name] = var
+
+        if var.is_exposed == True:
+
+            type = var.type
+
+            self.exposed_vars[type].append(var)
+
+    def _registerParameterDirectly(self, par, model_to_incorporate):
+
+        """
+        Create a Parameter object directly, and register it. Intended only for internal use when incorporating other models
+
+        :ivar par:
+            Parameter object that will be registered in the current Model object
+
+        :ivar model_to_incorporate:
+            Model from which the object will be incorporated
+        """
+
+        par = deepcopy(par)
+
+        par.name = par.name[:-(1+len(model_to_incorporate.name))] +'_'+self.name
+
+        self.parameters[par.name] = par
+
+    def _registerConstantDirectly(self, con, model_to_incorporate):
+
+        """
+        Create a Constant object directly, and register it. Intended only for internal use when incorporating other models
+
+        :ivar con:
+            Constant object that will be registered in the current Model object
+
+        :ivar model_to_incorporate:
+            Model from which the object will be incorporated
+        """
+
+        con = deepcopy(con)
+
+        con.name = con.name[:-(1+len(model_to_incorporate.name))] +'_'+self.name
+
+        self.constants[con.name] = con
+
+    def _registerEquationDirectly(self, eq, model_to_incorporate):
+
+        """
+        Create a Equation object directly, and register it. Intended only for internal use when incorporating other models
+
+        :ivar eq:
+            Equation object that will be registered in the current Model object
+
+        :ivar model_to_incorporate:
+            Model from which the object will be incorporated
+        """
+
+        eq = deepcopy(eq)
+
+        eq.name = eq.name[:-(1+len(model_to_incorporate.name))] +'_'+self.name
+
+        eq._sweepObjects()
+
+        self.equations[eq.name] = eq
+
+
     def createVariable(self, name, units , description = "", is_lower_bounded = False, is_upper_bounded = False, lower_bound = None, upper_bound = None, is_exposed = False, type = '', latex_text="", value = 0.):
 
         """
@@ -390,7 +583,7 @@ class Model:
 
         """
 
-        var = Variable(name, units , description, is_lower_bounded, is_upper_bounded, lower_bound, upper_bound, value, latex_text)
+        var = Variable(name, units , description, is_exposed, type, is_lower_bounded, is_upper_bounded, lower_bound, upper_bound, value, latex_text)
 
         var.name=var.name+'_'+self.name
 

@@ -328,9 +328,18 @@ class Simulation:
 
                 output_dict = OrderedDict(sorted(self.output.items(), key=lambda x: str(x[0])))
 
-                output_dict = {str(k):float(v) for (k,v) in output_dict.items()}
+                try:
 
-                return output_dict
+                    output_dict = {str(k):float(v) for (k,v) in output_dict.items()}
+
+                    return output_dict
+
+                except:
+
+                    print("Output = ",self.output)
+                    print("Output values = ",self.output.values())
+
+                    raise TypeError("!")
 
             else:
 
