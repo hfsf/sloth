@@ -17,6 +17,7 @@ class Model:
 
     """
     Model class definition. Stores several Equation objects, map exposed the exposed variables of the model and allow distribution of a variable among a specific domain.
+    Also, includes ports atributes, for easy connection beetween different models (model_with_ports feature).
 
     * Note:
 
