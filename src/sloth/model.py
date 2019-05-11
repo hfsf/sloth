@@ -417,52 +417,6 @@ class Model:
         if print_debug_msg is True:
             print("\n==>New __dict__ for current object is: ", self.__dict__)
 
-    def createEquation(self, name, description="", expr=None, check_equation=True):
-
-        """
-        Function for creation of an Equation object. Mandatory interface for model equation creation in the specific declaratory section.
-
-        :ivar str name:
-            Name for the current equation
-
-        :ivar str description:
-            Description for the present equation. Defaults to ""
-
-        :param EquationNode expr:
-            EquationNode object to declare for the current Equation object. Defaults to None
-        """
-
-        eq = Equation(name, description, expr)
-        eq.setResidual(expr) # I DON'T UNDERSTAND WHY THIS NEED TO BE HERE! x)
-
-        eq.name=eq.name+'_'+self.name
-
-        # #\nCreating equation for expression: %s\n     And its symbolic map is: %s"%(eq.equation_expression, eq.equation_expression.repr_symbolic, eq.equation_expression.symbolic_map))
-
-        # print("\n==FOR EQUATION== \nEquation expression: %s"%(eq.equation_expression))
-
-        eq._sweepObjects()
-
-        #Check if all objects used in the current equation were declared
-
-        if check_equation is True:
-
-            if self._checkEquation_(eq) is True:
-
-                self.equations[eq.name] = eq
-
-                return eq
-
-            else:
-
-                pass
-
-        else:
-
-            self.equations[eq.name] = eq
-
-            return eq
-
     def _registerVariableDirectly(self, var, model_to_incorporate):
 
         """
@@ -653,6 +607,54 @@ class Model:
         self.constants[con.name] = con
 
         return con
+
+
+    def createEquation(self, name, description="", expr=None, check_equation=True):
+
+        """
+        Function for creation of an Equation object. Mandatory interface for model equation creation in the specific declaratory section.
+
+        :ivar str name:
+            Name for the current equation
+
+        :ivar str description:
+            Description for the present equation. Defaults to ""
+
+        :param EquationNode expr:
+            EquationNode object to declare for the current Equation object. Defaults to None
+        """
+
+        eq = Equation(name, description, expr)
+        eq.setResidual(expr) # I DON'T UNDERSTAND WHY THIS NEED TO BE HERE! x)
+
+        eq.name=eq.name+'_'+self.name
+
+        # #\nCreating equation for expression: %s\n     And its symbolic map is: %s"%(eq.equation_expression, eq.equation_expression.repr_symbolic, eq.equation_expression.symbolic_map))
+
+        # print("\n==FOR EQUATION== \nEquation expression: %s"%(eq.equation_expression))
+
+        eq._sweepObjects()
+
+        #Check if all objects used in the current equation were declared
+
+        if check_equation is True:
+
+            if self._checkEquation_(eq) is True:
+
+                self.equations[eq.name] = eq
+
+                return eq
+
+            else:
+
+                pass
+
+        else:
+
+            self.equations[eq.name] = eq
+
+            return eq
+
 
     #==== FUNCTIONS THAT SHOULD BE PROVIDED BY THE USER ====
 

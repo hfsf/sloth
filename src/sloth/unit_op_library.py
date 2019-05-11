@@ -9,7 +9,7 @@ from .core.equation_operators import *
 from .core.template_units import *
 from .core.domain import *
 
-from .unit_op import UnitOp, MaterialStream
+#from .unit_op import UnitOp, MaterialStream
 
 class HomogeneousMaterialStream(model.Model):
 
@@ -63,8 +63,7 @@ class HomogeneousMaterialStream(model.Model):
 
             self.property_package.calculate(T=self.T.value, P=self.P.value)
 
-'''
-### CANDIDATE FOR REMOVAL IN NEXT REFACTORY ###
+
 class MaterialStream(model.Model):
 
 
@@ -78,7 +77,7 @@ class MaterialStream(model.Model):
     *REQUIRES: PropertyPackage[phase1, phase2, ... phaseN]
     """
 
-    def __init__(self, name, description="Biphasic material stream", property_package=None):
+    def __init__(self, name, description="Multiphasic material stream", property_package=None):
 
         super().__init__(name, description, property_package)
 
@@ -124,7 +123,6 @@ class MaterialStream(model.Model):
         if self.T.is_specified is True and self.P.is_specified is True:
 
             self.property_package.calculate(T=self.T.value, P=self.P.value)
-'''
 
 class Mixer(model.Model):
     """

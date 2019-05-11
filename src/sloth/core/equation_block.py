@@ -1,4 +1,4 @@
- 
+
 # *coding:utf-8*
 
 import sympy as sp
@@ -10,7 +10,7 @@ from .variable import Variable
 class EquationBlock:
 
     """
-    Define EquationBlock. Act as a container for Equation objects and provides mechanisms for transforming them into matrix form. 
+    Define EquationBlock. Act as a container for Equation objects.
     """
 
     def __init__(self, equations, variable_dict, parameter_dict, owner_model=None):
@@ -99,7 +99,7 @@ class EquationBlock:
 
         yd_map = {k:v for (k,v) in zip(diff_list,yd_list)}
 
-        y_map = {k:v for (k,v) in zip(var_list,y_list)} 
+        y_map = {k:v for (k,v) in zip(var_list,y_list)}
 
         return yd_map, y_map
 
@@ -127,11 +127,11 @@ class EquationBlock:
 
         """
         Set the list for each of the Variable objects that appear in the equations of the model
-        
+
         :return:
             List of variable names
         :rtype list(str):
-        
+
         # TODO
             * Optimize code snippet marked below
         """
@@ -163,7 +163,7 @@ class EquationBlock:
         return var_name_list
 
     def _getEquationBlockAsFunction(self, differential_form='residual', side='rhs', compilation_mechanism='numpy'):
-    
+
         """
         Return the Equations that compose the current EquationBlock object into a monolithical function that will return an array of results.
 
@@ -171,7 +171,7 @@ class EquationBlock:
             Definition of which form the equations are presented, if in a 'elementary' form (y == a*x +b) or in a 'residual' form (y - a*x - b == 0). Defaults to 'residual'
 
         :param str side:
-            Side of which the equality of the equation in the elementary form should be examined ('lhs' for left, 'rhs' for right-hand side). 
+            Side of which the equality of the equation in the elementary form should be examined ('lhs' for left, 'rhs' for right-hand side).
 
         :param str compilation_mechanism:
             Determination of which mechanism to use to compile the equations. Defaults to 'numpy'
@@ -180,7 +180,7 @@ class EquationBlock:
             Monolithic function corresponding to all the equations defined for current EquationBlock, retuning an array of results
         :rtype function:
         """
- 
+
         # POSSIBLY UNECESSARY SNIPPET. REMOVE IN FURTHER REFACTORIES
         #===========================================================
         '''
@@ -200,7 +200,7 @@ class EquationBlock:
 
         if differential_form == 'elementary':
 
-            fun_ = sp.lambdify(self._var_list, 
+            fun_ = sp.lambdify(self._var_list,
                                np_array(self._getEquationList(differential_form,                           side)
                                     ),
                                compilation_mechanism
@@ -219,8 +219,8 @@ class EquationBlock:
             original_eqs = self._getEquationList(differential_form, side)
 
             rewritten_eqs = [eq_i.subs(yd_map) for eq_i in original_eqs]
-            
-            _fun_ = sp.lambdify(["t","y","yd"], 
+
+            _fun_ = sp.lambdify(["t","y","yd"],
                                np_array(rewritten_eqs),
                                compilation_mechanism
                         )
@@ -238,7 +238,7 @@ class EquationBlock:
 
         :return:
             List of boolean flags indicating which equations are boolean
-        :rtype list(bool): 
+        :rtype list(bool):
         """
 
         return [float(i.type == 'differential') for i in self.equations]
@@ -252,7 +252,7 @@ class EquationBlock:
             Definition of which form the equations are presented, if in a 'elementary' form (y == a*x +b) or in a 'residual' form (y - a*x - b == 0). Defaults to None, for which the declared form of the equation are used.
 
         :param str side:
-            Side of which the equality of the equation in the elementary form should be examined ('lhs' for left, 'rhs' for right-hand side). 
+            Side of which the equality of the equation in the elementary form should be examined ('lhs' for left, 'rhs' for right-hand side).
 
         :return:
             List of the sympy expressions representing each Equation object of the model
@@ -266,7 +266,7 @@ class EquationBlock:
     def __call__(self):
 
         """
-        Overloaded method for EquationBlock object. Examines the equations atribute of the EquationBlock object and build the matrix 
+        Overloaded method for EquationBlock object. Examines the equations atribute of the EquationBlock object and build the matrix
         """
 
         # Fill-up the list of Variables and Equations
