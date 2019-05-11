@@ -62,7 +62,7 @@ class Problem:
 
         self.parameter_dict = OrderedDict(parameter_dict)
 
-        self.connection_graph = ConnectionGraph()
+        #self.connection_graph = ConnectionGraph()
 
     def setInitialConditions(self, condition):
 
@@ -244,7 +244,7 @@ class Problem:
 
                 #Create connection beetween Model objects
 
-                self.createGraphModelConnection(model_1, model_2)
+                #self.createGraphModelConnection(model_1, model_2)
 
             else:
 
@@ -300,6 +300,7 @@ class Problem:
 
             _ = [mod_i() for mod_i in self.models.values() if mod_i.name in models_name]
 
+    '''
     def createGraphModelConnection(self, model_input, model_output):
 
         """
@@ -307,8 +308,9 @@ class Problem:
         """
 
         self.connection_graph.add_edge(model_input.name, model_output.name)
+    '''
 
-
+    '''
     def drawConnectionGraph(self, file_name='output.png', show_model_headings=True):
 
         """
@@ -328,6 +330,7 @@ class Problem:
                 self.connection_graph.add_node(id_name = model_i.name)
 
         self.connection_graph.draw(file_name, show_model_headings)
+    '''
 
     def addModels(self, model_list):
 

@@ -61,6 +61,8 @@ def mod():
 
     diff_mod = differential_model("D0","Differential model")
 
+    diff_mod._infoModelReport_()
+
     diff_mod()
 
     return diff_mod
@@ -113,7 +115,7 @@ def prob_opt(mod):
 
             #Reload problem definitions (Equation symbolic objects etc)
 
-            self.simulation_instance.problem.resolve() 
+            self.simulation_instance.problem.resolve()
 
             self.simulation_instance.setConfigurations(
                                         definition_dict=self.simulation_configuration
@@ -154,7 +156,7 @@ def opt(sim, mod, prob, prob_opt):
                              constraints=constraints,
                              optimization_configuration=optimization_configuration)
 
-    sim.setConfigurations(initial_time=0., 
+    sim.setConfigurations(initial_time=0.,
                   end_time=16.,
                   is_dynamic=True,
                   domain=mod.dom,
@@ -162,15 +164,15 @@ def opt(sim, mod, prob, prob_opt):
                   print_output=False,
                   compile_equations=True,
                   output_headers=["Time","Preys(u)","Predators(v)"],
-                  variable_name_map={"t_D0":"Time(t)", 
-                                     "u_D0":"Preys(u)", 
+                  variable_name_map={"t_D0":"Time(t)",
+                                     "u_D0":"Preys(u)",
                                      "v_D0":"Predators(v)"
-                            } 
+                            }
             )
-    
+
     prob.resolve()
 
-    prob.setInitialConditions({'t_D0':0.,'u_D0':10.,'v_D0':5.})    
+    prob.setInitialConditions({'t_D0':0.,'u_D0':10.,'v_D0':5.})
 
     sim.setProblem(prob)
 
@@ -193,9 +195,9 @@ def test_model_properties(mod):
 def test_model_enodes(mod):
 
     assert mod.eq1.equation_expression.symbolic_map[list(mod.a().symbolic_map.keys())[0]] == mod.a
-    
+
     assert mod.eq1.equation_expression.symbolic_map[list(mod.b().symbolic_map.keys())[0]] == mod.b
-    
+
     assert mod.eq1.equation_expression.symbolic_map[list(mod.b().symbolic_map.keys())[0]] == mod.eq2.equation_expression.symbolic_map[list(mod.b().symbolic_map.keys())[0]]
 
 
@@ -210,7 +212,7 @@ def test_simulation_properties(mod, prob, sim):
     assert sim.name == "simul"
 
     assert sim.description == "generic simulation"
-    
+
     assert sim.problem == prob
 
 @pytest.mark.parametrize("compile_equations",[True,False])
@@ -224,7 +226,7 @@ def test_simulation_result(mod, prob, sim, compile_equations):
 
     prob.resolve()
 
-    prob.setInitialConditions({'t_D0':0.,'u_D0':10.,'v_D0':5.})    
+    prob.setInitialConditions({'t_D0':0.,'u_D0':10.,'v_D0':5.})
 
     sim.setProblem(prob)
 
@@ -232,7 +234,7 @@ def test_simulation_result(mod, prob, sim, compile_equations):
     print("===>prob.elementary_equations:%s"%[i.elementary_equation_expression for i in prob._equation_list])
     print("===>prob.equations:%s"%[i.equation_expression for i in prob._equation_list])
 
-    sim.setConfigurations(initial_time=0., 
+    sim.setConfigurations(initial_time=0.,
                       end_time=16.,
                       is_dynamic=True,
                       domain=mod.dom,
@@ -240,10 +242,10 @@ def test_simulation_result(mod, prob, sim, compile_equations):
                       print_output=False,
                       compile_equations=compile_equations,
                       output_headers=["Time","Preys(u)","Predators(v)"],
-                      variable_name_map={"t_D0":"Time(t)", 
-                                         "u_D0":"Preys(u)", 
+                      variable_name_map={"t_D0":"Time(t)",
+                                         "u_D0":"Preys(u)",
                                          "v_D0":"Predators(v)"
-                                } 
+                                }
                 )
 
     sim.runSimulation()
@@ -262,13 +264,13 @@ def test_simulation_result(mod, prob, sim, compile_equations):
 
     assert result['t_D0']['Predators(v)'][-1] == pytest.approx(7.1602100083)
 
-def DONOTtest_optimization(mod, prob, sim, opt, prob_opt):
+def test_optimization(mod, prob, sim, opt, prob_opt):
 
     prob.addModels(mod)
 
     prob.resolve()
 
-    prob.setInitialConditions({'t_D0':0.,'u_D0':10.,'v_D0':5.})    
+    prob.setInitialConditions({'t_D0':0.,'u_D0':10.,'v_D0':5.})
 
     sim.setProblem(prob)
 

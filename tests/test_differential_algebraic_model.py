@@ -189,11 +189,11 @@ def test_simulation_result(mod, prob, sim, compile_equations):
 
     assert result['t_DA0']['Y-2'][0] == pytest.approx(0.)
 
-    assert result['t_DA0']['Y-2'][-1] == pytest.approx(-0.340922)
+    assert result['t_DA0']['Y-2'][-1] == pytest.approx(-0.3409274981941177)
 
     assert result['t_DA0']['Y-3'][0] == pytest.approx(0.)
 
-    assert result['t_DA0']['Y-3'][-1] == pytest.approx(-0.882047)
+    assert result['t_DA0']['Y-3'][-1] == pytest.approx(-0.8820603476203837)
 
     assert result['t_DA0']['Y-4'][0] == pytest.approx(0.)
 
@@ -201,4 +201,4 @@ def test_simulation_result(mod, prob, sim, compile_equations):
 
     assert result['t_DA0']['Y-5'][0] == pytest.approx(0.)
 
-    assert result['t_DA0']['Y-5'][-1] == pytest.approx(10.041643)
+    assert result['t_DA0']['Y-5'][-1] == pytest.approx(10.041694313692696)

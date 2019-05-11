@@ -11,7 +11,34 @@ from .core.variable import Variable
 from .core.constant import Constant
 from .core.parameter import Parameter
 from . import connection
+from . import analysis
 import prettytable
+
+from copy import deepcopy
+
+def _totalizeInletsFunction_genericMaterialStreams(main_model, set_P_by_min=True, set_T_by_min=True):
+
+    """
+    Generic function for totalization of inlets, assuming that all those are MaterialStreams from the UnitOp library
+    """
+
+    if set_P_by_min is True:
+
+        pass
+
+    if set_T_by_min is True:
+
+        pass
+
+def _totalizeOutletsFunction_genericMaterialStreams(main_model):
+
+    """
+    Generic function for totalization of outlets, assuming that all those are MaterialStreams from the UnitOp library
+    """
+
+    #Something should be defined here?
+
+    pass
 
 class Model:
 
@@ -41,7 +68,7 @@ class Model:
 
     """
 
-    def __init__(self, name, description = "", property_package=None):
+    def __init__(self, name, description = "", property_package=None, ports={'inlets':{},'outlets':{}}, function_for_inlets_totalization = None, function_for_outlets_totalization = None):
 
         """
         Instantiate Model.
@@ -73,33 +100,57 @@ class Model:
         try:
             len(self.parameters)
         except:
-            self.parameters = collections.OrderedDict({})
+            self.parameters = {}
 
         try:
             len(self.variables)
         except:
-            self.variables = collections.OrderedDict({})
+            self.variables = {}
 
         try:
             len(self.constants)
         except:
-            self.constants = collections.OrderedDict({})
+            self.constants = {}
 
         try:
             len(self.equations)
         except:
-            self.equations = collections.OrderedDict({})
+            self.equations = {}
 
         try:
             len(self.connections)
         except:
-            self.connections = collections.OrderedDict({})
+            self.connections = {}
+
+        self._inlets = []
+
+        self._outputs = []
+
+        self.ports = ports
 
         self.objects_info = {}
 
         self.ignore_equation_warning = False
 
         self.ignore_variable_warning = False
+
+        if function_for_inlets_totalization is None:
+
+            function_for_inlets_totalization = _totalizeInletsFunction_genericMaterialStreams
+
+        if function_for_outlets_totalization is None:
+
+            function_for_outlets_totalization = _totalizeOutletsFunction_genericMaterialStreams
+
+        self.totalizeInletsFunction = function_for_inlets_totalization
+
+        self.totalizeOutletsFunction = function_for_outlets_totalization
+
+    def _infoModelReport_(self):
+
+        analist = analysis.Analysis()
+
+        print(analist.modelReport(self))
 
     def _gatherObjectsInfo_(self):
 
@@ -232,6 +283,146 @@ class Model:
 
             return(True)
 
+    def _addVariableDirectly(self, var):
+
+        """
+        Function for directly inclusion of an Variable object into current model, mainly used for creation of new Variable objects on-the-fly
+        """
+
+        #Object has  a owner model. Need to change the model ownership
+
+        var_ = var
+
+        var_ = deepcopy(var)
+
+        if var.owner_model_name is not "":
+
+            object_name =  var.name[:-(1+len(var.owner_model_name))]
+
+        else:
+
+            object_name = var.name
+
+        var_.name = object_name + "_" + self.name
+
+        var_.owner_model_name = self.name
+
+        #Adding the object to current model dictionaries
+
+        self.variables[var_.name] = var_
+
+        if var_.is_exposed == True:
+
+            self.exposed_vars[type].append(var_)
+
+        #Adding the object to current Model as an atribute (pythonic beauty)
+
+        self.__dict__[object_name] = var_
+
+    def _addParameterDirectly(self, par):
+
+        """
+        Function for directly inclusion of an Parameter object into current model, mainly used for creation of new parameters objects on-the-fly
+        """
+
+        #Object has  a owner model. Need to change the model ownership
+
+        par_ = par
+
+        par_ = deepcopy(par)
+
+        if par.owner_model_name is not "":
+
+            object_name =  par.name[:-(1+len(par.owner_model_name))]
+
+        else:
+
+            object_name = par.name
+
+        par_.name = object_name + "_" + self.name
+
+        par_.owner_model_name = self.name
+
+        #Adding the object to current model dictionaries
+
+        self.parameters[par_.name] = par_
+
+        #Adding the object to current Model as an atribute (pythonic beauty)
+
+        self.__dict__[object_name] = par_
+
+    def _addConstantDirectly(self, con):
+
+        """
+        Function for directly inclusion of an Constant object into current model, mainly used for creation of new Constants objects on-the-fly
+        """
+
+        #Object has  a owner model. Need to change the model ownership
+
+        con_ = con
+
+        con_ = deepcopy(con)
+
+        if con.owner_model_name is not "":
+
+            object_name =  con.name[:-(1+len(con.owner_model_name))]
+
+        else:
+
+            object_name = con.name
+
+        con_.name = object_name + "_" + self.name
+
+        con_.owner_model_name = self.name
+
+        #Adding the object to current model dictionaries
+
+        self.constants[con_.name] = con_
+
+        #Adding the object to current Model as an atribute (pythonic beauty)
+
+        self.__dict__[object_name] = con_
+
+    def _addEquationDirectly(self, eq):
+
+        """
+        Function for directly inclusion of an Equation object into current model, mainly used for creation of new Equation objects on-the-fly
+        """
+
+        #Object has  a owner model. Need to change the model ownership
+
+        eq_ = eq
+
+        eq_ = deepcopy(eq)
+
+        if eq.owner_model_name is not "":
+
+            object_name =  eq.name[:-(1+len(eq.owner_model_name))]
+
+        else:
+
+            object_name = eq.name
+
+        eq_.name = object_name + "_" + self.name
+
+        eq_.owner_model_name = self.name
+
+        #Adding the object to current model dictionaries
+
+        self.equations[eq_.name] = eq_
+
+        #Adding the object to current Model as an atribute (pythonic beauty)
+
+        self.__dict__[object_name] = eq_
+
+    def __getitem__(self, port_type, port_name):
+
+        """
+        Overloaded function used to reference the ports of the model through its name
+        """
+
+        return self.ports[port_type][port_name]
+
     def __call__(self):
 
         """
@@ -253,6 +444,33 @@ class Model:
         if len(self.equations) == 0 and self.ignore_equation_warning is False:
 
             print("Warning: No equations were declared.")
+
+        if len(self._inlets) > 0:
+
+            self.totalizeInletsFunction()
+
+
+    def _setInlets(self, inlets, inlet_name='in'):
+
+        try:
+            _inlets = self.ports['inlets'][inlet_name]
+        except:
+            _inlets = []
+
+        if isinstance(inlets, list):
+
+            _ = [_inlets.append(i) for i in inlets]
+        else:
+
+            _inlets.append(inlets)
+
+        self.ports['inlets'].update({inlet_name: _inlets})
+
+        _ = [self._inlets.extend(self.ports['inlets'][in_]) for in_ in list(self.ports['inlets'].keys())]
+
+    def _setOutlets(self, outlets):
+
+        pass
 
     def _createConnection(self, name, description, out_vars, in_vars, out_model, expr):
 
@@ -323,7 +541,7 @@ class Model:
             EquationNode object to declare for the current Equation object. Defaults to None
         """
 
-        eq = Equation(name, description, expr)
+        eq = Equation(name, description, expr, self.name)
         eq.setResidual(expr) # I DON'T UNDERSTAND WHY THIS NEED TO BE HERE! x)
 
         eq.name=eq.name+'_'+self.name
@@ -391,7 +609,10 @@ class Model:
 
         """
 
-        var = Variable(name, units , description, is_lower_bounded, is_upper_bounded, lower_bound, upper_bound, value, latex_text)
+        if latex_text is "":
+            latex_text = name
+
+        var = Variable(name, units , description, is_lower_bounded, is_upper_bounded, lower_bound, upper_bound, value, is_exposed, type, latex_text, self.name)
 
         var.name=var.name+'_'+self.name
 
@@ -424,7 +645,11 @@ class Model:
         :param str latex_text:
         Latex text to represent the parameter
         """
-        par = Parameter(name, units , description, value, latex_text)
+
+        if latex_text is "":
+            latex_text = name
+
+        par = Parameter(name, units , description, value, latex_text, is_specified=False, owner_model_name=self.name)
 
         par.name=par.name+'_'+self.name
 
@@ -454,7 +679,10 @@ class Model:
         Latex text to represent the constant
         """
 
-        con = Constant(name, units , description, value, latex_text)
+        if latex_text is "":
+            latex_text = name
+
+        con = Constant(name, units , description, value, latex_text, is_specified=False, owner_model_name=self.name)
 
         con.name=con.name+'_'+self.name
 

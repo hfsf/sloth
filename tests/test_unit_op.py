@@ -15,7 +15,7 @@ from src.sloth.simulation import Simulation
 from src.sloth.core.property_package import PropertyPackage
 from src.sloth.analysis import Analysis
 
-from src.sloth.unit_op_library import *
+from src.sloth.unit_op_library import Mixer, MaterialStream, MultiphasicMaterialStream, Valve, Heater, SimplePump
 
 from src.sloth.core.equation_operators import *
 from src.sloth.core.template_units import *
@@ -218,19 +218,19 @@ def test_biphasic_mixer_biphasic_material_stream(biphasic_mixer_class, prob, sim
 
     class biphasic_material_stream(MultiphasicMaterialStream):
 
-        def __init__(self, name, ndot, x1, description="Biphasic material stream", property_package=pp_water_toluene):
+        def __init__(self, name, ndot, z1, description="Biphasic material stream", property_package=pp_water_toluene):
 
             super().__init__(name, description, property_package)
 
             self.ndot.setValue(ndot)
 
-            self.x_water.setValue(x1)
+            self.z_water.setValue(z1)
 
-            self.x_toluene.setValue(1. - x1)
+            self.z_toluene.setValue(1. - z1)
 
-            n_mols_water = self.x_water.value*self.ndot.value
+            n_mols_water = self.z_water.value*self.ndot.value
 
-            n_mols_toluene = self.x_toluene.value*self.ndot.value
+            n_mols_toluene = self.z_toluene.value*self.ndot.value
 
             MW_water = self.property_package["water"].MW
 
@@ -254,6 +254,18 @@ def test_biphasic_mixer_biphasic_material_stream(biphasic_mixer_class, prob, sim
     bfms3 = biphasic_material_stream("BFMS3", 500., .8)
     bfms3()
 
+    print("BFMS1")
+    bfms1._infoModelReport_()
+
+    print("BFMS2")
+    bfms2._infoModelReport_()
+
+    print("\n\nBFMS3")
+    bfms3._infoModelReport_()
+
+    print("\n\nMIXER")
+    biphasic_mixer._infoModelReport_()
+
     prob.addModels([biphasic_mixer, bfms1, bfms2, bfms3])
 
     prob.createConnection("", biphasic_mixer, Min(bfms1.T(), bfms2.T()), biphasic_mixer.T_in())
@@ -266,7 +278,7 @@ def test_biphasic_mixer_biphasic_material_stream(biphasic_mixer_class, prob, sim
 
     prob.createConnection("", biphasic_mixer, bfms1.H()*bfms1.ndot() + bfms2.H()*bfms2.ndot() + bfms3.H()*bfms3.ndot(), biphasic_mixer.ndot_in()*biphasic_mixer.H_in())
 
-    prob.createConnection("", biphasic_mixer, bfms1.x_water()*bfms1.ndot() + bfms2.x_water()*bfms2.ndot() + bfms3.x_water()*bfms3.ndot(), biphasic_mixer.x_water_in()*biphasic_mixer.ndot_in())
+    prob.createConnection("", biphasic_mixer, bfms1.z_water()*bfms1.ndot() + bfms2.z_water()*bfms2.ndot() + bfms3.z_water()*bfms3.ndot(), biphasic_mixer.z_water_in()*biphasic_mixer.ndot_in())
 
     prob.createConnection("", biphasic_mixer, bfms1.w_water()*bfms1.mdot() + bfms2.w_water()*bfms2.mdot() + bfms3.w_water()*bfms3.mdot(), biphasic_mixer.w_water_in()*biphasic_mixer.mdot_in())
 
@@ -555,13 +567,19 @@ def test_pump_mixer_heater_homogeneous_material_stream_heater(simple_mixer, simp
 
     prob.resolve()
 
-    prob.createGraphModelConnection(hms1, spmp)
+    ####### TODO: solve the pagmo x pygraphviz incompatibility due to pickling issues #########
+    #### Possible solution: create a JSON file with all the instructions and create
+    ####                      LATER a graphic using pygraphviz, with the benefit of
+    ####                      chosing multiple engines for graph creation
+    ##########################################################################################
 
-    prob.createGraphModelConnection(hms2, simple_mixer)
+    #prob.createGraphModelConnection(hms1, spmp)
 
-    prob.createGraphModelConnection(spmp, simple_mixer)
+    #prob.createGraphModelConnection(hms2, simple_mixer)
 
-    prob.drawConnectionGraph('/home/hfsf/out.png', show_model_headings=False)
+    #prob.createGraphModelConnection(spmp, simple_mixer)
+
+    #prob.drawConnectionGraph('/home/hfsf/out.png', show_model_headings=False)
 
     sim.setProblem(prob)
 

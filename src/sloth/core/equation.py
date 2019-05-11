@@ -28,19 +28,23 @@ class Equation:
     Definition of Equation class. Process the ExpressionNode into one resultant node, which can be evaluated.
     """
 
-    def __init__(self, name, description, fast_expr = None):
+    def __init__(self, name, description, fast_expr = None, owner_model_name=""):
 
         """
         Istantiate Equation.
 
         :ivar str name:
-        Name for the current equation
+            Name for the current equation
 
         :ivar str description:
-        Description for the present equation. Defauls to ""
+            Description for the present equation. Defauls to ""
 
         :ivar EquationNode fast_expr:
-        EquationNode object to declare for the current Equation object. Defaults to None.
+            EquationNode object to declare for the current Equation object. Defaults to None.
+
+        :ivar str owner_model_name:
+            Name of the owner model of the current Equation object. Defaults to "", meaning that the object was created aside a model.
+
         """
 
         if name is "":
@@ -66,6 +70,8 @@ class Equation:
         if fast_expr != None:
 
             self.setResidual( fast_expr )
+
+        self.owner_model_name = owner_model_name
 
     def __call__(self, i=1):
 

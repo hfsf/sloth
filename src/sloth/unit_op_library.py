@@ -96,6 +96,9 @@ class MultiphasicMaterialStream(model.Model):
 
         super().__init__(name, description, property_package)
 
+        self.ignore_equation_warning = True
+        self.ignore_variable_warning = True
+
         self.mdot = self.createParameter("mdot", kg/s, "Mass flux for stream")
         self.ndot = self.createParameter("ndot", mol/s, "Molar flux for stream")
         self.P = self.createParameter("P", Pa, "Pressure for stream")
@@ -104,11 +107,11 @@ class MultiphasicMaterialStream(model.Model):
 
         for phase_i in self.property_package.phase_names:
 
-            exec("self.x_{} = self.createParameter('x_{}',dimless,'Molar fraction for {} phase')".format(phase_i, phase_i, phase_i))
+            exec("self.z_{} = self.createParameter('z_{}',dimless,'Molar fraction for {} phase')".format(phase_i, phase_i, phase_i))
             exec("self.w_{} = self.createParameter('w_{}',dimless,'Mass fraction for {} phase')".format(phase_i, phase_i, phase_i))
 
-            #exec("self.x_{}_out = self.createVariable('x_{}_out',dimless,'Molar fraction for {} phase', is_exposed='True', type='output')".format(phase_i, phase_i, phase_i))
-            #exec("self.w_{}_out = self.createVariable('w_{}_out',dimless,'Mass fraction for {} phase', is_exposed='True', type='output')".format(phase_i, phase_i, phase_i))
+        #exec("self.z_{}_out = self.createVariable('z_{}_out',dimless,'Molar fraction for {} phase', is_exposed='True', type='output')".format(phase_i, phase_i, phase_i))
+        #exec("self.w_{}_out = self.createVariable('w_{}_out',dimless,'Mass fraction for {} phase', is_exposed='True', type='output')".format(phase_i, phase_i, phase_i))
 
         '''
         self.mdot_out = self.createVariable("mdot_out",kg/s, "Mass flux from stream", is_exposed=True, type="output")
@@ -119,12 +122,9 @@ class MultiphasicMaterialStream(model.Model):
 
         for phase_i in self.property_package.phase_names:
 
-            exec("self.createEquation('','Molar fraction for {} phase', self.x_{}_out()-self.x_{}())".format(phase_i, phase_i, phase_i, phase_i))
+            exec("self.createEquation('','Molar fraction for {} phase', self.z_{}_out()-self.x_{}())".format(phase_i, phase_i, phase_i, phase_i))
             exec("self.createEquation('','Mass fraction for {} phase', self.w_{}_out()-self.w_{}())".format(phase_i, phase_i, phase_i, phase_i))
         '''
-
-        self.ignore_equation_warning = True
-        self.ignore_variable_warning = True
 
     def DeclareParameters(self):
 
@@ -196,9 +196,9 @@ class Mixer(model.Model):
 
                 for phase_i in self.property_package.phase_names:
 
-                    exec("self.x_{}_in = self.createVariable('x_{}_in',dimless,'Molar fraction for {} phase in the input', is_exposed='True', type='output')".format(phase_i,phase_i, phase_i))
+                    exec("self.z_{}_in = self.createVariable('z_{}_in',dimless,'Molar fraction for {} phase in the input', is_exposed='True', type='output')".format(phase_i,phase_i, phase_i))
                     exec("self.w_{}_in = self.createVariable('w_{}_in',dimless,'Mass fraction for {} phase in the input', is_exposed='True', type='output')".format(phase_i,phase_i, phase_i))
-                    exec("self.x_{}_out = self.createVariable('x_{}_out',dimless,'Molar fraction for {} phase in the output', is_exposed='True', type='output')".format(phase_i,phase_i, phase_i))
+                    exec("self.z_{}_out = self.createVariable('z_{}_out',dimless,'Molar fraction for {} phase in the output', is_exposed='True', type='output')".format(phase_i,phase_i, phase_i))
                     exec("self.w_{}_out = self.createVariable('w_{}_out',dimless,'Mass fraction for {} phase in the output', is_exposed='True', type='output')".format(phase_i, phase_i, phase_i))
 
         self.ndot_in  = self.createVariable("ndot_in", mol/s, "molar input flux", latex_text="\\dot{n}_{in}", is_exposed=True, type='input')
@@ -224,9 +224,9 @@ class Mixer(model.Model):
 
             for phase_i in self.property_package.phase_names:
 
-                _sum_molar_frac_in += eval("self.x_{}_in()".format(phase_i))
+                _sum_molar_frac_in += eval("self.z_{}_in()".format(phase_i))
                 _sum_mass_frac_in += eval("self.w_{}_in()".format(phase_i))
-                _sum_molar_frac_out += eval("self.x_{}_out()".format(phase_i))
+                _sum_molar_frac_out += eval("self.z_{}_out()".format(phase_i))
                 _sum_mass_frac_out += eval("self.w_{}_out()".format(phase_i))
 
             self.createEquation("molar_frac_sum_in", "Molar fraction summation for input", _sum_molar_frac_in)
@@ -244,7 +244,7 @@ class Mixer(model.Model):
 
                     #Create molar conservation for each component
 
-                    exec("_molar_conservation_i = self.x_{}_out() - self.x_{}_in()".format(phase_i, phase_i))
+                    exec("_molar_conservation_i = self.z_{}_out() - self.z_{}_in()".format(phase_i, phase_i))
 
                     exec("self.createEquation('molar_conservation_for_{}', 'Molar conservation for {} phase', _molar_conservation_i)".format(phase_i, phase_i))
 
@@ -311,9 +311,9 @@ class Tank(model.Model):
 
             for phase_i in self.property_package.phase_names:
 
-                exec("self.x_{}_in = self.createVariable('x_{}_in',dimless,'Molar fraction for {} phase in the input', is_exposed='True', type='output')".format(phase_i,phase_i, phase_i))
+                exec("self.z_{}_in = self.createVariable('z_{}_in',dimless,'Molar fraction for {} phase in the input', is_exposed='True', type='output')".format(phase_i,phase_i, phase_i))
                 exec("self.w_{}_in = self.createVariable('w_{}_in',dimless,'Mass fraction for {} phase in the input', is_exposed='True', type='output')".format(phase_i,phase_i, phase_i))
-                exec("self.x_{}_out = self.createVariable('x_{}_out',dimless,'Molar fraction for {} phase in the output', is_exposed='True', type='output')".format(phase_i,phase_i, phase_i))
+                exec("self.z_{}_out = self.createVariable('z_{}_out',dimless,'Molar fraction for {} phase in the output', is_exposed='True', type='output')".format(phase_i,phase_i, phase_i))
                 exec("self.w_{}_out = self.createVariable('w_{}_out',dimless,'Mass fraction for {} phase in the output', is_exposed='True', type='output')".format(phase_i, phase_i, phase_i))
 
         self.t = self.createVariable("t",s,"time",latex_text="t")
@@ -427,9 +427,9 @@ class Valve(model.Model):
 
             for phase_i in self.property_package.phase_names:
 
-                exec("self.x_{}_in = self.createVariable('x_{}_in',dimless,'Molar fraction for {} phase in the input', is_exposed='True', type='output')".format(phase_i,phase_i, phase_i))
+                exec("self.z_{}_in = self.createVariable('z_{}_in',dimless,'Molar fraction for {} phase in the input', is_exposed='True', type='output')".format(phase_i,phase_i, phase_i))
                 exec("self.w_{}_in = self.createVariable('w_{}_in',dimless,'Mass fraction for {} phase in the input', is_exposed='True', type='output')".format(phase_i,phase_i, phase_i))
-                exec("self.x_{}_out = self.createVariable('x_{}_out',dimless,'Molar fraction for {} phase in the output', is_exposed='True', type='output')".format(phase_i,phase_i, phase_i))
+                exec("self.z_{}_out = self.createVariable('z_{}_out',dimless,'Molar fraction for {} phase in the output', is_exposed='True', type='output')".format(phase_i,phase_i, phase_i))
                 exec("self.w_{}_out = self.createVariable('w_{}_out',dimless,'Mass fraction for {} phase in the output', is_exposed='True', type='output')".format(phase_i, phase_i, phase_i))
 
 
@@ -480,7 +480,7 @@ class Valve(model.Model):
 
             for phase_i in self.property_package.phase_names:
 
-                exec("_molar_conservation_i = self.x_{}_out() - self.x_{}_in()".format(phase_i, phase_i))
+                exec("_molar_conservation_i = self.z_{}_out() - self.z_{}_in()".format(phase_i, phase_i))
 
                 exec("self.createEquation('molar_fraction_conservation_for_{}', 'Molar conservation for {} phase', _molar_conservation_i)".format(phase_i, phase_i))
 
@@ -537,9 +537,9 @@ class SimplePump(model.Model):
 
             for phase_i in self.property_package.phase_names:
 
-                exec("self.x_{}_in = self.createVariable('x_{}_in',dimless,'Molar fraction for {} phase in the input', is_exposed='True', type='output')".format(phase_i,phase_i, phase_i))
+                exec("self.z_{}_in = self.createVariable('z_{}_in',dimless,'Molar fraction for {} phase in the input', is_exposed='True', type='output')".format(phase_i,phase_i, phase_i))
                 exec("self.w_{}_in = self.createVariable('w_{}_in',dimless,'Mass fraction for {} phase in the input', is_exposed='True', type='output')".format(phase_i,phase_i, phase_i))
-                exec("self.x_{}_out = self.createVariable('x_{}_out',dimless,'Molar fraction for {} phase in the output', is_exposed='True', type='output')".format(phase_i,phase_i, phase_i))
+                exec("self.z_{}_out = self.createVariable('z_{}_out',dimless,'Molar fraction for {} phase in the output', is_exposed='True', type='output')".format(phase_i,phase_i, phase_i))
                 exec("self.w_{}_out = self.createVariable('w_{}_out',dimless,'Mass fraction for {} phase in the output', is_exposed='True', type='output')".format(phase_i, phase_i, phase_i))
 
 
@@ -569,7 +569,7 @@ class SimplePump(model.Model):
 
             for phase_i in self.property_package.phase_names:
 
-                exec("_molar_conservation_i = self.x_{}_out() - self.x_{}_in()".format(phase_i, phase_i))
+                exec("_molar_conservation_i = self.z_{}_out() - self.z_{}_in()".format(phase_i, phase_i))
 
                 exec("self.createEquation('molar_fraction_conservation_for_{}', 'Molar conservation for {} phase', _molar_conservation_i)".format(phase_i, phase_i))
 
@@ -607,9 +607,9 @@ class Heater(model.Model):
 
             for phase_i in self.property_package.phase_names:
 
-                exec("self.x_{}_in = self.createVariable('x_{}_in',dimless,'Molar fraction for {} phase in the input', is_exposed='True', type='output')".format(phase_i,phase_i, phase_i))
+                exec("self.z_{}_in = self.createVariable('z_{}_in',dimless,'Molar fraction for {} phase in the input', is_exposed='True', type='output')".format(phase_i,phase_i, phase_i))
                 exec("self.w_{}_in = self.createVariable('w_{}_in',dimless,'Mass fraction for {} phase in the input', is_exposed='True', type='output')".format(phase_i,phase_i, phase_i))
-                exec("self.x_{}_out = self.createVariable('x_{}_out',dimless,'Molar fraction for {} phase in the output', is_exposed='True', type='output')".format(phase_i,phase_i, phase_i))
+                exec("self.z_{}_out = self.createVariable('z_{}_out',dimless,'Molar fraction for {} phase in the output', is_exposed='True', type='output')".format(phase_i,phase_i, phase_i))
                 exec("self.w_{}_out = self.createVariable('w_{}_out',dimless,'Mass fraction for {} phase in the output', is_exposed='True', type='output')".format(phase_i, phase_i, phase_i))
 
         self.ndot_in  = self.createVariable("ndot_in", mol/s, "molar input flux", latex_text="\\dot{n}_{in}", is_exposed=True, type='input')
@@ -655,7 +655,7 @@ class Heater(model.Model):
 
             for phase_i in self.property_package.phase_names:
 
-                exec("_molar_conservation_i = self.x_{}_out() - self.x_{}_in()".format(phase_i, phase_i))
+                exec("_molar_conservation_i = self.z_{}_out() - self.z_{}_in()".format(phase_i, phase_i))
 
                 exec("self.createEquation('molar_fraction_conservation_for_{}', 'Molar conservation for {} phase', _molar_conservation_i)".format(phase_i, phase_i))
 
@@ -724,9 +724,9 @@ class DynamicFlash(model.Model):
 
             for phase_i in self.property_package.phase_names:
 
-                exec("self.x_{}_in = self.createVariable('x_{}_in',dimless,'Molar fraction for {} phase in the input', is_exposed='True', type='output')".format(phase_i,phase_i, phase_i))
+                exec("self.z_{}_in = self.createVariable('z_{}_in',dimless,'Molar fraction for {} phase in the input', is_exposed='True', type='output')".format(phase_i,phase_i, phase_i))
                 exec("self.w_{}_in = self.createVariable('w_{}_in',dimless,'Mass fraction for {} phase in the input', is_exposed='True', type='output')".format(phase_i,phase_i, phase_i))
-                exec("self.x_{}_out = self.createVariable('x_{}_out',dimless,'Molar fraction for {} phase in the output', is_exposed='True', type='output')".format(phase_i,phase_i, phase_i))
+                exec("self.z_{}_out = self.createVariable('z_{}_out',dimless,'Molar fraction for {} phase in the output', is_exposed='True', type='output')".format(phase_i,phase_i, phase_i))
                 exec("self.w_{}_out = self.createVariable('w_{}_out',dimless,'Mass fraction for {} phase in the output', is_exposed='True', type='output')".format(phase_i, phase_i, phase_i))
 
 
@@ -778,7 +778,7 @@ class DynamicFlash(model.Model):
 
             for phase_i in self.property_package.phase_names:
 
-                exec("_molar_conservation_i = self.x_{}_out() - self.x_{}_in()".format(phase_i, phase_i))
+                exec("_molar_conservation_i = self.z_{}_out() - self.z_{}_in()".format(phase_i, phase_i))
 
                 exec("self.createEquation('molar_fraction_conservation_for_{}', 'Molar conservation for {} phase', _molar_conservation_i)".format(phase_i, phase_i))
 

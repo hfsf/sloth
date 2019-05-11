@@ -148,14 +148,14 @@ class Optimization:
             Configuration (either a dictionary or a JSON file name to be loaded) to run the simulations used in the optimization study. Defaults to None, from which the configurations defined for the simulation input will be loaded, raising an exception if it is not possible
 
         :ivar list(Quantity or str) optimization_parameters:
-            List of parameters to be optimized for the supplied problem. Can be supplied either the names of the Quantity objects or direct reference to them. 
+            List of parameters to be optimized for the supplied problem. Can be supplied either the names of the Quantity objects or direct reference to them.
 
         :ivar dict constraints:
             Dictionary containing the constraints for each one of the studied variables/parameters. If None is provided, look for the constraints in the quantity object definition (only for variables). Defaults to None
 
         :ivar bool is_maximization:
             Determine if the objective function need to be maximized, or if it is a minimization work. Defaults to False (thus, minimization).
-        
+
         :ivar [decorated function, str] optimizer:
             The optimization routine to be employed. The user can either provide an decorated function, or a string with the name of the default optimizers
 
@@ -163,7 +163,7 @@ class Optimization:
             Function for determination of the constraints on-the-fly given the simulation output variables, which signature is [(DataFrame) output_variables, constraints_additional_args=None]
 
         :ivar list constraints_additional_args:
-            Additional args to be passed to the function that determines constraints on-the-fly. Defaults to []  
+            Additional args to be passed to the function that determines constraints on-the-fly. Defaults to []
 
         :ivar list additional_args:
             Additional args to be passed to the optimizer. Defaults to []
@@ -190,7 +190,7 @@ class Optimization:
             with open(simulation_configuration, "r") as read_file:
 
                 self.simulation_configuration = json.load(read_file)
-        
+
         elif simulation_configuration is None and simulation.configurations is not None:
 
             self.simulation_configuration = simulation.configurations
@@ -223,7 +223,9 @@ class Optimization:
 
         self.optimization_configuration = optimization_configuration
 
-        if optimization_configuration is {}:
+        print("\n\n==>optimization_configuration: ",self.optimization_configuration)
+
+        if optimization_configuration is {} or optimization_configuration is None:
 
             self.optimization_configuration = {'number_of_individuals':50,
                                                'number_of_generations':1000,
@@ -244,7 +246,7 @@ class Optimization:
                                                'variant_pso':5,
                                                'max_v_pso':0.5,
                                                'neighborhood_type_pso':2,
-                                               'neighborhood_param_pso':4, 
+                                               'neighborhood_param_pso':4,
                                     }
 
         elif isinstance(optimization_configuration, str):
@@ -263,7 +265,7 @@ class Optimization:
 
         self.optimizer = self._setOptimizer(optimizer)
 
-        self.best_parameters = None 
+        self.best_parameters = None
 
         self.best_fitness = None
 
@@ -379,7 +381,7 @@ class Optimization:
 
                 neighb_type = self.optimization_configuration['neighborhood_type_pso']
 
-                neighb_param = self.optimization_configuration['neighborhood_param_pso']                
+                neighb_param = self.optimization_configuration['neighborhood_param_pso']
 
                 ind = self.optimization_configuration['number_of_individuals']
 
@@ -403,7 +405,7 @@ class Optimization:
 
         """
         Perform sanity tests preemptory to the execution of the optimization
-        
+
         :return:
             Result indicating if the system is well formed (True) or not (False)
         :rtype bool:
@@ -513,7 +515,7 @@ class Optimization:
 
         """
         Return the results obtained by the optimization
-        
+
         :return (self.best_parameters, self.best_fitness):
             Tuple containing the best parameters obtained by the optimization algorithm (aka the decision vector) and the best fitness obtained
         :rtype tuple(numpy.array, numpy.array)

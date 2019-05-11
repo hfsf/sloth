@@ -17,9 +17,9 @@ class Parameter(Quantity):
     """
 
 
-    def __init__(self, name, units , description="", value=0, latex_text="", is_specified=False):
+    def __init__(self, name, units , description="", value=0, latex_text="", is_specified=False, owner_model_name=""):
 
-        super().__init__(name, units, description, value, latex_text)
+        super().__init__(name, units, description, value, latex_text, owner_model_name)
 
         """
         Initial definition.
