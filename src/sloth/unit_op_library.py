@@ -87,7 +87,7 @@ class MultiphasicMaterialStream(model.Model):
 
     *INPUTS: -
     *OUTPUTS: (Parameters are directly referenced)
-    *PARAMETERS: mdot, ndot, P, H, T, x_<phase1_name>, x_<phase2_name>, w_<phase1_name>, w_<phase2_name>, ..., x_<phaseN_name>, w_<phaseN_name>
+    *PARAMETERS: mdot, ndot, P, H, T, z_<phase1_name>, z_<phase2_name>, w_<phase1_name>, z_<phase2_name>, ..., z_<phaseN_name>, z_<phaseN_name>
 
     *REQUIRES: PropertyPackage[phase1, phase2, ... phaseN]
     """
@@ -109,22 +109,6 @@ class MultiphasicMaterialStream(model.Model):
 
             exec("self.z_{} = self.createParameter('z_{}',dimless,'Molar fraction for {} phase')".format(phase_i, phase_i, phase_i))
             exec("self.w_{} = self.createParameter('w_{}',dimless,'Mass fraction for {} phase')".format(phase_i, phase_i, phase_i))
-
-        #exec("self.z_{}_out = self.createVariable('z_{}_out',dimless,'Molar fraction for {} phase', is_exposed='True', type='output')".format(phase_i, phase_i, phase_i))
-        #exec("self.w_{}_out = self.createVariable('w_{}_out',dimless,'Mass fraction for {} phase', is_exposed='True', type='output')".format(phase_i, phase_i, phase_i))
-
-        '''
-        self.mdot_out = self.createVariable("mdot_out",kg/s, "Mass flux from stream", is_exposed=True, type="output")
-        self.ndot_out = self.createVariable("ndot_out",mol/s, "Molar flux from stream",is_exposed=True, type="output")
-        self.P_out = self.createVariable("P_out", Pa, "Pressure from stream",is_exposed=True, type="output")
-        self.H_out = self.createVariable("H_out", J/mol, "Molar enthalpy from stream",is_exposed=True, type="output")
-        self.T_out = self.createVariable("T_out", K, "Temperature from stream",is_exposed=True, type="output")
-
-        for phase_i in self.property_package.phase_names:
-
-            exec("self.createEquation('','Molar fraction for {} phase', self.z_{}_out()-self.x_{}())".format(phase_i, phase_i, phase_i, phase_i))
-            exec("self.createEquation('','Mass fraction for {} phase', self.w_{}_out()-self.w_{}())".format(phase_i, phase_i, phase_i, phase_i))
-        '''
 
     def DeclareParameters(self):
 
@@ -152,18 +136,6 @@ class MultiphasicMaterialStream(model.Model):
         if self.T.is_specified is True and self.P.is_specified is True:
 
             self.property_package.calculate(T=self.T.value, P=self.P.value)
-
-    '''
-    def DeclareEquations(self):
-
-        #Create equations for output of streams using parameter values
-
-        self.createEquation("mass_flux", self.mdot_out.description, self.mdot_out() - self.mdot() )
-        self.createEquation("molar_flux", self.ndot_out.description, self.ndot_out() - self.ndot() )
-        self.createEquation("pressure_output", self.P_out.description, self.P_out() - self.P() )
-        self.createEquation("enthalpy_output", self.H_out.description, self.H_out() - self.H())
-        self.createEquation("temperature_output", self.T_out.description, self.T_out() - self.T())
-    '''
 
 class Mixer(model.Model):
     """
