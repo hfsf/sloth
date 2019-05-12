@@ -117,6 +117,65 @@ class MaterialStream(model.Model):
 
             self.property_package.calculate(T=self.T.value, P=self.P.value)
 
+
+class MultiphasicMaterialStream(model.Model):
+
+
+    """
+    Model for a biphasic material stream
+
+    *INPUTS: -
+    *OUTPUTS: (Parameters are directly referenced)
+    *PARAMETERS: mdot, ndot, P, H, T, z_<phase1_name>, z_<phase2_name>, w_<phase1_name>, z_<phase2_name>, ..., z_<phaseN_name>, z_<phaseN_name>
+
+    *REQUIRES: PropertyPackage[phase1, phase2, ... phaseN]
+    """
+
+    def __init__(self, name, description="Biphasic material stream", property_package=None):
+
+        super().__init__(name, description, property_package)
+
+        self.ignore_equation_warning = True
+        self.ignore_variable_warning = True
+
+        self.mdot = self.createParameter("mdot", kg/s, "Mass flux for stream")
+        self.ndot = self.createParameter("ndot", mol/s, "Molar flux for stream")
+        self.P = self.createParameter("P", Pa, "Pressure for stream")
+        self.H = self.createParameter("H", J/mol, "Molar enthalpy for stream")
+        self.T = self.createParameter("T", K, "Temperature for stream")
+
+        for phase_i in self.property_package.phase_names:
+
+            exec("self.z_{} = self.createParameter('z_{}',dimless,'Molar fraction for {} phase')".format(phase_i, phase_i, phase_i))
+            exec("self.w_{} = self.createParameter('w_{}',dimless,'Mass fraction for {} phase')".format(phase_i, phase_i, phase_i))
+
+    def DeclareParameters(self):
+
+        #try to set values if the property_package was defined
+        if self.property_package is not None:
+
+            if self.mdot.is_specified is True and self.ndot.is_specified is False:
+
+                self.ndot.setValue( self.mdot.value/(self.property_package["*"].MW*1e-3) )
+
+            if self.mdot.is_specified is False and self.ndot.is_specified is True:
+
+                self.mdot.setValue( self.ndot.value*self.property_package["*"].MW*1e-3 )
+
+        #Recalculate property_package if T and P where provided
+
+        if self.T.is_specified is True and self.P.is_specified is False:
+
+            self.property_package.calculate(T=self.T.value)
+
+        if self.T.is_specified is False and self.P.is_specified is True:
+
+            self.property_package.calculate(P=self.P.value)
+
+        if self.T.is_specified is True and self.P.is_specified is True:
+
+            self.property_package.calculate(T=self.T.value, P=self.P.value)
+
 class Mixer(model.Model):
     """
     Model for a mixer of material streams
