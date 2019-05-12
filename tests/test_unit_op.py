@@ -15,7 +15,7 @@ from src.sloth.simulation import Simulation
 from src.sloth.core.property_package import PropertyPackage
 from src.sloth.analysis import Analysis
 
-from src.sloth.unit_op_library import *
+from src.sloth.unit_op_library import Mixer, MaterialStream, MultiphasicMaterialStream, Valve, Heater, SimplePump
 
 from src.sloth.core.equation_operators import *
 from src.sloth.core.template_units import *
@@ -253,6 +253,18 @@ def test_biphasic_mixer_biphasic_material_stream(biphasic_mixer_class, prob, sim
     bfms2()
     bfms3 = biphasic_material_stream("BFMS3", 500., .8)
     bfms3()
+
+    print("BFMS1")
+    bfms1._infoModelReport_()
+
+    print("BFMS2")
+    bfms2._infoModelReport_()
+
+    print("\n\nBFMS3")
+    bfms3._infoModelReport_()
+
+    print("\n\nMIXER")
+    biphasic_mixer._infoModelReport_()
 
     prob.addModels([biphasic_mixer, bfms1, bfms2, bfms3])
 
@@ -679,12 +691,22 @@ def test_pump_mixer_heater_hms(simple_mixer, simple_heater, prob, sim, pp_water)
     '''
     prob.createGraphModelConnection(hms1, spmp)
 
-    prob.createGraphModelConnection(hms2, simple_mixer)
+    ####### TODO: solve the pagmo x pygraphviz incompatibility due to pickling issues #########
+    #### Possible solution: create a JSON file with all the instructions and create
+    ####                      LATER a graphic using pygraphviz, with the benefit of
+    ####                      chosing multiple engines for graph creation
+    ##########################################################################################
 
-    prob.createGraphModelConnection(spmp, simple_mixer)
+    #prob.createGraphModelConnection(hms1, spm)
+
+    #prob.createGraphModelConnection(hms2, simple_mixer)
+
+    #prob.createGraphModelConnection(spmp, simple_mixer)
 
     prob.drawConnectionGraph('/home/hfsf/out.png', show_model_headings=False)
     '''
+
+    #prob.drawConnectionGraph('/home/hfsf/out.png', show_model_headings=False)
 
     sim.setProblem(prob)
 

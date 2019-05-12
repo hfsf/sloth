@@ -31,7 +31,7 @@ class Quantity:  # New-style class syntax
 
     """
 
-    def __init__(self, name, units, description="", value=0., latex_text=""):
+    def __init__(self, name, units, description="", value=0., latex_text="", owner_model_name=""):
         """
         Instantiate Quantity.
 
@@ -48,7 +48,10 @@ class Quantity:  # New-style class syntax
             Value of the current QTY. Defaults to 0.
 
         :ivar str latex_text:
-            Text for latex representation
+            Text for latex representation.
+
+        :ivar str owner_model_name:
+            Name of the owner model of the current Quantity object. Defaults to "", meaning that the object was created aside a model.
         """
 
         self.name = name
@@ -62,6 +65,8 @@ class Quantity:  # New-style class syntax
         self.latex_text = latex_text
 
         self.is_specified = False
+
+        self.owner_model_name = owner_model_name
 
 
     def setValue(self, quantity_value, quantity_unit=None):
@@ -100,7 +105,7 @@ class Quantity:  # New-style class syntax
 
     def __call__(self):
         """
-        Overloaded function for calling the QTY as an function. 
+        Overloaded function for calling the QTY as an function.
         Return an EquationNode object.
 
         :return:
@@ -112,10 +117,10 @@ class Quantity:  # New-style class syntax
 
         if self.is_specified == False:
 
-            return EquationNode(name=self.name, 
-                                symbolic_object=sp.symbols(self.name), 
+            return EquationNode(name=self.name,
+                                symbolic_object=sp.symbols(self.name),
                                 symbolic_map={self.name:self},
-                                variable_map={self.name:self}, 
+                                variable_map={self.name:self},
                                 unit_object=self.units,
                                 latex_text=self.latex_text,
                                 repr_symbolic=sp.symbols(self.name)
@@ -125,10 +130,10 @@ class Quantity:  # New-style class syntax
 
         if self.is_specified == True:
 
-            return EquationNode(name=self.name, 
-                                symbolic_object=self.value, 
+            return EquationNode(name=self.name,
+                                symbolic_object=self.value,
                                 symbolic_map={self.name:self},
-                                variable_map={}, 
+                                variable_map={},
                                 unit_object=self.units,
                                 latex_text=self.latex_text,
                                 repr_symbolic=sp.symbols(self.name)
@@ -189,7 +194,7 @@ class Quantity:  # New-style class syntax
     def __mul__(self, other_obj):
         """
         Overloaded function for multiplication of two unit-containing-objects.
-        The __mul__ function does not requires dimensional coherence, 
+        The __mul__ function does not requires dimensional coherence,
         but resultant variable units should be modified.
 
         :param Variable other_obj:
@@ -207,7 +212,7 @@ class Quantity:  # New-style class syntax
     def __div__(self, other_obj):
         """
         Overloaded function for division of two unit-containing-objects.
-        The __div__ function does not requires dimensional coherence, 
+        The __div__ function does not requires dimensional coherence,
         but resultant variable units should be modified.
 
         :param Variable other_obj:
@@ -220,7 +225,7 @@ class Quantity:  # New-style class syntax
 
         new_obj = self.__class__(units = self.units/other_obj.units, value = self.value/other_obj.value)
 
-        return(new_obj) 
+        return(new_obj)
 
     def __pow__(self, power):
 
@@ -239,4 +244,4 @@ class Quantity:  # New-style class syntax
 
         new_obj = self.__class__( units = self.units**power.value, value = self.value**power.value )
 
-        return(new_obj) 
+        return(new_obj)

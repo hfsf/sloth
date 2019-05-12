@@ -12,14 +12,40 @@ from .core.constant import Constant
 from .core.parameter import Parameter
 from . import analysis
 from . import connection
+from . import analysis
 import prettytable
 
 from copy import deepcopy
+
+def _totalizeInletsFunction_genericMaterialStreams(main_model, set_P_by_min=True, set_T_by_min=True):
+
+    """
+    Generic function for totalization of inlets, assuming that all those are MaterialStreams from the UnitOp library
+    """
+
+    if set_P_by_min is True:
+
+        pass
+
+    if set_T_by_min is True:
+
+        pass
+
+def _totalizeOutletsFunction_genericMaterialStreams(main_model):
+
+    """
+    Generic function for totalization of outlets, assuming that all those are MaterialStreams from the UnitOp library
+    """
+
+    #Something should be defined here?
+
+    pass
 
 class Model:
 
     """
     Model class definition. Stores several Equation objects, map exposed the exposed variables of the model and allow distribution of a variable among a specific domain.
+    Also, includes ports atributes, for easy connection beetween different models (model_with_ports feature).
 
     * Note:
 
@@ -43,7 +69,7 @@ class Model:
 
     """
 
-    def __init__(self, name, description = "", property_package=None):
+    def __init__(self, name, description = "", property_package=None, ports={'inlets':{},'outlets':{}}, function_for_inlets_totalization = None, function_for_outlets_totalization = None):
 
         """
         Instantiate Model.
@@ -75,33 +101,56 @@ class Model:
         try:
             len(self.parameters)
         except:
-            self.parameters = {}#collections.OrderedDict({})
+            self.parameters = {}
 
         try:
             len(self.variables)
         except:
-            self.variables = {}#collections.OrderedDict({})
+            self.variables = {}
 
         try:
             len(self.constants)
         except:
-            self.constants = {}#collections.OrderedDict({})
-
+            self.constants = {}
         try:
             len(self.equations)
         except:
-            self.equations = {}#collections.OrderedDict({})
+            self.equations = {}
 
         try:
             len(self.connections)
         except:
-            self.connections = {}#collections.OrderedDict({})
+            self.connections = {}
+
+        self._inlets = []
+
+        self._outputs = []
+
+        self.ports = ports
 
         self.objects_info = {}
 
         self.ignore_equation_warning = False
 
         self.ignore_variable_warning = False
+
+        if function_for_inlets_totalization is None:
+
+            function_for_inlets_totalization = _totalizeInletsFunction_genericMaterialStreams
+
+        if function_for_outlets_totalization is None:
+
+            function_for_outlets_totalization = _totalizeOutletsFunction_genericMaterialStreams
+
+        self.totalizeInletsFunction = function_for_inlets_totalization
+
+        self.totalizeOutletsFunction = function_for_outlets_totalization
+
+    def _infoModelReport_(self):
+
+        analist = analysis.Analysis()
+
+        print(analist.modelReport(self))
 
     def _gatherObjectsInfo_(self):
 
@@ -238,6 +287,146 @@ class Model:
 
             return(True)
 
+    def _addVariableDirectly(self, var):
+
+        """
+        Function for directly inclusion of an Variable object into current model, mainly used for creation of new Variable objects on-the-fly
+        """
+
+        #Object has  a owner model. Need to change the model ownership
+
+        var_ = var
+
+        var_ = deepcopy(var)
+
+        if var.owner_model_name is not "":
+
+            object_name =  var.name[:-(1+len(var.owner_model_name))]
+
+        else:
+
+            object_name = var.name
+
+        var_.name = object_name + "_" + self.name
+
+        var_.owner_model_name = self.name
+
+        #Adding the object to current model dictionaries
+
+        self.variables[var_.name] = var_
+
+        if var_.is_exposed == True:
+
+            self.exposed_vars[type].append(var_)
+
+        #Adding the object to current Model as an atribute (pythonic beauty)
+
+        self.__dict__[object_name] = var_
+
+    def _addParameterDirectly(self, par):
+
+        """
+        Function for directly inclusion of an Parameter object into current model, mainly used for creation of new parameters objects on-the-fly
+        """
+
+        #Object has  a owner model. Need to change the model ownership
+
+        par_ = par
+
+        par_ = deepcopy(par)
+
+        if par.owner_model_name is not "":
+
+            object_name =  par.name[:-(1+len(par.owner_model_name))]
+
+        else:
+
+            object_name = par.name
+
+        par_.name = object_name + "_" + self.name
+
+        par_.owner_model_name = self.name
+
+        #Adding the object to current model dictionaries
+
+        self.parameters[par_.name] = par_
+
+        #Adding the object to current Model as an atribute (pythonic beauty)
+
+        self.__dict__[object_name] = par_
+
+    def _addConstantDirectly(self, con):
+
+        """
+        Function for directly inclusion of an Constant object into current model, mainly used for creation of new Constants objects on-the-fly
+        """
+
+        #Object has  a owner model. Need to change the model ownership
+
+        con_ = con
+
+        con_ = deepcopy(con)
+
+        if con.owner_model_name is not "":
+
+            object_name =  con.name[:-(1+len(con.owner_model_name))]
+
+        else:
+
+            object_name = con.name
+
+        con_.name = object_name + "_" + self.name
+
+        con_.owner_model_name = self.name
+
+        #Adding the object to current model dictionaries
+
+        self.constants[con_.name] = con_
+
+        #Adding the object to current Model as an atribute (pythonic beauty)
+
+        self.__dict__[object_name] = con_
+
+    def _addEquationDirectly(self, eq):
+
+        """
+        Function for directly inclusion of an Equation object into current model, mainly used for creation of new Equation objects on-the-fly
+        """
+
+        #Object has  a owner model. Need to change the model ownership
+
+        eq_ = eq
+
+        eq_ = deepcopy(eq)
+
+        if eq.owner_model_name is not "":
+
+            object_name =  eq.name[:-(1+len(eq.owner_model_name))]
+
+        else:
+
+            object_name = eq.name
+
+        eq_.name = object_name + "_" + self.name
+
+        eq_.owner_model_name = self.name
+
+        #Adding the object to current model dictionaries
+
+        self.equations[eq_.name] = eq_
+
+        #Adding the object to current Model as an atribute (pythonic beauty)
+
+        self.__dict__[object_name] = eq_
+
+    def __getitem__(self, port_type, port_name):
+
+        """
+        Overloaded function used to reference the ports of the model through its name
+        """
+
+        return self.ports[port_type][port_name]
+
     def __call__(self):
 
         """
@@ -259,6 +448,33 @@ class Model:
         if len(self.equations) == 0 and self.ignore_equation_warning is False:
 
             print("Warning: No equations were declared.")
+
+        if len(self._inlets) > 0:
+
+            self.totalizeInletsFunction()
+
+
+    def _setInlets(self, inlets, inlet_name='in'):
+
+        try:
+            _inlets = self.ports['inlets'][inlet_name]
+        except:
+            _inlets = []
+
+        if isinstance(inlets, list):
+
+            _ = [_inlets.append(i) for i in inlets]
+        else:
+
+            _inlets.append(inlets)
+
+        self.ports['inlets'].update({inlet_name: _inlets})
+
+        _ = [self._inlets.extend(self.ports['inlets'][in_]) for in_ in list(self.ports['inlets'].keys())]
+
+    def _setOutlets(self, outlets):
+
+        pass
 
     def _createConnection(self, name, description, out_vars, in_vars, out_model, expr):
 
@@ -333,173 +549,6 @@ class Model:
         return(obj_)
 
 
-    def _incorporateFromModel(self, model, copy_objects=True, register_variables=True, register_parameters=True, register_constants=True, register_equations=True, register_connections=True, print_debug_msg=False):
-
-        """
-        Function for incorporation of another model in the current one, copying its variables, parameters, equations, etc.
-
-        :ivar model:
-            Model form which desired objects should be incorporated
-
-        :param bool copy_objects:
-            If the atributes of the python object should be copied, allowign them to be acessed directly in the current Model object as if they were declared natively (eg:equation definition)
-
-        :param bool register_variables:
-            If the variables should be copied from the donor model to the one that will incorporate. Defaults to True.
-
-        :param bool register_parameters:
-            If the parameters should be copied from the donor model to the one that will incorporate. Defaults to True.
-
-        :param bool register_constants:
-            If the constants should be copied from the donor model to the one that will incorporate. Defaults to True.
-
-        :param bool register_equations:
-            If the equations should be copied from the donor model to the one that will incorporate. Defaults to True.
-
-        :param bool registerister_connections:
-            If the connections should be copied from the donor model to the one that will incorporate. Defaults to True.
-        """
-
-        if print_debug_msg is True:
-            print("==> Copying directly objects from model ", model.name,": ")
-
-        if copy_objects is True:
-
-            #Copy atributes from donor model as if they were declared natively for the current one
-
-            fixed_elements = ['variables', 'parameters', 'constants', 'equations', 'name', 'description', 'property_package', 'exposed_vars', 'connections', 'objects_info', 'ignore_equation_warning', 'ignore_variable_warning']
-
-            self.__dict__.update( { k: self._ownObjectFromModel(model.__dict__[k], model) for k in model.__dict__.keys() if k not in fixed_elements } )
-
-            if print_debug_msg is True:
-                print("\n ==>Registering objects from donor model dictionaries")
-
-        if register_variables is True:
-
-            if print_debug_msg is True:
-                print("\n \t\t Old variables dict for current model: ", self.variables)
-
-            _ = [ self._registerVariableDirectly(var_i[1], model) for var_i in list(model.variables.items()) ]
-
-            if print_debug_msg is True:
-                print("\n \t\t New variables dict for current model: ", self.variables)
-
-        if register_parameters is True:
-
-            if print_debug_msg is True:
-                print("\n \t\t Old parameters dict for current model: ", self.parameters)
-
-            _ = [ self._registerParameterDirectly(par_i[1], model) for par_i in list(model.parameters.items()) ]
-
-            if print_debug_msg is True:
-                print("\n \t\t New parameters dict for current model: ", self.parameters)
-
-        if register_constants is True:
-
-            if print_debug_msg is True:
-                print("\n \t\t Old constants dict for current model: ", self.constants)
-
-            _ = [ self._registerParameterDirectly(con_i[1], model) for con_i in list(model.constants.items()) ]
-
-            if print_debug_msg is True:
-                print("\n \t\t New constants dict for current model: ", self.constants)
-
-        if register_equations is True:
-
-            if print_debug_msg is True:
-                print("\n \t\t Old equations dict for current model: ", self.equations)
-
-            _ = [ self._registerEquationDirectly(eq_i[1], model) for eq_i in list(model.equations.items()) ]
-
-            if print_debug_msg is True:
-                print("\n \t\t New equations dict for current model: ", self.equations)
-
-        if print_debug_msg is True:
-            print("\n==>New __dict__ for current object is: ", self.__dict__)
-
-    def _registerVariableDirectly(self, var, model_to_incorporate):
-
-        """
-        Create a Variable object directly, and register it. Intended only for internal use when incorporating other models
-
-        :ivar var:
-            Variable object that will be registered in the current Model object
-
-        :ivar model_to_incorporate:
-            Model from which the object will be incorporated
-        """
-
-        print ("")
-
-        var = deepcopy(var)
-
-        var.name = var.name[:-(1+len(model_to_incorporate.name))] +'_'+self.name
-
-        self.variables[var.name] = var
-
-        if var.is_exposed == True:
-
-            type = var.type
-
-            self.exposed_vars[type].append(var)
-
-    def _registerParameterDirectly(self, par, model_to_incorporate):
-
-        """
-        Create a Parameter object directly, and register it. Intended only for internal use when incorporating other models
-
-        :ivar par:
-            Parameter object that will be registered in the current Model object
-
-        :ivar model_to_incorporate:
-            Model from which the object will be incorporated
-        """
-
-        par = deepcopy(par)
-
-        par.name = par.name[:-(1+len(model_to_incorporate.name))] +'_'+self.name
-
-        self.parameters[par.name] = par
-
-    def _registerConstantDirectly(self, con, model_to_incorporate):
-
-        """
-        Create a Constant object directly, and register it. Intended only for internal use when incorporating other models
-
-        :ivar con:
-            Constant object that will be registered in the current Model object
-
-        :ivar model_to_incorporate:
-            Model from which the object will be incorporated
-        """
-
-        con = deepcopy(con)
-
-        con.name = con.name[:-(1+len(model_to_incorporate.name))] +'_'+self.name
-
-        self.constants[con.name] = con
-
-    def _registerEquationDirectly(self, eq, model_to_incorporate):
-
-        """
-        Create a Equation object directly, and register it. Intended only for internal use when incorporating other models
-
-        :ivar eq:
-            Equation object that will be registered in the current Model object
-
-        :ivar model_to_incorporate:
-            Model from which the object will be incorporated
-        """
-
-        eq = deepcopy(eq)
-
-        eq.name = eq.name[:-(1+len(model_to_incorporate.name))] +'_'+self.name
-
-        eq._sweepObjects()
-
-        self.equations[eq.name] = eq
-
-
     def createVariable(self, name, units , description = "", is_lower_bounded = False, is_upper_bounded = False, lower_bound = None, upper_bound = None, is_exposed = False, type = '', latex_text="", value = 0.):
 
         """
@@ -537,7 +586,10 @@ class Model:
 
         """
 
-        var = Variable(name, units , description, is_exposed, type, is_lower_bounded, is_upper_bounded, lower_bound, upper_bound, value, latex_text)
+        if latex_text is "":
+            latex_text = name
+
+        var = Variable(name, units , description, is_lower_bounded, is_upper_bounded, lower_bound, upper_bound, value, is_exposed, type, latex_text, self.name)
 
         var.name=var.name+'_'+self.name
 
@@ -570,7 +622,11 @@ class Model:
         :param str latex_text:
         Latex text to represent the parameter
         """
-        par = Parameter(name, units , description, value, latex_text)
+
+        if latex_text is "":
+            latex_text = name
+
+        par = Parameter(name, units , description, value, latex_text, is_specified=False, owner_model_name=self.name)
 
         par.name=par.name+'_'+self.name
 
@@ -600,7 +656,10 @@ class Model:
         Latex text to represent the constant
         """
 
-        con = Constant(name, units , description, value, latex_text)
+        if latex_text is "":
+            latex_text = name
+
+        con = Constant(name, units , description, value, latex_text, is_specified=False, owner_model_name=self.name)
 
         con.name=con.name+'_'+self.name
 
@@ -624,7 +683,7 @@ class Model:
             EquationNode object to declare for the current Equation object. Defaults to None
         """
 
-        eq = Equation(name, description, expr)
+        eq = Equation(name, description, expr, owner_model_name=self.name)
         eq.setResidual(expr) # I DON'T UNDERSTAND WHY THIS NEED TO BE HERE! x)
 
         eq.name=eq.name+'_'+self.name

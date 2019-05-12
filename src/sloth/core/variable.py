@@ -17,21 +17,22 @@ class Variable(Quantity):
 
     """
 
-    def __init__(self, name, units , description = "", is_exposed=False, type=None, is_lower_bounded = False, is_upper_bounded = False, lower_bound = None, upper_bound = None,  value = 0, latex_text="", domain=None):
+    def __init__(self, name, units , description = "", is_lower_bounded = False, is_upper_bounded = False, lower_bound = None, upper_bound = None,  value = 0, is_exposed=False, type='', latex_text="", owner_model_name="", domain=None):
 
-        super().__init__(name, units, description, value, latex_text)
+
+        super().__init__(name, units, description, value, latex_text, owner_model_name)
 
         """
         Initial definition.
 
         :param str name:
-        Name for the current variable
+            Name for the current variable
 
         :param Unit units:
-        Definition of dimensional unit of current variable
+            Definition of dimensional unit of current variable
 
         :param str description:
-        Description for the present variable. Defauls to ""
+            Description for the present variable. Defauls to ""
 
         :param bool is_exposed:
         Define if the Variable object will be treated as an exposed variable for a Model object
@@ -44,21 +45,36 @@ class Variable(Quantity):
         A sanity check is performed and if lowerBound != None, isLowerBounded = True.
 
         :param bool isUpper_bounded:
-        Define if the Variable object has some maximum value restriction.
-        A sanity check is performed and if upperBound != None, isUpperBounded = True.
+            Define if the Variable object has some maximum value restriction.
+            A sanity check is performed and if upperBound != None, isUpperBounded = True.
 
         :param float lower_bound:
-        Minimum value for Variable object
+            Minimum value for Variable object
 
         :param float upper_bound:
-        Minimum value for Variable object
+            Minimum value for Variable object
 
         :param float value:
-        Value of the current variable. Defaults to 0.
+            Value of the current variable. Defaults to 0.
+
+        :param bool is_exposed:
+            If the current Variable object is exposed in its owner model or not. Defaults to False.
+
+        :param str type:
+            The exosure type of the current Variable object in its owner model. Defaults to '', meaning that the object is not exposed.
 
         :param str latex_text:
+            Text for latex representation.
 
         :param Domain domain:
+            Domain
+
+<<<<<<< HEAD
+        :param Domain domain:
+=======
+        :ivar str owner_model_name:
+            Name of the owner model of the current Quantity object. Defaults to "", meaning that the object was created aside a model.
+>>>>>>> e42c4c50337aeff2b985fbd8a491576494c98938
 
         === Coming from base class ===
 
@@ -70,11 +86,9 @@ class Variable(Quantity):
 
         self.value = value
 
+        self.owner_model_name = owner_model_name
+
         """
-
-        self.is_exposed = is_exposed
-
-        self.type = type
 
         self.is_lower_bounded = ( lower_bound != None )
 
@@ -85,6 +99,10 @@ class Variable(Quantity):
         self.upper_bound = upper_bound
 
         self.domain = domain
+
+        self.is_exposed = is_exposed
+
+        self.type = type
 
     def distributeOnDomain(self, domain):
 

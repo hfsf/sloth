@@ -81,21 +81,14 @@ class MaterialStream(model.Model):
 
         super().__init__(name, description, property_package)
 
+        self.ignore_equation_warning = True
+        self.ignore_variable_warning = True
+
         self.mdot = self.createParameter("mdot", kg/s, "Mass flux for stream")
         self.ndot = self.createParameter("ndot", mol/s, "Molar flux for stream")
         self.P = self.createParameter("P", Pa, "Pressure for stream")
         self.H = self.createParameter("H", J/mol, "Molar enthalpy for stream")
         self.T = self.createParameter("T", K, "Temperature for stream")
-
-        if self.property_package is not None:
-
-            for phase_i in self.property_package.phase_names:
-
-                exec("self.z_{} = self.createParameter('z_{}',dimless,'Molar fraction for {} phase')".format(phase_i, phase_i, phase_i))
-                exec("self.w_{} = self.createParameter('w_{}',dimless,'Mass fraction for {} phase')".format(phase_i, phase_i, phase_i))
-
-        self.ignore_equation_warning = True
-        self.ignore_variable_warning = True
 
     def DeclareParameters(self):
 
