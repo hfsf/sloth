@@ -275,6 +275,67 @@ class Equation:
 
         return func
 
+    def _convertEquationSymbolicExpression(self, names_map, whole_obj_map):
+
+        """
+        Convert the symbolic representation of the equation using a dictionary for mapping
+
+        :param dict names_map:
+            Dictionary for mapping the symbolic representation (names) used in the symbolic conversion
+                replacing 'a_M2' for 'a_M1' (e.g: {'a_M1':'a_M2'})
+
+       :param dict whole_obj_map:
+            Dictionary for mapping the  symbolic representation and their correspondent for ALL objects in the
+                model following form: {'a_M1':Variable(), ...}. Used for rwrite the symbolic_map of the rewrited
+                equation_expression object.
+        """
+
+        self.equation_expression.repr_symbolic = self.equation_expression.repr_symbolic.subs(names_map)
+
+        self.equation_expression.symbolic_object = self.equation_expression.symbolic_object.subs(names_map)
+
+        if self.elementary_equation_expression is not None:
+
+            elem_expr = list(self.elementary_equation_expression)
+
+            elem_expr[0].repr_symbolic = elem_expr[0].repr_symbolic.subs(names_map)
+
+            elem_expr[1].repr_symbolic = elem_expr[1].repr_symbolic.subs(names_map)
+
+            try:
+
+                elem_expr[0].symbolic_object = elem_expr[0].symbolic_object.subs(names_map)
+
+            except:
+
+                pass #Element does not support symbolic substitution. It is a float.
+
+            try:
+
+                elem_expr[1].symbolic_object = elem_expr[1].symbolic_object.subs(names_map)
+
+            except:
+
+                pass #Element does not support symbolic substitution. It is a float.
+
+            symbols_used_0 = [str(i) for i in list(elem_expr[0].repr_symbolic.free_symbols)]
+
+            symbols_used_1 = [str(i) for i in list(elem_expr[1].repr_symbolic.free_symbols)]
+
+            elem_expr[0].symbolic_map = {k:whole_obj_map[k] for k in symbols_used_0}
+
+            elem_expr[1].symbolic_map = {k:whole_obj_map[k] for k in symbols_used_1}
+
+            self.elementary_equation_expression = tuple(elem_expr)
+
+        symbols_used_ = [str(i) for i in list(self.equation_expression.repr_symbolic.free_symbols)]
+
+        new_symbolic_map = {k:whole_obj_map[k] for k in symbols_used_}
+
+        self.equation_expression.symbolic_map = new_symbolic_map
+
+        self._sweepObjects()
+
     def setResidual(self, equation_expression):
 
         """

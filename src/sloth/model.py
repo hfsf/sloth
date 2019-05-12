@@ -287,6 +287,50 @@ class Model:
 
             return(True)
 
+    def incorporateFromExternalModel(self, model_to_incorporate, incorporate_variables=True, incorporate_parameters=True, incorporate_constants=True, incorporate_equations=True, incorporate_ports=False):
+
+        """
+        Incorporate objects from a external Model
+        """
+
+        if incorporate_variables is True:
+
+            _ = [self._addVariableDirectly(obj_i) for obj_i in list(model_to_incorporate.variables.values())]
+
+        if incorporate_parameters is True:
+
+            _ = [self._addParameterDirectly(obj_i) for obj_i in list(model_to_incorporate.parameters.values())]
+
+        if incorporate_constants is True:
+
+            _ = [self._addConstantDirectly(obj_i) for obj_i in list(model_to_incorporate.constants.values())]
+
+        if incorporate_ports is True:
+
+            pass
+
+        var_names_from_old_model = list(model_to_incorporate.variables.keys())
+        par_names_from_old_model = list(model_to_incorporate.parameters.keys())
+        con_names_from_old_model = list(model_to_incorporate.constants.keys())
+
+        var_names_from_old_model.extend(par_names_from_old_model)
+        var_names_from_old_model.extend(con_names_from_old_model)
+        whole_names_from_old_model = var_names_from_old_model
+
+        names_map = {k: k[:-(1+len(model_to_incorporate.name))]+'_'+self.name for k in whole_names_from_old_model}
+
+        if incorporate_equations is True:
+
+            whole_objects_map = {}
+
+            whole_objects_map = {**whole_objects_map, **self.constants}
+
+            whole_objects_map = {**whole_objects_map, **self.parameters}
+
+            whole_objects_map = {**whole_objects_map, **self.variables}
+
+            _ = [self._addEquationDirectly(obj_i, names_map, whole_objects_map) for obj_i in list(model_to_incorporate.equations.values())]
+
     def _addVariableDirectly(self, var):
 
         """
@@ -387,7 +431,7 @@ class Model:
 
         self.__dict__[object_name] = con_
 
-    def _addEquationDirectly(self, eq):
+    def _addEquationDirectly(self, eq, names_map={}, whole_objects_map={}, rewrite_symbolic_representation=True):
 
         """
         Function for directly inclusion of an Equation object into current model, mainly used for creation of new Equation objects on-the-fly
@@ -410,6 +454,12 @@ class Model:
         eq_.name = object_name + "_" + self.name
 
         eq_.owner_model_name = self.name
+
+        #Rewriting the symbolic representation of the equation
+
+        if rewrite_symbolic_representation is True:
+
+            eq_._convertEquationSymbolicExpression(names_map, whole_objects_map)
 
         #Adding the object to current model dictionaries
 

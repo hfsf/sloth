@@ -122,15 +122,15 @@ def mod_():
 
         def __init__(self, name, description):
 
-            super().__init__(name, "Model 3")
+            super().__init__(name, description)
 
             m1 = mod1("M1","Model 1")
             m1()
             m1b =mod1b("M1b", "Model 1b")
             m1b()
 
-            self._incorporateFromModel(m1)
-            self._incorporateFromModel(m1b)
+            self.incorporateFromExternalModel(m1)
+            self.incorporateFromExternalModel(m1b)
 
         def DeclareVariables(self):
 
@@ -153,7 +153,7 @@ def mod_():
             self.createEquation("eq32", "Generic equation 3.2", eq22)
             self.createEquation("eq33", "Generic equation 3.3", eq23)
 
-    mod = mod_("M3", "Model 3")
+    mod = mod_("M4", "Model 4")
 
     mod()
 
@@ -267,7 +267,7 @@ def test_multiple_incorporated_model_solution(prob, mod3, sim):
 
     assert results == pytest.approx(expected)
 
-def donot_test_incorporateFromModel_feature(prob, mod_, sim):
+def test_incorporateFromExternalModel_feature(prob, mod_, sim):
 
     mod_._infoModelReport_()
 
@@ -285,7 +285,7 @@ def donot_test_incorporateFromModel_feature(prob, mod_, sim):
 
     print("\n\n==>Results = ",results)
 
-    expected = {'a_M3':-5., 'b_M3':3., 'd_M3':-3., 'g_M3':-7., 'k_M3':0.}
+    expected = {'a_M4':-5., 'b_M4':3., 'd_M4':-3., 'g_M4':-7., 'k_M4':0.}
 
     assert results == pytest.approx(expected)
 
