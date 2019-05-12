@@ -185,20 +185,20 @@ def test_simulation_result(mod, prob, sim, compile_equations):
 
     assert result['t_DA0']['Y-1'][0] == pytest.approx(1.)
 
-    assert result['t_DA0']['Y-1'][-1] == pytest.approx(0.940142)
+    assert result['t_DA0']['Y-1'][-1] == pytest.approx(0.940142, rel=1e-6, abs=1e-12)
 
     assert result['t_DA0']['Y-2'][0] == pytest.approx(0.)
 
-    assert result['t_DA0']['Y-2'][-1] == pytest.approx(-0.3409274981941177)
+    assert result['t_DA0']['Y-2'][-1] == pytest.approx(-0.3409274981, rel=1e-6, abs=1e-12)
 
     assert result['t_DA0']['Y-3'][0] == pytest.approx(0.)
 
-    assert result['t_DA0']['Y-3'][-1] == pytest.approx(-0.8820603476203837)
+    assert result['t_DA0']['Y-3'][-1] == pytest.approx(-0.88206, rel=1e-6, abs=1e-12)
 
     assert result['t_DA0']['Y-4'][0] == pytest.approx(0.)
 
-    assert result['t_DA0']['Y-4'][-1] == pytest.approx(-2.432436)
+    assert result['t_DA0']['Y-4'][-1] == pytest.approx(-2.432435875, rel=1e-6, abs=1e-12)
 
     assert result['t_DA0']['Y-5'][0] == pytest.approx(0.)
 
-    assert result['t_DA0']['Y-5'][-1] == pytest.approx(10.041694313692696)
+    assert result['t_DA0']['Y-5'][-1] == pytest.approx(10.04169, rel=1e-6, abs=1e-12)

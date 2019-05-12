@@ -152,7 +152,7 @@ def test_mixer_and_homogeneous_material_stream(simple_mixer, prob, sim, pp_water
     #---------------------------------------------
     #Create a homogeneous material_stream model
 
-    class homogeneous_material_stream(MaterialStream):
+    class homogeneous_material_stream(MultiphasicMaterialStream):
 
         def __init__(self, name, mdot, description="Homogeneous material stream", property_package=pp_water):
 
@@ -216,7 +216,7 @@ def test_biphasic_mixer_biphasic_material_stream(biphasic_mixer_class, prob, sim
     #---------------------------------------------
     #Create biphasic material_stream model
 
-    class biphasic_material_stream(MaterialStream):
+    class biphasic_material_stream(MultiphasicMaterialStream):
 
         def __init__(self, name, ndot, z1, description="Biphasic material stream", property_package=pp_water_toluene):
 
@@ -320,7 +320,7 @@ def test_simple_mixer_valve_homogeneous_material_stream(simple_mixer, valve_clas
     #---------------------------------------------
     #Create a homogeneous material_stream model
 
-    class homogeneous_material_stream(MaterialStream):
+    class homogeneous_material_stream(MultiphasicMaterialStream):
 
         def __init__(self, name, mdot, description="Homogeneous material stream", property_package=pp_water):
 
@@ -409,7 +409,7 @@ def test_mixer_homogeneous_material_stream_heater(simple_mixer, simple_heater, p
     #---------------------------------------------
     #Create a homogeneous material_stream model
 
-    class homogeneous_material_stream(MaterialStream):
+    class homogeneous_material_stream(MultiphasicMaterialStream):
 
         def __init__(self, name, mdot, description="Homogeneous material stream", property_package=pp_water):
 
@@ -492,7 +492,7 @@ def test_pump_mixer_heater_homogeneous_material_stream_heater(simple_mixer, simp
     #---------------------------------------------
     #Create a homogeneous material_stream model
 
-    class homogeneous_material_stream(MaterialStream):
+    class homogeneous_material_stream(MultiphasicMaterialStream):
 
         def __init__(self, name, mdot, description="Homogeneous material stream", property_package=pp_water):
 
@@ -619,7 +619,7 @@ def test_pump_mixer_heater_hms(simple_mixer, simple_heater, prob, sim, pp_water)
     #---------------------------------------------
     #Create a homogeneous material_stream model
 
-    class homogeneous_material_stream(MaterialStream):
+    class homogeneous_material_stream(MultiphasicMaterialStream):
 
         def __init__(self, name, mdot, description="Homogeneous material stream", property_package=pp_water):
 
