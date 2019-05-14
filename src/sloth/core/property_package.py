@@ -53,7 +53,7 @@ class PropertyPackage:
 
         if isinstance(pp, self.__class__):
 
-            for phase_i in pp.phase_names:
+            for phase_i in pp.phase_names :
 
                 if phase_i not in self.phase_names:
 
