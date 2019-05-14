@@ -282,7 +282,7 @@ class Mixer(model.Model):
 
         self.createEquation("mechanical_equilibrium", "Mechanical Equilibrium", _mechanical_equilibrium)
 
-        self.H_in =  self.createVariable("H_in", J/mol, "molar enthalpy for output stream", latex_text="H_{in}", is_exposed=True, type='input')
+        self.H_in =  self.createVariable("H_in", J/mol, "molar enthalpy for input stream", latex_text="H_{in}", is_exposed=True, type='input')
         self.H_out =  self.createVariable("H_out", J/mol, "molar enthalpy for output stream", latex_text="H_{out}", is_exposed=True, type='output')
 
         _energy_balance = self.ndot_out()*self.H_out() - self.ndot_in()*self.H_in()

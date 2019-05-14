@@ -3,16 +3,21 @@
 """
 Define Model class, for storage of equations, distribution on domains and information about input and output variables (exposed variables), and incorporation of other models variables and equations
 """
-import collections
-from .core.error_definitions import UnexpectedObjectDeclarationError, UnexpectedValueError
+### REMOVE IN THE NEXT REFACTORY ###
+#import collections
+###################################
+
+from .core.error_definitions import UnexpectedObjectDeclarationError, UnexpectedValueError, AbsentRequiredObjectError
 from .core.equation import Equation
-from .core.equation_operators import Log, Log10, Sqrt, Abs, Exp, Sin, Cos, Tan
+from .core.equation_operators import *
 from .core.variable import Variable
 from .core.constant import Constant
 from .core.parameter import Parameter
 from . import analysis
 from . import connection
 from . import analysis
+from .core.template_units import *
+
 import prettytable
 
 from copy import deepcopy
@@ -23,13 +28,74 @@ def _totalizeInletsFunction_genericMaterialStreams(main_model, set_P_by_min=True
     Generic function for totalization of inlets, assuming that all those are MaterialStreams from the UnitOp library
     """
 
-    if set_P_by_min is True:
+    #Creation of variables (P_in, T_in, mdot_in, ndot_in, H_in) if they were not defined previously for the model
 
-        pass
+    if not hasattr(main_model, 'P_in'):
 
-    if set_T_by_min is True:
+        main_model.P_in = main_model.createVariable("P_in", Pa, "p_in", "Pressure from the totalized input stream for "+main_model.name, latex_text="{P}_{in}", is_exposed=True, type='input')
 
-        pass
+        main_model.__dict__['P_in'] = main_model.P_in
+
+    if not hasattr(main_model, 'T_in'):
+
+        main_model.T_in = main_model.createVariable("T_in", K, "T_in", "Temperature from the totalized input stream for "+main_model.name, latex_text="{T}_{in}", is_exposed=True, type='input')
+
+        main_model.__dict__['T_in'] = main_model.T_in
+
+    if not hasattr(main_model, 'mdot_in'):
+
+        main_model.mdot_in = main_model.createVariable("mdot_in", kg/s, "mdot_in", "Mass flux from the totalized input stream for "+main_model.name, latex_text="\\dot{m}_{in}", is_exposed=True, type='input')
+
+        main_model.__dict__['mdot_in'] = main_model.mdot_in
+
+    if not hasattr(main_model, 'ndot_in'):
+
+        main_model.ndot_in = main_model.createVariable("ndot_in", mol/s, "ndot_in", "Molar flux from the totalized input stream for "+main_model.name, latex_text="\\dot{n}_{in}", is_exposed=True, type='input')
+
+        main_model.__dict__['ndot_in'] = main_model.ndot_in
+
+    if not hasattr(main_model, 'H_in'):
+
+        main_model.H_in = main_model.createVariable("H_in", J/mol, "H_in", "Molar enthalpy for the totalized input stream for "+main_model.name, latex_text="{H}_{in}", is_exposed=True, type='input')
+
+        main_model.__dict__['H_in'] = main_model.H_in
+
+    #Incorporate the inlets for further reference to its parameters
+
+    _ = [main_model.incorporateFromExternalModel(stream, incorporate_equations=False, rewrite_name=False) for stream in main_model._inlets]
+
+    #Now, create the equations for the totalization
+
+    if len(main_model.ports['inlets']) > 0 :
+
+
+        _ = [print("\n->",stream.name,":\n\t",stream.__dict__) for stream in main_model._inlets]
+
+        P_from_inputs = [stream.P() for stream in main_model._inlets]
+
+        _ = [main_model.createEquation("eq_P_"+stream.P.name, "", stream.P() - stream.P.value) for stream in main_model._inlets]
+
+        try:
+
+            T_from_inputs = [stream.T() for stream in main_model._inlets]
+
+            _ = [main_model.createEquation("eq_T_"+stream.T.name, "", stream.T() - stream.T.value) for stream in main_model._inlets]
+
+        except:
+
+            raise AbsentRequiredObjectError("(list of inlet streams with 'T' object defined)")
+
+        if set_P_by_min is True:
+
+            tot_P = main_model.createEquation("totalization_P", "Totalization equation for pressure for "+main_model.name, main_model.P_in() - Min(*P_from_inputs))
+
+            main_model.__dict__['tot_p'] = tot_P
+
+        if set_T_by_min is True:
+
+            tot_T = main_model.createEquation("totalization_T", "Totalization equation for temperature for "+main_model.name, main_model.T_in() - Min(*T_from_inputs))
+
+            main_model.__dict__['tot_T'] = tot_T
 
 def _totalizeOutletsFunction_genericMaterialStreams(main_model):
 
@@ -287,7 +353,7 @@ class Model:
 
             return(True)
 
-    def incorporateFromExternalModel(self, model_to_incorporate, incorporate_variables=True, incorporate_parameters=True, incorporate_constants=True, incorporate_equations=True, incorporate_ports=False):
+    def incorporateFromExternalModel(self, model_to_incorporate, incorporate_variables=True, incorporate_parameters=True, incorporate_constants=True, incorporate_equations=True, incorporate_ports=False, rewrite_name=True):
 
         """
         Incorporate objects from a external Model
@@ -295,15 +361,15 @@ class Model:
 
         if incorporate_variables is True:
 
-            _ = [self._addVariableDirectly(obj_i) for obj_i in list(model_to_incorporate.variables.values())]
+            _ = [self._addVariableDirectly(obj_i, rewrite_name) for obj_i in list(model_to_incorporate.variables.values())]
 
         if incorporate_parameters is True:
 
-            _ = [self._addParameterDirectly(obj_i) for obj_i in list(model_to_incorporate.parameters.values())]
+            _ = [self._addParameterDirectly(obj_i, rewrite_name) for obj_i in list(model_to_incorporate.parameters.values())]
 
         if incorporate_constants is True:
 
-            _ = [self._addConstantDirectly(obj_i) for obj_i in list(model_to_incorporate.constants.values())]
+            _ = [self._addConstantDirectly(obj_i, rewrite_name) for obj_i in list(model_to_incorporate.constants.values())]
 
         if incorporate_ports is True:
 
@@ -329,9 +395,9 @@ class Model:
 
             whole_objects_map = {**whole_objects_map, **self.variables}
 
-            _ = [self._addEquationDirectly(obj_i, names_map, whole_objects_map) for obj_i in list(model_to_incorporate.equations.values())]
+            _ = [self._addEquationDirectly(obj_i, names_map, whole_objects_map, rewrite_name) for obj_i in list(model_to_incorporate.equations.values())]
 
-    def _addVariableDirectly(self, var):
+    def _addVariableDirectly(self, var, rewrite_name):
 
         """
         Function for directly inclusion of an Variable object into current model, mainly used for creation of new Variable objects on-the-fly
@@ -351,7 +417,8 @@ class Model:
 
             object_name = var.name
 
-        var_.name = object_name + "_" + self.name
+        if rewrite_name is True:
+            var_.name = object_name + "_" + self.name
 
         var_.owner_model_name = self.name
 
@@ -367,7 +434,7 @@ class Model:
 
         self.__dict__[object_name] = var_
 
-    def _addParameterDirectly(self, par):
+    def _addParameterDirectly(self, par, rewrite_name):
 
         """
         Function for directly inclusion of an Parameter object into current model, mainly used for creation of new parameters objects on-the-fly
@@ -387,7 +454,8 @@ class Model:
 
             object_name = par.name
 
-        par_.name = object_name + "_" + self.name
+        if rewrite_name is True:
+            par_.name = object_name + "_" + self.name
 
         par_.owner_model_name = self.name
 
@@ -399,7 +467,7 @@ class Model:
 
         self.__dict__[object_name] = par_
 
-    def _addConstantDirectly(self, con):
+    def _addConstantDirectly(self, con, rewrite_name):
 
         """
         Function for directly inclusion of an Constant object into current model, mainly used for creation of new Constants objects on-the-fly
@@ -419,7 +487,8 @@ class Model:
 
             object_name = con.name
 
-        con_.name = object_name + "_" + self.name
+        if rewrite_name is True:
+            con_.name = object_name + "_" + self.name
 
         con_.owner_model_name = self.name
 
@@ -431,7 +500,7 @@ class Model:
 
         self.__dict__[object_name] = con_
 
-    def _addEquationDirectly(self, eq, names_map={}, whole_objects_map={}, rewrite_symbolic_representation=True):
+    def _addEquationDirectly(self, eq, names_map={}, whole_objects_map={}, rewrite_name=True, rewrite_symbolic_representation=True):
 
         """
         Function for directly inclusion of an Equation object into current model, mainly used for creation of new Equation objects on-the-fly
@@ -451,7 +520,8 @@ class Model:
 
             object_name = eq.name
 
-        eq_.name = object_name + "_" + self.name
+        if rewrite_name is True:
+            eq_.name = object_name + "_" + self.name
 
         eq_.owner_model_name = self.name
 
@@ -489,6 +559,10 @@ class Model:
 
         self.DeclareVariables()
 
+        if len(self._inlets) > 0:
+
+            self.totalizeInletsFunction(main_model=self)
+
         self.DeclareEquations()
 
         if len(self.variables) == 0 and self.ignore_variable_warning is False:
@@ -498,11 +572,6 @@ class Model:
         if len(self.equations) == 0 and self.ignore_equation_warning is False:
 
             print("Warning: No equations were declared.")
-
-        if len(self._inlets) > 0:
-
-            self.totalizeInletsFunction()
-
 
     def _setInlets(self, inlets, inlet_name='in'):
 
