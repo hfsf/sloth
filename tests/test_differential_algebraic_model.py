@@ -208,5 +208,3 @@ def test_simulation_result(mod, prob, sim, compile_equations):
     assert result['t_DA0']['Y-5'][0] == pytest.approx(0.)
 
     #assert result['t_DA0']['Y-5'][-1] == pytest.approx(10.04169, rel=1e-6, abs=1e-12)
-
-    assert 1 == 2

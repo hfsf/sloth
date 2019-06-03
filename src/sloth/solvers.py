@@ -109,7 +109,7 @@ class LASolver(Solver):
     def lookUpForSolver(self):
 
         """
-        Define the solver mechanism used for solution of the problem, given the name of desired mechanism in the instantiation of current Solver object 
+        Define the solver mechanism used for solution of the problem, given the name of desired mechanism in the instantiation of current Solver object
         """
 
         if self.solver==None or self.solver == 'sympy':
@@ -150,7 +150,7 @@ class LASolver(Solver):
 
     def solve(self, conf_args={}):
 
-        X = self.solver_mechanism() 
+        X = self.solver_mechanism()
 
         return X
 
@@ -169,7 +169,7 @@ class NLASolver(Solver):
     def lookUpForSolver(self):
 
         """
-        Define the solver mechanism used for solution of the problem, given the name of desired mechanism in the instantiation of current Solver object 
+        Define the solver mechanism used for solution of the problem, given the name of desired mechanism in the instantiation of current Solver object
         """
 
         if self.solver==None or self.solver == 'sympy':
@@ -192,7 +192,7 @@ class NLASolver(Solver):
 
     def solve(self, conf_args={}):
 
-        X = self.solver_mechanism() 
+        X = self.solver_mechanism()
 
         return X
 
@@ -215,7 +215,7 @@ class DSolver(Solver):
 
         arg_names = additional_configurations['arg_names']
 
-        if time_variable_name not in problem.initial_conditions:
+        if any(t_i not in problem.initial_conditions for t_i in time_variable_name):
 
             raise AbsentRequiredObjectError("initial condition for time variable (%s)"%time_variable_name)
 
@@ -246,7 +246,7 @@ class DSolver(Solver):
     def lookUpForSolver(self):
 
         """
-        Define the solver mechanism used for solution of the problem, given the name of desired mechanism in the instantiation of current Solver object 
+        Define the solver mechanism used for solution of the problem, given the name of desired mechanism in the instantiation of current Solver object
         """
 
         if self.solver==None or self.solver == 'scipy':
@@ -259,7 +259,7 @@ class DSolver(Solver):
         Return the differential equations composing the differential system as an array of numpy functions
 
         :return compiled_diff_equations_:
-            Array containing each of the differntial equations composing the differential system as numpy functions 
+            Array containing each of the differntial equations composing the differential system as numpy functions
         :rtype function:
         """
 
@@ -348,13 +348,13 @@ class DSolver(Solver):
 
             """
             print("type=%s"%(type(eq_i.elementary_equation_expression[0])))
-            print("type2=%s"%(type(eq_i.elementary_equation_expression[0].symbolic_object)))            
+            print("type2=%s"%(type(eq_i.elementary_equation_expression[0].symbolic_object)))
             print("type3=%s"%(type(eq_i.elementary_equation_expression[0].symbolic_object.args)))
-            print("\neq=%s\nexpression=%s\n expression[0]=%s, args=%s and %s" % 
+            print("\neq=%s\nexpression=%s\n expression[0]=%s, args=%s and %s" %
                 (eq_i,
                  eq_i.elementary_equation_expression,
                  eq_i.elementary_equation_expression[0],
-                 eq_i.elementary_equation_expression[0].args, 
+                 eq_i.elementary_equation_expression[0].args,
                  eq_i.elementary_equation_expression[1].args)
                 )
             """
@@ -391,7 +391,7 @@ class DSolver(Solver):
 
         for eq_i in self.diffSystem:
 
-            s_map_dict = eq_i.elementary_equation_expression[0].symbolic_map 
+            s_map_dict = eq_i.elementary_equation_expression[0].symbolic_map
 
             Y_.update(s_map_dict)
 
@@ -399,7 +399,7 @@ class DSolver(Solver):
 
         return Y_
 
-    def solve(self, conf_args={}): 
+    def solve(self, conf_args={}):
 
     # args_={}, conf_args_={}, initial_time=0., end_time=None, number_of_time_steps = None):
 
@@ -460,7 +460,7 @@ class DSolver(Solver):
 
         Y = solver( diffYinterfaceForSolver,
                     Y_0,
-                    time_points, 
+                    time_points,
                     **conf_args_
                    )
 
@@ -491,7 +491,7 @@ class DSolver(Solver):
             self.domain._renameHeaders(variable_name_map)
 
         # ================================================
-            
+
         return time_points,Y
 
 
@@ -530,7 +530,7 @@ class DaeSolver(Solver):
         self.compiled_equations = None
 
         self.compilation_mechanism = additional_configurations['compilation_mechanism']
-        
+
         self.compiled_equations = self._compileEquationsIntoFunctions()
 
         #======================================================================
@@ -541,11 +541,11 @@ class DaeSolver(Solver):
         Return the equations composing the differential algebraic system as an array of numpy functions
 
         :return:
-            Function that will return the result for each of the equations in form of an array 
+            Function that will return the result for each of the equations in form of an array
         :rtype function:
         """
 
-        return self.problem.equation_block._getEquationBlockAsFunction('residual','rhs', self.compilation_mechanism)        
+        return self.problem.equation_block._getEquationBlockAsFunction('residual','rhs', self.compilation_mechanism)
 
     def _createMappingFromValues(self, var_names, var_vals):
 
@@ -578,7 +578,7 @@ class DaeSolver(Solver):
         """
 
         diff_eqs = self.problem.equation_block._equation_groups['differential']
-        
+
         lin_eqs = self.problem.equation_block._equation_groups['linear']
 
         nlin_eqs = self.problem.equation_block._equation_groups['nonlinear']
@@ -597,7 +597,7 @@ class DaeSolver(Solver):
 
         conf_args_ = conf_args['configuration_args']
 
-        initial_conditions = self.problem.initial_conditions        
+        initial_conditions = self.problem.initial_conditions
 
         if number_of_time_steps == None and self.end_time!= None:
 
@@ -677,5 +677,5 @@ class DaeSolver(Solver):
             self.domain._renameHeaders(variable_map)
 
         # ================================================
-            
+
         return Time, Y

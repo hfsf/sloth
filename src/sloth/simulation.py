@@ -100,7 +100,7 @@ class Simulation:
                           is_dynamic=False,
                           compile_equations=True,
                           domain=None,
-                          time_variable_name='t',
+                          time_variable_name=None,
                           arg_names=[],
                           args=[],
                           verbosity_solver=0,
@@ -132,6 +132,10 @@ class Simulation:
             additional_conf = definition_dict
 
         else:
+
+            if time_variable_name is None:
+
+                time_variable_name = self.problem.time_variable_name
 
             additional_conf = {'compile_equations':compile_equations,
                                'domain':domain,
