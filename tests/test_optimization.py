@@ -156,11 +156,18 @@ def opt(sim, mod, prob, prob_opt):
                              constraints=constraints,
                              optimization_configuration=optimization_configuration)
 
+    prob.setTimeVariableName(['t_D0'])
+
+    prob.resolve()
+
+    prob.setInitialConditions({'t_D0':0.,'u_D0':10.,'v_D0':5.})
+
+    sim.setProblem(prob)
+
     sim.setConfigurations(initial_time=0.,
                   end_time=16.,
                   is_dynamic=True,
                   domain=mod.dom,
-                  time_variable_name="t_D0",
                   print_output=False,
                   compile_equations=True,
                   output_headers=["Time","Preys(u)","Predators(v)"],
@@ -169,12 +176,6 @@ def opt(sim, mod, prob, prob_opt):
                                      "v_D0":"Predators(v)"
                             }
             )
-
-    prob.resolve()
-
-    prob.setInitialConditions({'t_D0':0.,'u_D0':10.,'v_D0':5.})
-
-    sim.setProblem(prob)
 
     prob_opt()
 
@@ -205,6 +206,8 @@ def test_simulation_properties(mod, prob, sim):
 
     prob.addModels(mod)
 
+    prob.setTimeVariableName(['t_D0'])
+
     prob.resolve()
 
     sim.setProblem(prob)
@@ -224,6 +227,8 @@ def test_simulation_result(mod, prob, sim, compile_equations):
 
     prob.addModels(mod)
 
+    prob.setTimeVariableName(['t_D0'])
+
     prob.resolve()
 
     prob.setInitialConditions({'t_D0':0.,'u_D0':10.,'v_D0':5.})
@@ -238,7 +243,6 @@ def test_simulation_result(mod, prob, sim, compile_equations):
                       end_time=16.,
                       is_dynamic=True,
                       domain=mod.dom,
-                      time_variable_name="t_D0",
                       print_output=False,
                       compile_equations=compile_equations,
                       output_headers=["Time","Preys(u)","Predators(v)"],
@@ -267,6 +271,8 @@ def test_simulation_result(mod, prob, sim, compile_equations):
 def test_optimization(mod, prob, sim, opt, prob_opt):
 
     prob.addModels(mod)
+
+    prob.setTimeVariableName(['t_D0'])
 
     prob.resolve()
 

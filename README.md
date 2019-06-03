@@ -1,6 +1,6 @@
 # Sloth - A noobish, humble and umpretentious tool for process simulation using simultaneous equation solving
 
-![](https://github.com/hfsf/sloth/blob/master/docs/imgs/sloth.png)
+![](https://github.com/hfsf/sloth/blob/master/docs/imgs/sloth_logo.png)
 
 ## Sloth aims to be:
 

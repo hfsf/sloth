@@ -51,7 +51,7 @@ def mod():
 
             expr1 = self.y1.Diff(self.t) - self.y3()
 
-            expr2 = self.y2.Diff(self.t) - self.y4()
+            expr2 = self.y2.Diff(self.t) - self.y4()#*self.t()
 
             expr3 = self.y3.Diff(self.t) + self.y5()*self.y1()
 
@@ -118,6 +118,8 @@ def test_simulation_properties(mod, prob, sim):
 
     prob.addModels(mod)
 
+    prob.setTimeVariableName(['t_DA0'])
+
     prob.resolve()
 
     sim.setProblem(prob)
@@ -138,6 +140,8 @@ def test_simulation_properties(mod, prob, sim):
 def test_simulation_result(mod, prob, sim, compile_equations):
 
     prob.addModels(mod)
+
+    prob.setTimeVariableName(['t_DA0'])
 
     prob.resolve()
 
@@ -204,3 +208,5 @@ def test_simulation_result(mod, prob, sim, compile_equations):
     assert result['t_DA0']['Y-5'][0] == pytest.approx(0.)
 
     #assert result['t_DA0']['Y-5'][-1] == pytest.approx(10.04169, rel=1e-6, abs=1e-12)
+
+    assert 1 == 2

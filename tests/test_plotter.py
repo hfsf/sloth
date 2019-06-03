@@ -96,6 +96,8 @@ def test_plotter_after_simulation(mod, prob, sim, compile_equations, short_refer
 
     prob.addModels(mod)
 
+    prob.setTimeVariableName(['t_D0'])
+
     prob.resolve()
 
     prob.setInitialConditions({'t_D0':0.,'u_D0':10.,'v_D0':5.})
@@ -106,7 +108,6 @@ def test_plotter_after_simulation(mod, prob, sim, compile_equations, short_refer
                       end_time=16.,
                       is_dynamic=True,
                       domain=mod.dom,
-                      time_variable_name="t_D0",
                       print_output=False,
                       compile_equations=compile_equations,
                       output_headers=["Time","Preys(u)","Predators(v)"],
