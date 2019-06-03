@@ -233,7 +233,13 @@ def Max(*obj):
 
         else:
 
-            obj_latex_name = obj_i.name
+            try:
+
+                obj_latex_name = obj_i.name
+
+            except:
+
+                obj_latex_name = str(obj_i)
 
         if isinstance(obj_i, EquationNode):
 

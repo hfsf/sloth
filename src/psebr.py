@@ -48,7 +48,10 @@ class ethanol_opt(Model):
 
     def DeclareEquations(self):
 
-        u = self.a0() + self.a1()*Exp(self.w1()+ self.t()/self.tf())
+        F = self.a0() + self.a1()*Exp(self.w1()+ self.t()/self.tf())
+
+        u = Min(Max(0., F), 12.)
+
         eqx1 = self.x1.Diff(self.t) == u
         self.eqx1 = self.createEquation("eq_x1", "", eqx1)
 
@@ -92,9 +95,13 @@ class ethanol_max_prob(OptimizationProblem):
 
         result = self.simulation_instance.getResults('dict')
 
-        f = result['t_E0']['Ethanol(x4)'][-1] * result['t_E0']['Volume(x1)'][-1]
+        f = -1*result['t_E0']['Ethanol(x4)'][-1]*result['t_E0']['Volume(x1)'][-1]
 
         self.simulation_instance.reset()
+
+        if f > 0. or result['t_E0']['Ethanol(x4)'][-1] < 0. :
+
+            f = 1e10
 
         return[f]
 
@@ -175,7 +182,7 @@ def run_optimization_study():
     prob_opt()
 
     opt = opt_study(simulation=sim, optimization_problem=prob_opt, simulation_configuration=None, optimization_parameters=[mod.a0, mod.a1, mod.w1],
-        constraints=([-10.,-10.,-100.],[10.,10.,100.]))
+        constraints=([-5.,-5.,-5.],[5.,5.,5.]))
 
     opt.optimization_problem()
 
@@ -188,6 +195,8 @@ def run_optimization_study():
         openfile.write("==>Results: {}".format(opt.getResults()))
 
     print("Sucessful run? ", opt.run_sucessful)
+
+    print("\n\n--->RESULT: ",opt.getResults())
 
 def run_simulation_study(a0, a1, w1):
 

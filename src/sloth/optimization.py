@@ -228,7 +228,7 @@ class Optimization:
         if optimization_configuration is {} or optimization_configuration is None:
 
             self.optimization_configuration = {'number_of_individuals':50,
-                                               'number_of_generations':1000,
+                                               'number_of_generations':3,
                                                'crossover_rate':.95,
                                                'mutation_rate':.02,
                                                'elitism':1,
