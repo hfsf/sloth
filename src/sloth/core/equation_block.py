@@ -293,7 +293,9 @@ class EquationBlock:
 
                 #print("\n\t\t======>Has time_var_declared? : ", [ t_i in sp.srepr(eq_i) for t_i in var_name])
 
-                if any(var_i in sp.srepr(eq_i) for var_i in var_name):
+                #Will not trigger for 'Derivative' terms
+
+                if any(var_i in sp.srepr(eq_i) and 'Derivative' not in sp.srepr(eq_i) for var_i in var_name):
 
                     has_been_declared = True
 
