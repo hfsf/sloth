@@ -48,7 +48,7 @@ class ethanol_opt(Model):
 
     def DeclareEquations(self):
 
-        u = self.a0() + self.a1()*Exp(self.w1()+ self.tf()/self.tf())
+        u = self.a0() + self.a1()*Exp(self.w1()+ self.t()/self.tf())
         eqx1 = self.x1.Diff(self.t) == u
         self.eqx1 = self.createEquation("eq_x1", "", eqx1)
 
@@ -81,6 +81,8 @@ class ethanol_max_prob(OptimizationProblem):
         self.simulation_instance[self.mod.a0].setValue(a0)
         self.simulation_instance[self.mod.a1].setValue(a1)
         self.simulation_instance[self.mod.w1].setValue(w1)
+
+        self.simulation_instance.problem.setTimeVariableName(['t_E0'])
 
         self.simulation_instance.problem.resolve()
 
@@ -162,9 +164,11 @@ def run_optimization_study():
 
     prob.addModels(mod)
 
+    prob.setTimeVariableName(['t_E0'])
+
     prob.resolve()
 
-    prob.setInitialConditions({'t_E0':0., 'x1_E0':10., 'x2_E0':1., 'x3_E0':150., 'x4_E0':1e-18})
+    prob.setInitialConditions({'t_E0':0., 'x1_E0':10., 'x2_E0':1., 'x3_E0':150., 'x4_E0':0.})
 
     sim.setProblem(prob)
 

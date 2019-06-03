@@ -215,7 +215,15 @@ class DSolver(Solver):
 
         arg_names = additional_configurations['arg_names']
 
-        if any(t_i not in problem.initial_conditions for t_i in time_variable_name):
+        if isinstance(time_variable_name, list):
+
+            has_initial_time_condition_declared = all(t_i in problem.initial_conditions for t_i in time_variable_name)
+
+        else:
+
+            has_initial_time_condition_declared = time_variable_name in problem.initial_conditions
+
+        if has_initial_time_condition_declared is not True:
 
             raise AbsentRequiredObjectError("initial condition for time variable (%s)"%time_variable_name)
 
@@ -416,6 +424,18 @@ class DSolver(Solver):
         def diffYinterfaceForSolver(Y, t, args=()):
 
             Y_ = self._createMappingFromValues(self.diffY.keys(), Y)
+
+            for t_i in self.problem.time_variable_name:
+
+                has_t_i_var_declared_in_diff_eq = self.problem.equation_block._hasVarBeenDeclared(t_i, "differential")
+
+                #print("\n------>t_i = ",t_i)
+
+                #print("\n------> has? ", has_t_i_var_declared_in_diff_eq)
+
+                if has_t_i_var_declared_in_diff_eq is True:
+
+                    Y_.update({t_i:t})
 
             if len(args)>0:
                 args_ = self._createMappingFromValues(self.args_names, args)

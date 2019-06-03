@@ -263,6 +263,48 @@ class EquationBlock:
         #return [eq_i.equation_expression.symbolic_object for eq_i in self.equations]
         return [eq_i._getSymbolicObject(differential_form, side) for eq_i in self.equations]
 
+    def _hasVarBeenDeclared(self, var_name, group=None):
+
+        """
+        Check if an specific var was declared in current EquationBlock, in a specific group of equations, or through the entire set of equations
+        """
+
+        has_been_declared = False
+
+        if isinstance(var_name, list) is not True:
+
+            var_name = [var_name]
+
+        if group is not None:
+
+            where_to_look = self._equation_groups[group]
+
+        else:
+
+            where_to_look = self._equations_list
+
+        for eq in where_to_look:
+
+            #print("\n======>Equation: ", eq._getSymbolicObject())
+
+            for eq_i in eq._getSymbolicObject().args:
+
+                #print("\n\t======>Member: ",eq_i)
+
+                #print("\n\t\t======>Has time_var_declared? : ", [ t_i in sp.srepr(eq_i) for t_i in var_name])
+
+                if any(var_i in sp.srepr(eq_i) for var_i in var_name):
+
+                    has_been_declared = True
+
+                    break
+
+            if has_been_declared is True:
+
+                break
+
+        return has_been_declared
+
     def __call__(self):
 
         """

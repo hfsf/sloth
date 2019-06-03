@@ -10,6 +10,7 @@ import prettytable
 from .core.variable import Variable
 from .core.constant import Constant
 from .core.parameter import Parameter
+import sympy as sp
 
 class DOF_Analysis:
 
@@ -48,6 +49,36 @@ class DOF_Analysis:
         var_names_ = [i for i in self.problem.equation_block._var_list]
 
         eq_reps = self.problem.equation_block._equations_list
+
+        has_time_var_declared_in_diff_eq = False
+
+        """
+        for eq in self.problem.equation_block._equation_groups['differential']:
+
+            print("\n======>Equation: ", eq._getSymbolicObject())
+
+            for i in eq._getSymbolicObject().args:
+
+                print("\n\t======>Member: ",i)
+
+                print("\n\t\t======>Has time_var_declared? : ", [ t_i in sp.srepr(i) for t_i in self.problem.time_variable_name])
+
+                if any(t_i in sp.srepr(i) for t_i in self.problem.time_variable_name):
+
+                    has_time_var_declared_in_diff_eq = True
+
+                    break
+            if has_time_var_declared_in_diff_eq is True:
+
+                break
+
+        """
+
+        has_time_var_declared_in_diff_eq = self.problem.equation_block._hasVarBeenDeclared(self.problem.time_variable_name, "differential")
+
+        if has_time_var_declared_in_diff_eq is True:
+
+            n_eqs += 1
 
         n_dof = n_vars - n_eqs
 
