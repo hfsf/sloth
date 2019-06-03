@@ -62,7 +62,21 @@ class Problem:
 
         self.parameter_dict = OrderedDict(parameter_dict)
 
+        self.time_variable_name = None
+
+        self.__extra_dof_differential__ = 0
+
+        self.__time_variable_names__ = []
+
         #self.connection_graph = ConnectionGraph()
+
+    def setTimeVariableName(self, name):
+
+        if isinstance(name, list) is False:
+
+            name = [name]
+
+        self.time_variable_name = name
 
     def setInitialConditions(self, condition):
 
@@ -162,7 +176,6 @@ class Problem:
                         _param_name_list.append(obj_i.name)
 
         #=================================================================
-
         #Remove unused variables from self.variable_dict and self.param_dict
 
         variable_dict_ = OrderedDict({})
@@ -370,3 +383,11 @@ class Problem:
         self._buildEquationBlock()
 
         self.equation_block()
+
+        #_has_time_var_declared_ = [ any(eq_obj_i in eq_i.objects_declared for eq_obj_i in self.time_variable_name) for eq_i in self.equation_block._equation_groups['differential']]
+
+        #if (self._getProblemType() is 'differential-algebraic') and  any( j is True for j in _has_time_var_declared_):
+
+            #self.equation_block._var_list.extend(self.time_variable_name)
+
+            #print("===> equation_block_var_list = ",self.equation_block._var_list)
