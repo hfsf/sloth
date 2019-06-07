@@ -170,6 +170,11 @@ class Model:
             self.parameters = {}
 
         try:
+            len(self.parameter_arrays)
+        except:
+            self.parameter_arrays = {}
+
+        try:
             len(self.variables)
         except:
             self.variables = {}
@@ -719,6 +724,42 @@ class Model:
             self.exposed_vars[type].append(var)
 
         return var
+
+    def createParameterArray(self, name, size, units, description = "", value = 0, latex_text=""):
+
+        """
+
+        Function for creation of an ParameterArray object. Store an Parameter object in '.ParameterArrays' dict. Mandatory interface for model ParameterArray creation in the DeclareParameters() function.
+
+        :param str name:
+            Name for the current ParameterArray
+
+        :param int size:
+            Size for the current ParameterArray
+
+        :param Unit units:
+            Definition of dimensional unit of current ParameterArray
+
+        :param str description:
+            Description for the present ParameterArray. Defauls to ""
+
+        :param float value:
+            Value of the current ParameterArray. Defaults to 0.
+
+        :param str latex_text:
+            Latex text to represent the parameter array
+        """
+
+        if latex_text is "":
+            latex_text = name
+
+        par_array = ParameterArray(name, size, units , description, value, latex_text, is_specified=False, owner_model_name=self.name)
+
+        par_array.name=par_array.name+'_'+self.name
+
+        self.parameter_arrays[par_array.name] = par_array
+
+        return par_array
 
     def createParameter(self, name, units , description = "", value = 0, latex_text=""):
 

@@ -12,7 +12,7 @@ class william_otto(Model):
 
         self.F_A = self.createParameter("F_A",dimless,"F_A")
         self.F_A.setValue(1.8)
-        self.F_B = self.createParameter("F_B",dimless,"F_B")
+        self.F_B = self.createVariable("F_B",dimless,"F_B")
 
         self.X_P = self.createVariable("X_P",dimless,"X_P")
         self.P_P = self.createParameter("P_P",dimless,"P_P")
@@ -27,8 +27,10 @@ class william_otto(Model):
         self.C_B = self.createParameter("C_B",dimless,"C_B")
         self.C_B.setValue(114.34)
 
-        self.T = self.createParameter("T",dimless,"T")
+        self.T = self.createVariable("T",dimless,"T")
+        #self.T.setValue(400.)
         self.W = self.createParameter("W",dimless,"W")
+
         self.W.setValue(2104.7)
 
         self.PHI =self.createVariable("I",dimless,"I")
@@ -49,29 +51,29 @@ class william_otto(Model):
 
         self.k1_def = self.a1()*Exp(-1.*self.b1()/self.T())
         self.k2_def = self.a2()*Exp(-1.*self.b2()/self.T())
-        self.k1 = self.createVariable("k1",dimless,"k1")
-        self.k2 = self.createVariable("k2",dimless,"k2")
+        self.k1 = self.k1_def#self.createVariable("k1",dimless,"k1")
+        self.k2 = self.k2_def#self.createVariable("k2",dimless,"k2")
 
 
     def DeclareEquations(self):
 
-        self.k1eq = self.createEquation("k1_eq","",self.k1() - self.k1_def)
+        #self.k1eq = self.createEquation("k1_eq","",self.k1() - self.k1_def)
 
-        self.k2eq = self.createEquation("k2_eq","",self.k2() - self.k2_def)
+        #self.k2eq = self.createEquation("k2_eq","",self.k2() - self.k2_def)
 
-        mass_A = self.F_A() - (self.F_A()+self.F_B())*self.X_A() - self.k1()*self.X_A()*self.X_B()*self.W()
+        mass_A = self.F_A() - (self.F_A()+self.F_B())*self.X_A() - self.k1*self.X_A()*self.X_B()*self.W()
 
         self.mass_A = self.createEquation("mass_balance_A", "Mass balance for A", mass_A)
 
-        mass_B = self.F_B() - (self.F_A()+self.F_B())*self.X_B() - 2*self.k1()*self.X_A()*self.X_B()*self.W() - self.k2()*self.X_A()*self.X_B()*self.W()
+        mass_B = self.F_B() - (self.F_A()+self.F_B())*self.X_B() - 2*self.k1*self.X_A()*self.X_B()*self.W() - self.k2*self.X_A()*self.X_B()*self.W()
 
         self.mass_B = self.createEquation("mass_balance_B", "Mass balance for B", mass_B )
 
-        mass_P = 2.*self.k1()*self.X_A()*self.X_B()*self.W() - 2.*self.k2()*self.X_B()*self.X_A()*self.W()-(self.F_A()+self.F_B())*self.X_P()
+        mass_P = 2.*self.k1*self.X_A()*self.X_B()*self.W() - 2.*self.k2*self.X_B()*self.X_A()*self.W()-(self.F_A()+self.F_B())*self.X_P()
 
         self.mass_P = self.createEquation("mass_balance_P", "Mass balance for P", mass_P )
 
-        mass_E = self.k2()*self.X_A()*self.X_B()*self.X_P()*self.W() - (self.F_A()+self.F_B())*self.X_E()
+        mass_E = self.k2*self.X_A()*self.X_B()*self.X_P()*self.W() - (self.F_A()+self.F_B())*self.X_E()
 
         self.mass_E = self.createEquation("mass_balance_E", "Mass balance for E", mass_E )
 
@@ -157,8 +159,7 @@ def run_wo_simulation_study():
     sim = simulation_WO()
 
     mod = william_otto()
-    mod.F_B.setValue(5.)
-    mod.T.setValue(350.)
+
     mod()
 
     prob = problem_WO()

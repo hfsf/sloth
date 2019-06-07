@@ -41,6 +41,8 @@ class EquationBlock:
 
         self._var_list = []
 
+        self._param_list = []
+
         #self._var_dict = variable_dict
 
         self._equations_list = []
@@ -122,6 +124,12 @@ class EquationBlock:
             _ = [diff_list.append(abs(i).args[0]) for i in eq.args if 'Derivative' in sp.srepr(i)]
 
         return diff_list
+
+    def _getParamList(self):
+
+        param_name_list = list(self.parameter_dict.keys())
+
+        return param_name_list
 
     def _getVarList(self):
 
@@ -314,6 +322,8 @@ class EquationBlock:
         """
 
         # Fill-up the list of Variables and Equations
+
+        self._param_list = self._getParamList()
 
         self._var_list = self._getVarList()
 

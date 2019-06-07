@@ -44,6 +44,10 @@ class DOF_Analysis:
 
         n_vars = len(self.problem.equation_block._var_list)
 
+        unspec_param_names = [par_i.name for par_i in list(self.problem.equation_block.parameter_dict.values()) if par_i.is_specified is False]
+
+        n_unspec_params = len(unspec_param_names)
+
         n_eqs = len(self.problem.equation_block._equations_list)
 
         var_names_ = [i for i in self.problem.equation_block._var_list]
@@ -80,17 +84,17 @@ class DOF_Analysis:
 
             n_eqs += 1
 
-        n_dof = n_vars - n_eqs
+        n_dof = n_vars + n_unspec_params - n_eqs
 
-        if n_vars > n_eqs:
+        if n_dof < 0:
 
-            raise Exception("\nThe system is OVER-specified\n    Number of variables:{} ({}) \n Number of equations:{} \n Equations:{}".format(n_vars, var_names_, n_eqs, eq_reps))
+            raise Exception("\nThe system is OVER-specified (Nb. Degrees of Freedom = {})\n    Number of variables:{} ({}) \n Number of unspecified params:{} ({}) \n Number of equations:{} \n Equations:{}".format(n_dof, n_vars, var_names_, n_unspec_params, unspec_param_names, n_eqs, eq_reps))
 
             return False
 
-        elif n_vars < n_eqs:
+        elif n_dof > 0:
 
-            raise Exception("\nThe system is UNDER-specified\n    Number of variables:{} ({}) \n Number of equations:{} \n Equations:{}".format(n_vars, var_names_, n_eqs, eq_reps))
+            raise Exception("\nThe system is UNDER-specified (Nb. Degrees of Freedom = {})\n    Number of variables:{} ({}) \n Number of unspecified params:{} ({}) \n Number of equations:{} \n Equations:{}".format(n_dof, n_vars, var_names_, n_unspec_params, unspec_param_names, n_eqs, eq_reps))
 
             return False
 

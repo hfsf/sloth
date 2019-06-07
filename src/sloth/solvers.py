@@ -13,7 +13,7 @@ import pylab as P
 import scipy.integrate as integrate
 from collections import OrderedDict
 from .core.error_definitions import AbsentRequiredObjectError, UnexpectedValueError, UnresolvedPanicError
-
+from .core.equation_operators import *
 import prettytable
 
 
@@ -126,7 +126,7 @@ class LASolver(Solver):
 
     def _sympySolveMechanism(self):
 
-        X = sp.solve(self.problem.equation_block._equations_list, dict=True)
+        X = sp.solve(self.problem.equation_block._equations_list, dict=True, quick=True)
 
         return X[0]
 
@@ -186,7 +186,7 @@ class NLASolver(Solver):
 
     def _sympySolveMechanism(self):
 
-        X = sp.solve(self.problem.equation_block._equations_list, dict=True)
+        X = sp.solve(self.problem.equation_block._equations_list, dict=True, quick=True)
 
         return X[0]
 

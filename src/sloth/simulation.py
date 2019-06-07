@@ -278,7 +278,7 @@ class Simulation:
             for var_i in list(self.output.keys()):
 
                 tab.add_row([ str(var_i),
-                              str(self.problem.equation_block._var_dict[str(var_i)].units),
+                              str(self.problem.equation_block.variable_dict[str(var_i)].units),
                               self.output[var_i]
                             ]
                 )
