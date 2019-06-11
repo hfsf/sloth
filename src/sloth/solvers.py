@@ -11,6 +11,8 @@ from assimulo.solvers import IDA
 from assimulo.problem import Implicit_Problem
 import pylab as P
 import scipy.integrate as integrate
+from assimulo.problem import Explicit_Problem
+from assimulo.solvers import CVode
 from collections import OrderedDict
 from .core.error_definitions import AbsentRequiredObjectError, UnexpectedValueError, UnresolvedPanicError
 from .core.equation_operators import *
@@ -126,7 +128,7 @@ class LASolver(Solver):
 
     def _sympySolveMechanism(self):
 
-        X = sp.solve(self.problem.equation_block._equations_list, dict=True, quick=True)
+        X = sp.solve(self.problem.equation_block._equations_list, dict=True)
 
         return X[0]
 
@@ -186,7 +188,7 @@ class NLASolver(Solver):
 
     def _sympySolveMechanism(self):
 
-        X = sp.solve(self.problem.equation_block._equations_list, dict=True, quick=True)
+        X = sp.solve(self.problem.equation_block._equations_list, dict=True)
 
         return X[0]
 
@@ -257,9 +259,17 @@ class DSolver(Solver):
         Define the solver mechanism used for solution of the problem, given the name of desired mechanism in the instantiation of current Solver object
         """
 
-        if self.solver==None or self.solver == 'scipy':
+        if self.solver==None or self.solver == 'ODEINT':
 
-            return self._scipySolveMechanism
+            return integrate.odeint
+
+        if self.solver == 'RADAU':
+
+            return integrate.Radau
+
+        if self.solver == 'CVODE':
+
+            return self._assimuloSolveMechanism
 
     def _compileDiffSystemIntoFunction(self):
 
@@ -331,6 +341,10 @@ class DSolver(Solver):
         res = [eq_i.eval(y_map_, side='rhs') for eq_i in self.diffSystem]
 
         return res
+
+    def _assimuloSolveMechanism(self):
+
+        return
 
     def _scipySolveMechanism(self):
 
@@ -421,7 +435,7 @@ class DSolver(Solver):
 
         conf_args_ = conf_args['configuration_args']
 
-        def diffYinterfaceForSolver(Y, t, args=()):
+        def diffYinterfaceForScipySolvers(Y, t, args=()):
 
             Y_ = self._createMappingFromValues(self.diffY.keys(), Y)
 
@@ -448,6 +462,70 @@ class DSolver(Solver):
 
                 global_dict.update(args_)
 
+                #====== Reorder global_dict from _var_list from equation_block ========
+
+                keys_ = self.problem.equation_block._var_list
+                keys_.extend([i for i in list(global_dict.keys()) if i not in keys_])
+
+                global_dict = {k:global_dict[k] for k in keys_}
+
+                #======================================================================
+
+                #print("\n\n\n\t--------->var_list:",self.problem.equation_block._var_list)
+                #print("\n\n\n\t--------->global_dict:",global_dict)
+                #print("\n\n\n\t--------->list(global_dict.values()):",list(global_dict.values()))
+
+                #res = [f_i(*list(global_dict.values())) for f_i in self.compiled_equations]
+
+                res = self.compiled_equations(*list(global_dict.values()))
+
+                #print("\n\n\n\t--------->res(compiled):",res)
+                #print("\n\n\n\t--------->res(NOT compiled):",self._evaluateDiffYfromEquations(Y_, args_))
+
+                #sss=input("...")
+
+            else:
+
+                res = self._evaluateDiffYfromEquations(Y_, args_)
+
+            return res
+
+        def diffYinterfaceForAssimuloSolvers(t, Y, args=()):
+
+            Y_ = self._createMappingFromValues(self.diffY.keys(), Y)
+
+            for t_i in self.problem.time_variable_name:
+
+                has_t_i_var_declared_in_diff_eq = self.problem.equation_block._hasVarBeenDeclared(t_i, "differential")
+
+                #print("\n------>t_i = ",t_i)
+
+                #print("\n------> has? ", has_t_i_var_declared_in_diff_eq)
+
+                if has_t_i_var_declared_in_diff_eq is True:
+
+                    Y_.update({t_i:t})
+
+            if len(args)>0:
+                args_ = self._createMappingFromValues(self.args_names, args)
+            else:
+                args_ = {}
+
+            if self.additional_configurations['compile_equations'] == True:
+
+                global_dict = Y_.copy()
+
+                global_dict.update(args_)
+
+                #====== Reorder global_dict from _var_list from equation_block ========
+
+                keys_ = self.problem.equation_block._var_list
+                keys_.extend([i for i in list(global_dict.keys()) if i not in keys_])
+
+                global_dict = {k:global_dict[k] for k in keys_}
+
+                #======================================================================
+
                 #res = [f_i(*list(global_dict.values())) for f_i in self.compiled_equations]
 
                 res = self.compiled_equations(*list(global_dict.values()))
@@ -464,7 +542,7 @@ class DSolver(Solver):
 
         self.solver_mechanism = self.lookUpForSolver()
 
-        solver = self.solver_mechanism()
+        solver = self.solver_mechanism
 
         # Retrive initial conditions in the right order
 
@@ -474,19 +552,46 @@ class DSolver(Solver):
 
         if number_of_time_steps == None and self.end_time!= None:
 
-            number_of_time_steps = int(2*(end_time - initial_time))
+            number_of_time_steps = int(100*(end_time - initial_time))
 
         time_points = np.linspace(initial_time, end_time, number_of_time_steps+1)
 
-        Y = solver( diffYinterfaceForSolver,
-                    Y_0,
-                    time_points,
-                    **conf_args_
-                   )
+        #print("\n\n\n\t\t---------->", self.solver)
+
+        if self.solver == None or self.solver == 'ODEINT':
+
+            Y = solver( diffYinterfaceForScipySolvers,
+                        Y_0,
+                        time_points,
+                        **conf_args_
+                       )
+
+        if self.solver == 'CVODE':
+
+            exp_mod = Explicit_Problem(diffYinterfaceForAssimuloSolvers,
+                                        Y_0,
+                                        name='CVODE')
+            exp_sim = CVode(exp_mod)
+            exp_sim.discr='BDF'
+            exp_sim.iter='Newton'
+            exp_sim.maxord=2
+            exp_sim.atol=1e-10
+            exp_sim.rtol=1e-10
+
+            time_points, Y = exp_sim.simulate(end_time, ncp_list=time_points)
 
         # print("\ntime_points.T shape=%s\nY.T shape=%s"%(time_points.reshape(1,-1).T.shape,Y.T.shape))
 
-        to_register_ = np.hstack((time_points.reshape(-1,1), Y))
+        if self.solver == None or self.solver == 'ODEINT':
+
+            print("Y.shape=",Y.shape," time_points.shape=",time_points.shape)
+            print("RESULT: \n",Y)
+
+            to_register_ = np.hstack((time_points.reshape(-1,1), Y))
+
+        if self.solver == 'CVODE':
+
+            to_register_ = np.hstack((time_points.reshape(-1,1), Y))
 
         if self.additional_configurations['print_output'] == True:
 

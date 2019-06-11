@@ -13,6 +13,7 @@ class william_otto(Model):
         self.F_A = self.createParameter("F_A",dimless,"F_A")
         self.F_A.setValue(1.8)
         self.F_B = self.createVariable("F_B",dimless,"F_B")
+        #self.F_B.setValue(2.)
 
         self.X_P = self.createVariable("X_P",dimless,"X_P")
         self.P_P = self.createParameter("P_P",dimless,"P_P")
@@ -27,13 +28,12 @@ class william_otto(Model):
         self.C_B = self.createParameter("C_B",dimless,"C_B")
         self.C_B.setValue(114.34)
 
-        self.T = self.createVariable("T",dimless,"T")
-        #self.T.setValue(400.)
+        self.T = self.createParameter("T",dimless,"T")
+        self.T.setValue(95.)
         self.W = self.createParameter("W",dimless,"W")
-
         self.W.setValue(2104.7)
 
-        self.PHI =self.createVariable("I",dimless,"I")
+        self.PHI =self.createVariable("PHI",dimless,"PHI")
 
         a1=1.655e8
         a2=2.611e13
@@ -60,6 +60,10 @@ class william_otto(Model):
         #self.k1eq = self.createEquation("k1_eq","",self.k1() - self.k1_def)
 
         #self.k2eq = self.createEquation("k2_eq","",self.k2() - self.k2_def)
+
+        conserv_ = self.X_A() + self.X_B() + self.X_P() + self.X_E() - 1.
+
+        self.conservation = self.createEquation("conservation", "conservation", conserv_)
 
         mass_A = self.F_A() - (self.F_A()+self.F_B())*self.X_A() - self.k1*self.X_A()*self.X_B()*self.W()
 
@@ -112,6 +116,8 @@ class wo_opt_problem(OptimizationProblem):
         self.simulation_instance.runSimulation()
 
         result = self.simulation_instance.getResults('dict')
+
+        print("\n\n RESULT: ",result)
 
         f = -1*result['PHI_'+self.mod.name]
 
@@ -186,7 +192,7 @@ def run_wo_opt_study():
 
     #opt.optimization_problem.bounds = [[1.5624, 0., 0., 322.22],[2.0916, 7.0559, 100., 377.78]] #1.5624, 2.0916), (0, 7.0559), (0,100), (322.22, 377.78)]
 
-    print("=>optimization_problem bounds",opt.optimization_problem.get_bounds())
+    #print("=>optimization_problem bounds",opt.optimization_problem.get_bounds())
 
     opt.runOptimization()
 

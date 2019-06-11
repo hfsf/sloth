@@ -2,6 +2,8 @@
 # *coding:utf-8*
 
 import sympy as sp
+from sympy.utilities.autowrap import ufuncify
+import numpy as np
 from numpy import array as np_array
 from scipy.linalg import solve
 from collections import OrderedDict
@@ -209,9 +211,8 @@ class EquationBlock:
         if differential_form == 'elementary':
 
             fun_ = sp.lambdify(self._var_list,
-                               np_array(self._getEquationList(differential_form,                           side)
-                                    ),
-                               compilation_mechanism
+                               np_array(self._getEquationList(differential_form,side)),
+                               [{'Min':min, 'Max':max, 'Sin':np.sin, 'Cos':np.cos}, compilation_mechanism]
                         )
 
             return fun_
@@ -230,7 +231,7 @@ class EquationBlock:
 
             _fun_ = sp.lambdify(["t","y","yd"],
                                np_array(rewritten_eqs),
-                               compilation_mechanism
+                               [{'Min':min, 'Max':max, 'Sin':np.sin, 'Cos':np.cos}, compilation_mechanism]
                         )
 
             #Provide result as numpy.array
@@ -295,7 +296,15 @@ class EquationBlock:
 
             #print("\n======>Equation: ", eq._getSymbolicObject())
 
-            for eq_i in eq._getSymbolicObject().args:
+            try:
+
+                equation_members_ = eq._getSymbolicObject().args
+
+            except:
+
+                equation_members_ = []
+
+            for eq_i in equation_members_:
 
                 #print("\n\t======>Member: ",eq_i)
 

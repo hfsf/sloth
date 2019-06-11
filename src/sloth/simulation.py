@@ -133,7 +133,7 @@ class Simulation:
 
         else:
 
-            if time_variable_name is None:
+            if time_variable_name is None and is_dynamic is True:
 
                 time_variable_name = self.problem.time_variable_name
 
@@ -189,13 +189,13 @@ class Simulation:
         elif problem_type == "differential":
 
             solver_mechanism = solvers._createSolver(self.problem, self.configurations)
+
         elif problem_type == "differential-algebraic":
 
             solver_mechanism = solvers._createSolver(self.problem, self.configurations)
         else:
 
             raise UnexpectedValueError("EquationBlock")
-
 
         dof_analist = analysis.DOF_Analysis(self.problem, number_parameters_to_optimize)
 

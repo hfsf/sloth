@@ -10,6 +10,10 @@ import pygmo as pg
 import json
 import numpy as np
 from time import time, strftime, gmtime
+from .model import Model
+from .problem import Problem
+from .simulation import Simulation
+import tqdm
 #import ipdb
 
 class OptimizationProblem:
@@ -126,7 +130,6 @@ class OptimizationProblem:
 
         self._is_ready = True
 
-
 class Optimization:
 
     """
@@ -228,15 +231,15 @@ class Optimization:
         if optimization_configuration is {} or optimization_configuration is None:
 
             self.optimization_configuration = {'number_of_individuals':50,
-                                               'number_of_generations':3,
-                                               'crossover_rate':.95,
-                                               'mutation_rate':.02,
+                                               'number_of_generations':300,
+                                               'crossover_rate':.6,
+                                               'mutation_rate':.04,
                                                'elitism':1,
                                                'crossover_type':'exponential',
                                                'mutation_type':'gaussian',
                                                'selection_type':'tournament',
                                                'selection_param':4,
-                                               'scale_factor':.8,
+                                               'scale_factor':.5,
                                                'variant_de':2,
                                                'ftol_de':1e-10,
                                                'xtol_de':1e-10,
@@ -529,4 +532,233 @@ class Optimization:
 
             return (self.best_parameters, self.best_fitness)
 
+'''
+======================== FOR FUTURE IMPLEMENTATIONS =================================
+class DRTO:
 
+    """
+    Define mechanisms for DRTO (Dynamic Real-Time Optmization)
+    """
+
+    def __init__(self, duration_of_interval, process_model, optimization_parameters, optimization_parameters_constraints, internal_optimization_problem, start_time, end_time, initial_conditions, dimension, number_of_states, output_headers, variable_name_map, verbosity=1):
+
+        """
+        Instantiate DRTO
+
+        :param float duration_of_interval:
+            Duration of the intervals of the DRTO
+
+        :param Model process_model:
+            Model to be optimized
+
+        :param list(Quantity) optimization_parameters:
+            List of parameters that will be optimized for each interval
+
+        :params tuple([],[]) optimization_parameter_constraints:
+            Tuple containing constraints for the optimization parameters, in a form of two lists: one for lower bound, other for the upper bound.
+
+        :param OptimizationProblem internal_optimization_problem:
+            Class for OptimizationProblem (eg:cost function analysis) to be performed for each DRTO interval
+
+        :param float start_time:
+            Start time of the DRTO
+
+        :param float end_time:
+            End time of the DRTO
+
+        :param dict(float) initial_conditions:
+            Initial conditions for the process
+
+        :param int dimension:
+            Dimension (number of degrees of freedom) of the incidental optimization problem of the DRTO
+
+        :param int number_of_states:
+            Number of states (dimension) of the problem, for storage of the output information for each interval of the DRTO
+
+        :param list(str) output_headers:
+            Headers for the output of the model (time included)
+
+        :param dict(str) variable_name_map:
+            Dict containing map between the original variable names and the names for reference on the domain
+
+        :param int verbosity:
+            Level of verbosity (0- No messages, 1-Critical messages only, 2- All messages)
+        """
+
+        if not end_time > start_time:
+
+            raise UnexpectedValueError("end_time > start_time")
+
+        self.duration_of_interval = duration_of_interval
+
+        self.number_of_intervals = int((end_time - start_time)/duration_of_interval)
+
+        self.process_model = process_model
+
+        self.optimization_parameters = optimization_parameters
+
+        self.internal_optimization_problem = internal_optimization_problem
+
+        self.start_time = start_time
+
+        self.end_time = end_time
+
+        self.initial_conditions = initial_conditions
+
+        self.dimension = dimension
+
+        self.number_of_states = number_of_states
+
+        self.output_headers = output_headers
+
+        self.variable_name_map = variable_name_map
+
+        self.verbosity = verbosity
+
+        #===========================================================
+
+        try:
+
+            self.time_variable_name = process_model.time_variable_name
+
+        except:
+
+            raise AbsentRequiredObjectError("Transient model")
+
+        self.opt_problem_for_interval = self._createOptProblemForInterval(time, time+self.duration_of_interval, self.initial_conditions)
+
+        self.opt_params = np.zeros((self.number_of_intervals, dimension))
+
+        self.state_storage = np.array([])
+
+    def _createSimulationInstance(self, start_time, end_time, initial_conditions, optimized_parameters):
+
+        mod = self.process_model
+        mod()
+
+        problem = Problem("problem_DRTO", "DRTO Problem")
+
+        problem.addModels(mod)
+
+        problem.setVariableName([self.time_variable_name])
+
+        problem.resolve()
+
+        initial_conditions_as_dict = {k:vi for k,vi in zip(list(self.initial_conditions.keys()),initial_conditions)}
+
+        problem.setInitialConditions(initial_conditions_as_dict)
+
+        _ = [i.setValue(o) for i,o in zip(self.optimization_parameters, optimized_parameters)]
+
+        sim = Simulation("problem", "Simulation of the problem")
+
+        sim.setProblem(prob)
+
+        sim.setConfigurations(initial_time=start_time, end_time=end_time, domain=mod.dom, time_variable_name = self.time_variable_name, is_dynamic=True, print_output=False, compile_equations=True, output_header=self.output_headers, variable_name_map=self.variable_name_map)
+
+        return sim
+
+    def _createptProblemForInterval(self, start_time_for_interval, end_time_for_interval, initial_conditions_for_interval):
+
+        mod = self.process_model
+        mod()
+
+        #Instantiate objects
+
+        sim = Simulation("problem_DRTO", "DRTO Problem")
+
+        sim.setConfigurations(initial_time=start_time_for_interval, end_time=end_time_for_interval, domain=mod.dom, time_variable_name=self.time_variable_name, is_dynamic=True, print_output=False, compile_equations=True, output_headers=self.output_headers, variable_name_map=self.variable_name_map)
+
+        problem = Problem("problem_DRTO", "DRTO Problem")
+
+        problem.addModels(mod)
+
+        problem.setVariableName([self.time_variable_name])
+
+        problem.resolve()
+
+        problem.setInitialConditions(initial_conditions_for_interval)
+
+        sim.setProblem(prob)
+
+        internal_optimization_problem = self.internal_optimization_problem(self.dimension, mod)
+
+        internal_optimization_problem()
+
+        #Create an optimization study
+
+        optimization_study = Optimization(simulation=sim, optimization_problem=internal_optimization_problem, simulation_configuration=None, optimization_parameters=self.optimization_parameters, constraints=self.constraints)
+
+        optimization_study.optimization_problem()
+
+        return optimization_study
+
+    def solve(self):
+
+        time = start_time
+
+        if self.verbosity >0:
+
+            print("\n Starting DRTO.")
+
+        if self.verbosity > 0 :
+
+            iterator = tqdm(range(self.number_of_intervals))
+
+        else:
+
+            iterator = range(self.number_of_intervals)
+
+        for k in iterator:
+
+            if self.verbosity > 0:
+
+                print("\n\t Starting DRTO for interval number {} [duration: {}~{}]".format(k+1, time, time + self.duration_of_interval))
+
+            if k == 0 :
+
+                #insert here the code, man
+
+                opt_problem_for_interval = self._createOptProblemForInterval(time, time+self.duration_of_interval, self.initial_conditions)
+                opt_problem_for_interval.runOptimization()
+
+                #extract params from solved opt_problem_for_interval
+
+                results = opt_problem_for_interval.getResults()
+
+                self.opt_params[k,:] = results[0]
+
+                #place here the results obtained for further expansion
+
+                sim_ = self._createSimulationInstance(time, time+self.duration_of_interval, self.initial_conditions, results[0]).runSimulation()
+                sim_results = sim_.getResults()
+
+                self.state_storage = np.array(sim_results)
+
+            else:
+
+                #Expand it adding new results
+
+                opt_problem_for_interval = self._createOptProblemForInterval(time, time+self.duration_of_interval, self.state_storage[-1])
+                opt_problem_for_interval.runOptimization()
+
+                results = opt_problem_for_interval.getResults()
+
+                self.opt_params[k,:] = results[0]
+
+                sim_ = self._createSimulationInstance(time, time+self.duration_of_interval, self.state_storage[-1], results[0]).runSimulation()
+                sim_results = sim_.getResults()[-1]
+
+                self.state_storage = np.vstack((self.state_storage, sim_results))
+
+            #Increment time
+
+            time += self.duration_of_interval
+
+            #Place the new initial state for the opt_problem_for_interval
+
+    def getResults(self):
+
+        return(self.state_storage,  self.opt_params)
+=================================================================================================
+'''
