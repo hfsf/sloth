@@ -217,12 +217,6 @@ class Model:
 
         self.totalizeOutletsFunction = function_for_outlets_totalization
 
-    def _infoModelReport_(self):
-
-        analist = analysis.Analysis()
-
-        print(analist.modelReport(self))
-
     def _gatherObjectsInfo_(self):
 
         """

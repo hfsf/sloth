@@ -204,7 +204,7 @@ class DSolver(Solver):
     """
     Defines Orinary Differential Solver class
 
-    * TODO: Include terminate clause in integrate method by using terminate opitional argument provided for odespy solvers. The terminate should receive the data in odespy format (Y,t, args), thus, a convenience function should be provided to allow the user to express its conditional function using a dictionary approach (eg: vars['x'] > 0)
+    * TODO: Include terminate clause in integrate method by using terminate optional argument provided for odespy solvers. The terminate should receive the data in odespy format (Y,t, args), thus, a convenience function should be provided to allow the user to express its conditional function using a dictionary approach (eg: vars['x'] > 0)
     """
 
     def __init__(self, problem, solver=None, additional_configurations={}):
@@ -212,6 +212,8 @@ class DSolver(Solver):
         super().__init__(problem, solver)
 
         self.domain = additional_configurations['domain']
+
+        self.times_for_solution = additional_configurations['times_for_solution']
 
         time_variable_name = additional_configurations['time_variable_name']
 
@@ -241,7 +243,7 @@ class DSolver(Solver):
 
         # Differently from another solvers, solver_mechanism is not initialized because this is done in the solving time (Simulation.runSimulation), where the user can set additional args and configuration args
 
-        self.solver_mechanism =  None
+        self.solver_mechanism = solver #None
 
         self.additional_configurations = additional_configurations
 
@@ -259,7 +261,7 @@ class DSolver(Solver):
         Define the solver mechanism used for solution of the problem, given the name of desired mechanism in the instantiation of current Solver object
         """
 
-        if self.solver==None or self.solver == 'ODEINT':
+        if self.solver == None or self.solver == 'ODEINT':
 
             return integrate.odeint
 
@@ -433,6 +435,8 @@ class DSolver(Solver):
 
         number_of_time_steps = conf_args['number_of_time_steps']
 
+        times_for_solution = conf_args['times_for_solution']
+
         conf_args_ = conf_args['configuration_args']
 
         def diffYinterfaceForScipySolvers(Y, t, args=()):
@@ -552,9 +556,15 @@ class DSolver(Solver):
 
         if number_of_time_steps == None and self.end_time!= None:
 
-            number_of_time_steps = int(100*(end_time - initial_time))
+            number_of_time_steps = 100#int(1000*(end_time - initial_time))
 
-        time_points = np.linspace(initial_time, end_time, number_of_time_steps+1)
+        if self.times_for_solution is None:
+
+            time_points = np.linspace(initial_time, end_time, number_of_time_steps+1)
+
+        else:
+
+            time_points = times_for_solution
 
         #print("\n\n\n\t\t---------->", self.solver)
 
@@ -574,22 +584,33 @@ class DSolver(Solver):
             exp_sim = CVode(exp_mod)
             exp_sim.discr='BDF'
             exp_sim.iter='Newton'
-            exp_sim.maxord=2
+            exp_sim.maxord=5
             exp_sim.atol=1e-10
             exp_sim.rtol=1e-10
 
             time_points, Y = exp_sim.simulate(end_time, ncp_list=time_points)
 
+            time_points = np.array(time_points)
+            Y = np.array(Y)
+
         # print("\ntime_points.T shape=%s\nY.T shape=%s"%(time_points.reshape(1,-1).T.shape,Y.T.shape))
+
+        to_register_ = None
 
         if self.solver == None or self.solver == 'ODEINT':
 
-            print("Y.shape=",Y.shape," time_points.shape=",time_points.shape)
-            print("RESULT: \n",Y)
+            # print("Y.shape=",Y.shape," time_points.shape=",time_points.shape)
+            # print("RESULT: \n",Y)
 
             to_register_ = np.hstack((time_points.reshape(-1,1), Y))
 
         if self.solver == 'CVODE':
+
+            # print("Y = ",Y)
+            # print("time_points = ",time_points)
+
+            #print("Y.shape=",Y.shape," time_points.shape=",time_points.shape)
+            #print("RESULT: \n",Y)
 
             to_register_ = np.hstack((time_points.reshape(-1,1), Y))
 
@@ -604,6 +625,8 @@ class DSolver(Solver):
                 tab.add_row(np.concatenate(([time_points[i]], Y[i,:])))
 
             print(tab)
+
+        print("\n\n\n--->TO_REGISTER_ = ",to_register_, "\n\n ---> SOLVER = ",self.solver)
 
         self.domain._register(to_register_)
 

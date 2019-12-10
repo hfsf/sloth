@@ -94,7 +94,7 @@ class Simulation:
                           end_time=None,
                           linear_solver='sympy',
                           nonlinear_solver='sympy',
-                          differential_solver='scipy',
+                          differential_solver='ODEINT',
                           differential_algebraic_solver='IDA',
                           problem_type=None,
                           is_dynamic=False,
@@ -112,7 +112,8 @@ class Simulation:
                           compilation_mechanism="numpy",
                           definition_dict=None,
                           configurations_file=None,
-                          number_parameters_to_optimize=0):
+                          number_parameters_to_optimize=0,
+                          times_for_solution=None):
 
         """
         Set the configurations of the current simulation using the defined parameters
@@ -157,7 +158,8 @@ class Simulation:
                                'output_headers':output_headers,
                                'variable_name_map':variable_name_map,
                                'compilation_mechanism':compilation_mechanism,
-                               'number_parameters_to_optimize':number_parameters_to_optimize
+                               'number_parameters_to_optimize':number_parameters_to_optimize,
+                               'times_for_solution':times_for_solution
                                }
 
         #print("additional_conf is: %s"%additional_conf)

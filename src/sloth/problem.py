@@ -70,6 +70,10 @@ class Problem:
 
         #self.connection_graph = ConnectionGraph()
 
+    def _infoProblemReport_(self):
+
+        print(analysis.Analysis().problemReport(self))
+
     def setTimeVariableName(self, name):
 
         if isinstance(name, list) is False:

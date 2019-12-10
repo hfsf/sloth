@@ -230,8 +230,8 @@ class Optimization:
 
         if optimization_configuration is {} or optimization_configuration is None:
 
-            self.optimization_configuration = {'number_of_individuals':50,
-                                               'number_of_generations':300,
+            self.optimization_configuration = {'number_of_individuals':10,
+                                               'number_of_generations':100,
                                                'crossover_rate':.6,
                                                'mutation_rate':.04,
                                                'elitism':1,
@@ -240,9 +240,9 @@ class Optimization:
                                                'selection_type':'tournament',
                                                'selection_param':4,
                                                'scale_factor':.5,
-                                               'variant_de':2,
-                                               'ftol_de':1e-10,
-                                               'xtol_de':1e-10,
+                                               'variant_de':10,
+                                               'ftol_de':1e-8,
+                                               'xtol_de':1e-8,
                                                'omega_pso':0.7298,
                                                'eta1_pso':2.05,
                                                'eta2_pso':2.05,
@@ -337,7 +337,25 @@ class Optimization:
                 #=================================================================
 
 
-                algo = pg.algorithm(pg.sga(gen = gen, cr = cr, m = mr, elitism = elitism, mutation=mutation_type, selection=selection_type, crossover=crossover_type, param_s=selection_param))
+                algo = pg.algorithm(pg.sga(gen = gen, cr = cr, eta_c=1., m = mr, param_m=1., param_s=selection_param, crossover=crossover_type, mutation=mutation_type, selection=selection_type))
+
+                #isl = pg.island(algo, self.optimization_problem, ind)
+
+                self.optimization_mechanism = algo
+
+            if optimizer == 'sade':
+
+                gen = self.optimization_configuration['number_of_generations']
+
+                de_ftol = self.optimization_configuration['ftol_de']
+
+                de_xtol = self.optimization_configuration['xtol_de']
+
+                ind = self.optimization_configuration['number_of_individuals']
+
+                #==================================================================
+
+                algo = pg.algorithm(pg.de1220(gen=gen, ftol=de_ftol, xtol=de_xtol))
 
                 #isl = pg.island(algo, self.optimization_problem, ind)
 
@@ -533,7 +551,7 @@ class Optimization:
             return (self.best_parameters, self.best_fitness)
 
 '''
-======================== FOR FUTURE IMPLEMENTATIONS =================================
+#======================== FOR FUTURE IMPLEMENTATIONS =================================
 class DRTO:
 
     """
@@ -658,7 +676,7 @@ class DRTO:
 
         return sim
 
-    def _createptProblemForInterval(self, start_time_for_interval, end_time_for_interval, initial_conditions_for_interval):
+    def _createOptProblemForInterval(self, start_time_for_interval, end_time_for_interval, initial_conditions_for_interval):
 
         mod = self.process_model
         mod()
@@ -760,5 +778,6 @@ class DRTO:
     def getResults(self):
 
         return(self.state_storage,  self.opt_params)
-=================================================================================================
+
+#=================================================================================================
 '''

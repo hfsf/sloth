@@ -1,6 +1,6 @@
 
 # *coding:utf-8*
-
+import math
 import sympy as sp
 from sympy.utilities.autowrap import ufuncify
 import numpy as np
@@ -8,6 +8,7 @@ from numpy import array as np_array
 from scipy.linalg import solve
 from collections import OrderedDict
 from .variable import Variable
+from numba import jit
 
 class EquationBlock:
 
@@ -52,6 +53,8 @@ class EquationBlock:
         self._equation_groups = OrderedDict({'linear':[], 'nonlinear':[], 'differential':[]})
 
         self._assignEquationGroups()
+
+        self._fs = None
 
     def _assignEquationGroups(self):
 
@@ -215,7 +218,27 @@ class EquationBlock:
                                [{'Min':min, 'Max':max, 'Sin':np.sin, 'Cos':np.cos}, compilation_mechanism]
                         )
 
+            return jit(fun_)
+
+            '''
+            self._fs = [None for i in self._getEquationList(differential_form,side)]
+
+            #print("\n\n\t==>symbols = ",sp.symbols(self._var_list))
+
+            for i, eq_i in enumerate(self._getEquationList(differential_form,side)):
+
+                self._fs[i] = ufuncify(sp.symbols(self._var_list), eq_i, backend='f2py')
+
+            def fun_(*vars):
+
+                #print("\n\n\t======>vars = ",vars)
+
+                rtrn = [fs_i(*vars)[-1] for fs_i in self._fs]
+
+                return rtrn
+
             return fun_
+            '''
 
         if differential_form == 'residual':
 
@@ -231,7 +254,7 @@ class EquationBlock:
 
             _fun_ = sp.lambdify(["t","y","yd"],
                                np_array(rewritten_eqs),
-                               [{'Min':min, 'Max':max, 'Sin':np.sin, 'Cos':np.cos}, compilation_mechanism]
+                               [{'Min':min, 'Max':max, 'Sin':math.sin, 'Cos':math.cos}, compilation_mechanism]
                         )
 
             #Provide result as numpy.array

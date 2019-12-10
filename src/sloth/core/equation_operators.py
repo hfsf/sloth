@@ -46,7 +46,7 @@ def wrapper(own_func, obj, base_func, latex_func_name=None, equation_type=None, 
                                   variable_map={},
                                   unit_object=dimless,
                                   latex_text=f_name(latex_func_name, str(obj)),
-                                  repr_symbolic=base_func(obj, evaluate=False)
+                                  repr_symbolic=base_func(obj, *args,evaluate=False)
                                 )
 
             return enode_

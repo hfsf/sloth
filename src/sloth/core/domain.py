@@ -171,12 +171,13 @@ class Domain:
 
             var = list(self.independent_vars.values())[-1]
 
-        if self.values[var.name].values.size ==0 :
+        if self.values[var.name].values.size ==0:
 
-            self.values[var.name] =  pd.DataFrame(values,columns=self.values[var.name].columns)
+            self.values[var.name] = pd.DataFrame(values, columns=self.values[var.name].columns)
+
         elif self.values[var.name].values.size > 0 and values.shape[1] == len(self.independent_vars.keys())+len(self.dependent_objs.keys()):
 
-            self.values[var.name] =  pd.DataFrame(np.vstack((self.values[var.name].values, values)),columns=self.values[var.name].index)
+            self.values[var.name] = pd.DataFrame(np.vstack((self.values[var.name].values, values)),columns=self.values[var.name].index)
 
         else:
 
