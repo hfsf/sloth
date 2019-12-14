@@ -22,7 +22,7 @@ install:
   #Adding conda-forge channel
   - conda config --add channels conda-forge
   # Replace dep1 dep2 ... with your dependencies
-  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION cython numpy scipy assimulo pygmo>2.7 matplotlib seaborn sympy==1.3 prettytable pandas pytest mpmath numexpr
+  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION cython numpy scipy assimulo pygmo>2.7 matplotlib seaborn sympy==1.3 prettytable pandas pytest mpmath numexpr numba
   - pip install thermo pygraphviz
   - source activate test-environment
   - python setup.py install
