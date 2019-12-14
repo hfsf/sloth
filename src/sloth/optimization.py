@@ -3,17 +3,19 @@
 """
 Define optimization mechanisms
 """
+import copy
+import json
+from time import time, strftime, gmtime
+
+import numpy as np
+import pygmo as pg
+import pandas as pd
+
+
 from .core.error_definitions import *
 from .core.quantity import Quantity
-import copy
-import pygmo as pg
-import json
-import numpy as np
-from time import time, strftime, gmtime
-from .model import Model
-from .problem import Problem
-from .simulation import Simulation
-import tqdm
+
+
 #import ipdb
 
 class OptimizationProblem:
@@ -224,6 +226,10 @@ class Optimization:
 
         self.optimization_mechanism = None
 
+        self._pagmo_selected_algorithm = None
+
+        self._pagmo_selected_algorithm_log_columns = None
+
         self.optimization_configuration = optimization_configuration
 
         print("\n\n==>optimization_configuration: ",self.optimization_configuration)
@@ -336,6 +342,7 @@ class Optimization:
 
                 #=================================================================
 
+                self._pagmo_selected_algorithm = pg.sga
 
                 algo = pg.algorithm(pg.sga(gen = gen, cr = cr, eta_c=1., m = mr, param_m=1., param_s=selection_param, crossover=crossover_type, mutation=mutation_type, selection=selection_type))
 
@@ -354,6 +361,10 @@ class Optimization:
                 ind = self.optimization_configuration['number_of_individuals']
 
                 #==================================================================
+
+                self._pagmo_selected_algorithm = pg.de1220
+
+                self._pagmo_selected_algorithm_log_columns = ['Gen', 'Fevals', 'Best', 'F', 'CR', 'Variant', 'dx', 'df']
 
                 algo = pg.algorithm(pg.de1220(gen=gen, ftol=de_ftol, xtol=de_xtol))
 
@@ -378,6 +389,10 @@ class Optimization:
                 ind = self.optimization_configuration['number_of_individuals']
 
                 #==================================================================
+
+                self._pagmo_selected_algorithm = pg.de
+
+                self._pagmo_selected_algorithm_log_columns = ['Gen', 'Fevals', 'Best', 'F', 'CR', 'dx', 'df']
 
                 algo = pg.algorithm(pg.de(gen=gen, F=f_w, CR = cr, variant=de_variant, ftol=de_ftol, xtol=de_xtol))
 
@@ -407,6 +422,10 @@ class Optimization:
                 ind = self.optimization_configuration['number_of_individuals']
 
                 #==================================================================
+
+                self._pagmo_selected_algorithm = pg.pso_gen
+
+                self._pagmo_selected_algorithm_log_columns = ['Gen', 'Fevals', 'gbest', 'Mean Vel.', 'Mean lbest', 'Avg. Dist.']
 
                 algo = pg.algorithm(pg.pso_gen(gen=gen, omega=omega, eta1=eta1, eta2=eta2, max_vel=vcoeff,  variant=pso_variant))
 
@@ -487,7 +506,11 @@ class Optimization:
             pass
 
 
-    def runOptimization(self, print_output=False, report_frequency=0):
+    def getOptimizationLog(self):
+
+        return self.optimization_log
+
+    def runOptimization(self, print_output=False, report_frequency=0, optimization_log = True):
 
         if self._performSaneTests() == True:
 
@@ -520,6 +543,12 @@ class Optimization:
             end_time = time()
 
             elapsed_time = end_time - start_time
+
+            if optimization_log is True:
+
+                self.optimization_log = self.optimization_mechanism.extract(self._pagmo_selected_algorithm).get_log()
+
+                self.optimization_log = pd.DataFrame(self.optimization_log, columns=self._pagmo_selected_algorithm_log_columns)
 
             print("\n\tOptimization ended. \n\t Elapsed time:{}".format(strftime("%H:%M:%S", gmtime(elapsed_time))))
 

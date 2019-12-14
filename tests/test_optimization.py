@@ -218,8 +218,8 @@ def test_simulation_properties(mod, prob, sim):
 
     assert sim.problem == prob
 
-@pytest.mark.parametrize("compile_equations",[True,False])
-def test_simulation_result(mod, prob, sim, compile_equations):
+#@pytest.mark.parametrize("compile_equations",[True,False])
+def test_simulation_result(mod, prob, sim, compile_equations=True):
 
     mod.a.setValue(1.) # set value of parameter defined for optimization
 
@@ -283,6 +283,8 @@ def test_optimization(mod, prob, sim, opt, prob_opt):
     prob_opt()
 
     opt.runOptimization()
+
+    print(opt.getOptimizationLog())
 
     with open("test_log.backup", "w") as openfile:
 

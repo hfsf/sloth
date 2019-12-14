@@ -626,7 +626,7 @@ class DSolver(Solver):
 
             print(tab)
 
-        print("\n\n\n--->TO_REGISTER_ = ",to_register_, "\n\n ---> SOLVER = ",self.solver)
+        #print("\n\n\n--->TO_REGISTER_ = ",to_register_, "\n\n ---> SOLVER = ",self.solver)
 
         self.domain._register(to_register_)
 
