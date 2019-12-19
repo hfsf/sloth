@@ -188,7 +188,17 @@ class NLASolver(Solver):
 
     def _sympySolveMechanism(self):
 
+        var_names_ = [i for i in self.problem.equation_block._var_list]
+
+        guess_ = (.6)
+
+        #X = sp.nonlinsolve(self.problem.equation_block._equations_list, var_names_)#, dict=True)
+
+        #X = sp.nsolve(self.problem.equation_block._equations_list, var_names_, 0.65)
+
         X = sp.solve(self.problem.equation_block._equations_list, dict=True)
+
+        print("\n\n --> X = ",X)
 
         return X[0]
 
@@ -202,7 +212,7 @@ class NLASolver(Solver):
 class DSolver(Solver):
 
     """
-    Defines Orinary Differential Solver class
+    Defines Ordinary Differential Solver class
 
     * TODO: Include terminate clause in integrate method by using terminate optional argument provided for odespy solvers. The terminate should receive the data in odespy format (Y,t, args), thus, a convenience function should be provided to allow the user to express its conditional function using a dictionary approach (eg: vars['x'] > 0)
     """

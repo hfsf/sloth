@@ -356,9 +356,11 @@ class Unit:  # New-style class syntax
         :rtype bool:
         """
 
-        keys_ = sorted(self.dimension.keys())
+        #keys_ = sorted(self.dimension.keys())
 
         """
+        TODO: Deprecated ortographic comparison in favor of numerical comparison of all dimensions. Remove deprecated code in future versions
+        
         Syntatic convenience vodoo for conversion of dimensions of both units to one single str object.
         Thus the comparison between the two Unit objects is easy
 
@@ -368,8 +370,10 @@ class Unit:  # New-style class syntax
         
         """
 
-        dim_1 = "".join([str(float(self.dimension[idx_i])) for idx_i in keys_])
+        #dim_1 = "".join([str(float(self.dimension[idx_i])) for idx_i in keys_])
 
-        dim_2 = "".join([str(float(other_unit.dimension[idx_i])) for idx_i in keys_])
+        #dim_2 = "".join([str(float(other_unit.dimension[idx_i])) for idx_i in keys_])
 
-        return dim_1 == dim_2
+        #return dim_1 == dim_2
+
+        return all(self.dimension[idx] == other_unit.dimension[idx] for idx in sorted(self.dimension.keys()))

@@ -326,7 +326,13 @@ class Simulation:
                 except:
 
                     print("Output = ",self.output)
-                    print("Output values = ",self.output.values())
+
+                    try:
+                        print("Output values = ",self.output.values())
+
+                    except:
+
+                        pass
 
                     raise TypeError("!")
 
