@@ -95,6 +95,15 @@ class Solver:
 
         self.solver_mechanism = None
 
+    def _printSolvingInfo(self):
+
+        """
+        Print information about current equation sytem etc
+        :return:
+        """
+
+        pass
+
 
 class LASolver(Solver):
 
@@ -172,37 +181,29 @@ class NLASolver(Solver):
 
         """
         Define the solver mechanism used for solution of the problem, given the name of desired mechanism in the instantiation of current Solver object
+        Uses the mechanism provided by the pyneqsys package
         """
 
-        if self.solver==None or self.solver == 'sympy':
+        if self.solver==None or self.solver == '*':
 
-            return self._sympySolveMechanism
+            return self._defaultSolveMechanism
 
-        if self.solver=='scipyLU':
 
-            pass
-
-        if self.solver=='scipyNewtonKrylov':
-
-            pass
-
-    def _sympySolveMechanism(self):
+    def _defaultSolveMechanism(self):
 
         var_names_ = [i for i in self.problem.equation_block._var_list]
 
-        guess_ = (.6)
+        guess_ = [0.]*len(var_names_)
 
-        #X = sp.nonlinsolve(self.problem.equation_block._equations_list, var_names_)#, dict=True)
-
-        #X = sp.nsolve(self.problem.equation_block._equations_list, var_names_, 0.65)
-
-        X = sp.solve(self.problem.equation_block._equations_list, dict=True)
-
-        print("\n\n --> X = ",X)
+        # === INSERT HERE CODE TO RETURN THE SOLUTION ===
 
         return X[0]
 
-    def solve(self, conf_args={}):
+    def solve(self, verbose=True):
+
+        if verbose is True:
+
+            self._printSolvingInfo()
 
         X = self.solver_mechanism()
 
