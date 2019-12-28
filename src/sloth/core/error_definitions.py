@@ -98,6 +98,27 @@ class UnresolvedPanicError(Exception):
 
         return(err_msg)
 
+class NumericalError(Exception):
+
+    """
+    Error raised by unsolvable numeric problems. Ideally this exception would never arises.
+    """
+
+    def __init__(self, msg=''):
+
+        self.msg=msg
+
+    def __str__(self):
+
+        if self.msg is  '':
+
+            err_msg = "NumericalError.%s\n This should not have ocurrred. \n " % self.msg
+        else:
+
+            err_msg = self.msg
+
+        return(err_msg)
+
 
 
 class NonDimensionalArgumentError(Exception):

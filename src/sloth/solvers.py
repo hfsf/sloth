@@ -14,9 +14,11 @@ import scipy.integrate as integrate
 from assimulo.problem import Explicit_Problem
 from assimulo.solvers import CVode
 from collections import OrderedDict
-from .core.error_definitions import AbsentRequiredObjectError, UnexpectedValueError, UnresolvedPanicError
+from .core.error_definitions import AbsentRequiredObjectError, UnexpectedValueError, NumericalError
 from .core.equation_operators import *
 import prettytable
+
+from pyneqsys.symbolic import SymbolicSys
 
 
 def _createSolver(problem, additional_configurations):
@@ -175,6 +177,8 @@ class NLASolver(Solver):
 
         super().__init__(problem, solver)
 
+        self.expected_solver_names = ['*']
+
         self.solver_mechanism = self.lookUpForSolver()
 
     def lookUpForSolver(self):
@@ -188,16 +192,36 @@ class NLASolver(Solver):
 
             return self._defaultSolveMechanism
 
+        else:
+
+            raise AbsentRequiredObjectError("element from {}" % self.expected_solver_names, self.solver)
+
 
     def _defaultSolveMechanism(self):
 
-        var_names_ = [i for i in self.problem.equation_block._var_list]
+        var_names = [i for i in self.problem.equation_block._var_list]
 
-        guess_ = [0.]*len(var_names_)
+        equations_list = self.problem.equation_block._equations_list
 
-        # === INSERT HERE CODE TO RETURN THE SOLUTION ===
+        # TODO: Improve initial guess determination and/or employ a more robust solver
 
-        return X[0]
+        guess = [1.e-2]*len(var_names)
+
+        eqSys = SymbolicSys(var_names, equations_list)
+
+        x_out, sol_state = eqSys.solve(guess, solver='scipy', tol=1e-6)
+
+        print(sol_state)
+
+        if sol_state['success'] is True:
+
+            x_out_dict = {var_i: val_i for var_i, val_i in zip(var_names,x_out)}
+
+            return x_out_dict
+
+        else:
+
+            raise NumericalError()
 
     def solve(self, verbose=True):
 

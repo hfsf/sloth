@@ -93,7 +93,7 @@ class Simulation:
                           initial_time=0.,
                           end_time=None,
                           linear_solver='sympy',
-                          nonlinear_solver='sympy',
+                          nonlinear_solver='*',
                           differential_solver='ODEINT',
                           differential_algebraic_solver='IDA',
                           problem_type=None,
