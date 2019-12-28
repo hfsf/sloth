@@ -252,7 +252,7 @@ class DSolver(Solver):
 
         time_variable_name = additional_configurations['time_variable_name']
 
-        arg_names = additional_configurations['arg_names'] 
+        arg_names = additional_configurations['arg_names']
 
         if isinstance(time_variable_name, list):
 
