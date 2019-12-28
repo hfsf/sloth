@@ -25,6 +25,7 @@ install:
   - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION cython numpy scipy assimulo pygmo>2.7 matplotlib seaborn sympy==1.3 prettytable pandas pytest mpmath numexpr numba
   - pip install thermo pygraphviz
   - pip install pyneqsys
+  - pip install jupyter>=5.3.4
   - source activate test-environment
   - python setup.py install
 
