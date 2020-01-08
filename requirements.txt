@@ -3,7 +3,6 @@ numpy>=1.13.3
 sympy
 prettytable
 pytest>=3.8.0
-seaborn
 matplotlib
 assimulo
 pandas
@@ -15,4 +14,3 @@ sphinx_rtd_theme
 thermo
 numba
 pyneqsys
-jupyter>=5.3.4

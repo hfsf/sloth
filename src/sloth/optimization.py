@@ -15,6 +15,8 @@ import pandas as pd
 from .core.error_definitions import *
 from .core.quantity import Quantity
 
+import matplotlib.pyplot as plt
+from datetime import datetime
 
 #import ipdb
 
@@ -138,7 +140,7 @@ class Optimization:
     Define optimization mechanisms. Given variables for an subspecified system, the optimizator will work on the variables or parameters subjected to study towards the minimization (or maximization) of an objective function.
     """
 
-    def __init__(self, simulation, optimization_problem, optimization_parameters, simulation_configuration=None, constraints=None, is_maximization=False, optimizer='de', constraints_fun=None, constraints_additional_args=[], additional_args=[], objective_function=None,optimization_configuration={}):
+    def __init__(self, simulation, optimization_problem, optimization_parameters, simulation_configuration=None, constraints=None, is_maximization=False, optimizer='de', constraints_fun=None, constraints_additional_args=[], additional_args=[], objective_function=None, optimization_configuration=None):
 
         """
         Instantiate Optimization
@@ -230,33 +232,36 @@ class Optimization:
 
         self._pagmo_selected_algorithm_log_columns = None
 
-        self.optimization_configuration = optimization_configuration
+        #self.optimization_configuration = optimization_configuration
 
-        print("\n\n==>optimization_configuration: ",self.optimization_configuration)
+        #print("\n\n==>optimization_configuration: ",self.optimization_configuration)
+
+        default_optimization_configuration = {'number_of_individuals': 100,
+                                           'number_of_generations': 600,
+                                           'crossover_rate': .6,
+                                           'mutation_rate': .04,
+                                           'elitism': 1,
+                                           'crossover_type': 'exponential',
+                                           'mutation_type': 'gaussian',
+                                           'selection_type': 'tournament',
+                                           'selection_param': 4,
+                                           'scale_factor': .5,
+                                           'variant_de': 10,
+                                           'ftol_de': 1e-8,
+                                           'xtol_de': 1e-8,
+                                           'omega_pso': 0.7298,
+                                           'eta1_pso': 2.05,
+                                           'eta2_pso': 2.05,
+                                           'variant_pso': 5,
+                                           'max_v_pso': 0.5,
+                                           'neighborhood_type_pso': 2,
+                                           'neighborhood_param_pso': 4,
+                                           }
+
 
         if optimization_configuration is {} or optimization_configuration is None:
 
-            self.optimization_configuration = {'number_of_individuals':10,
-                                               'number_of_generations':100,
-                                               'crossover_rate':.6,
-                                               'mutation_rate':.04,
-                                               'elitism':1,
-                                               'crossover_type':'exponential',
-                                               'mutation_type':'gaussian',
-                                               'selection_type':'tournament',
-                                               'selection_param':4,
-                                               'scale_factor':.5,
-                                               'variant_de':10,
-                                               'ftol_de':1e-8,
-                                               'xtol_de':1e-8,
-                                               'omega_pso':0.7298,
-                                               'eta1_pso':2.05,
-                                               'eta2_pso':2.05,
-                                               'variant_pso':5,
-                                               'max_v_pso':0.5,
-                                               'neighborhood_type_pso':2,
-                                               'neighborhood_param_pso':4,
-                                    }
+            self.optimization_configuration = default_optimization_configuration
 
         elif isinstance(optimization_configuration, str):
 
@@ -266,7 +271,7 @@ class Optimization:
 
         elif isinstance(optimization_configuration, dict):
 
-            self.optimization_configuration = optimization_configuration
+            self.optimization_configuration = {**default_optimization_configuration, **optimization_configuration}
 
         else:
 
@@ -344,11 +349,15 @@ class Optimization:
 
                 self._pagmo_selected_algorithm = pg.sga
 
+                self._pagmo_selected_algorithm_log_columns = ['Gen', 'Fevals', 'Best', 'Improvement']
+
                 algo = pg.algorithm(pg.sga(gen = gen, cr = cr, eta_c=1., m = mr, param_m=1., param_s=selection_param, crossover=crossover_type, mutation=mutation_type, selection=selection_type))
 
                 #isl = pg.island(algo, self.optimization_problem, ind)
 
                 self.optimization_mechanism = algo
+
+                return('ga')
 
             if optimizer == 'sade':
 
@@ -371,6 +380,8 @@ class Optimization:
                 #isl = pg.island(algo, self.optimization_problem, ind)
 
                 self.optimization_mechanism = algo
+
+                return('sade')
 
             if optimizer == 'de':
 
@@ -400,6 +411,8 @@ class Optimization:
 
                 self.optimization_mechanism = algo
 
+                return('de')
+
             if optimizer == 'pso':
 
 
@@ -423,15 +436,17 @@ class Optimization:
 
                 #==================================================================
 
-                self._pagmo_selected_algorithm = pg.pso_gen
+                self._pagmo_selected_algorithm = pg.pso
 
                 self._pagmo_selected_algorithm_log_columns = ['Gen', 'Fevals', 'gbest', 'Mean Vel.', 'Mean lbest', 'Avg. Dist.']
 
-                algo = pg.algorithm(pg.pso_gen(gen=gen, omega=omega, eta1=eta1, eta2=eta2, max_vel=vcoeff,  variant=pso_variant))
+                algo = pg.algorithm(pg.pso(gen=gen, omega=omega, eta1=eta1, eta2=eta2, max_vel=vcoeff,  variant=pso_variant))
 
                 #isl = pg.island(algo, self.optimization_problem, ind)
 
                 self.optimization_mechanism = algo
+
+                return('pso')
 
         else:
 
@@ -499,6 +514,7 @@ class Optimization:
         print("\tOptimization problem: %s"%self.optimization_problem.name)
         param_names = [i if isinstance(i,str) else i.name for i in self.optimization_parameters]
         print("\tParameters to optimize: %s"%param_names)
+        print("\tNumber of individuals: %s"%self.optimization_configuration['number_of_individuals'])
         print("\tOptimization algorithm: %s"%self.optimization_mechanism.get_name())
         try:
             print("\tAlgorithm parameters: \n %s"%self.optimization_mechanism.get_extra_info().replace("\t","\t\t"))
@@ -510,7 +526,7 @@ class Optimization:
 
         return self.optimization_log
 
-    def runOptimization(self, print_output=False, report_frequency=0, optimization_log = True):
+    def runOptimization(self, print_output=True, report_frequency=0, optimization_log=True, save_optimization_graph=False):
 
         if self._performSaneTests() == True:
 
@@ -549,6 +565,45 @@ class Optimization:
                 self.optimization_log = self.optimization_mechanism.extract(self._pagmo_selected_algorithm).get_log()
 
                 self.optimization_log = pd.DataFrame(self.optimization_log, columns=self._pagmo_selected_algorithm_log_columns)
+
+            if save_optimization_graph is True:
+
+                generations = np.array(self.getOptimizationLog().loc[:, "Gen"].values.tolist(), dtype=int)
+
+                if self.optimizer == 'pso':
+
+                    objective_function = np.array(self.getOptimizationLog().loc[:, "gbest"].values.tolist(), dtype=float)
+
+                elif self.optimizer in ['sade', 'ga', 'de']:
+
+                    objective_function = np.array(self.getOptimizationLog().loc[:, "Best"].values.tolist(), dtype=float)
+                else:
+
+                    raise NotImplementedError("Additional optimization methods were not implemented yet.")
+
+                function_evaluations = np.array(self.getOptimizationLog().loc[:, "Fevals"].values.tolist(), dtype=int)
+
+                plt.xlim(0, max(function_evaluations))
+
+                curr_time = datetime.now()
+
+                timestamp_signature = str(curr_time.year)+'_' + \
+                                      str(curr_time.month)+'_' + \
+                                      str(curr_time.day)+'_' + \
+                                      str(curr_time.hour)+'_' + \
+                                      str(curr_time.minute)+'_' + \
+                                      str(curr_time.second)
+
+                plt.title(r'Optimization progress', fontsize=14)
+                plt.xlabel(r'Number of function evaluations', fontsize=11)
+                plt.ylabel(r'Objective function value', fontsize=11)
+                plt.plot(function_evaluations, objective_function, linestyle='-', color='black')
+                #plt.legend()
+                #print("+++> function evaluations: ", function_evaluations)
+                #print("+++> objective function value: ", objective_function)
+                plt.grid()
+                plt.savefig('optimization-'+self.optimizer+'-'+timestamp_signature+'.png', bbox_inches='tight')
+                plt.clf()
 
             print("\n\tOptimization ended. \n\t Elapsed time:{}".format(strftime("%H:%M:%S", gmtime(elapsed_time))))
 

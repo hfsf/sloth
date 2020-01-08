@@ -11,6 +11,7 @@ from collections import OrderedDict
 from .core.variable import Variable
 from .core.parameter import Parameter
 from .model import Model
+from .analysis import Analysis
 import numpy as np
 from .graph_creator import ConnectionGraph
 
@@ -72,7 +73,7 @@ class Problem:
 
     def _infoProblemReport_(self):
 
-        print(analysis.Analysis().problemReport(self))
+        print(Analysis().problemReport(self))
 
     def setTimeVariableName(self, name):
 

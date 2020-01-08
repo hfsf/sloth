@@ -16,8 +16,8 @@ from collections import OrderedDict
 import json
 from .core.quantity import Quantity
 
-class Simulation:
 
+class Simulation:
     """
     Simulation class definition
     """
@@ -48,7 +48,7 @@ class Simulation:
         self.configurations = None
 
         if plotter is None:
-          plotter = Plotter(simulation=self)
+            plotter = Plotter(simulation=self)
 
         self.plotter = plotter
 
@@ -89,10 +89,12 @@ class Simulation:
 
         self.problem = problem
 
+    # TODO: Remove the necessity to call for an empty setConfigurations method (e.g: Call it automatically when simulation is being executes)
+
     def setConfigurations(self,
                           initial_time=0.,
                           end_time=None,
-                          linear_solver='sympy',
+                          linear_solver='symbolicsys',
                           nonlinear_solver='*',
                           differential_solver='ODEINT',
                           differential_algebraic_solver='IDA',
@@ -135,49 +137,47 @@ class Simulation:
         else:
 
             if time_variable_name is None and is_dynamic is True:
-
                 time_variable_name = self.problem.time_variable_name
 
-            additional_conf = {'compile_equations':compile_equations,
-                               'domain':domain,
-                               'time_variable_name':time_variable_name,
-                               'initial_time':initial_time,
-                               'end_time':end_time,
-                               'is_dynamic':is_dynamic,
-                               'arg_names':arg_names,
-                               'linear_solver':linear_solver,
-                               'nonlinear_solver':nonlinear_solver,
-                               'differential_solver':differential_solver,
-                               'differential_algebraic_solver':differential_algebraic_solver,
-                               'problem_type':problem_type,
-                               'args':args,
-                               'verbosity_solver':verbosity_solver,
-                               'number_of_time_steps':number_of_time_steps,
-                               'configuration_args':configuration_args,
-                               'print_output':print_output,
-                               'output_headers':output_headers,
-                               'variable_name_map':variable_name_map,
-                               'compilation_mechanism':compilation_mechanism,
-                               'number_parameters_to_optimize':number_parameters_to_optimize,
-                               'times_for_solution':times_for_solution
+            additional_conf = {'compile_equations': compile_equations,
+                               'domain': domain,
+                               'time_variable_name': time_variable_name,
+                               'initial_time': initial_time,
+                               'end_time': end_time,
+                               'is_dynamic': is_dynamic,
+                               'arg_names': arg_names,
+                               'linear_solver': linear_solver,
+                               'nonlinear_solver': nonlinear_solver,
+                               'differential_solver': differential_solver,
+                               'differential_algebraic_solver': differential_algebraic_solver,
+                               'problem_type': problem_type,
+                               'args': args,
+                               'verbosity_solver': verbosity_solver,
+                               'number_of_time_steps': number_of_time_steps,
+                               'configuration_args': configuration_args,
+                               'print_output': print_output,
+                               'output_headers': output_headers,
+                               'variable_name_map': variable_name_map,
+                               'compilation_mechanism': compilation_mechanism,
+                               'number_parameters_to_optimize': number_parameters_to_optimize,
+                               'times_for_solution': times_for_solution
                                }
 
-        #print("additional_conf is: %s"%additional_conf)
+        # print("additional_conf is: %s"%additional_conf)
 
-        if number_parameters_to_optimize != 0 and additional_conf['number_parameters_to_optimize'] != number_parameters_to_optimize:
-
+        if number_parameters_to_optimize != 0 and additional_conf[
+            'number_parameters_to_optimize'] != number_parameters_to_optimize:
             additional_conf['number_parameters_to_optimize'] = number_parameters_to_optimize
 
         self.configurations = additional_conf
 
-    def runSimulation(self, show_output_msg = False):
+    def runSimulation(self, sanity_check=True, show_output_msg=False):
 
         problem_type = self.configurations['problem_type']
 
         number_parameters_to_optimize = self.configurations['number_parameters_to_optimize']
 
         if problem_type == None:
-
             problem_type = self.problem._getProblemType()
 
         if problem_type == "linear":
@@ -201,7 +201,9 @@ class Simulation:
 
         dof_analist = analysis.DOF_Analysis(self.problem, number_parameters_to_optimize)
 
-        dof_analist._makeSanityChecks()
+        if sanity_check is True:
+
+            dof_analist._makeSanityChecks()
 
         out = solver_mechanism.solve(self.configurations)
 
@@ -220,12 +222,10 @@ class Simulation:
             exit_status = self.getStatus()
 
             if exit_status == 0:
-
-                print("Simulation ended sucessfully with status ",exit_status,".")
+                print("Simulation ended sucessfully with status ", exit_status, ".")
 
             if exit_status is not 0:
-
-                print("Simulation ended unsucessfully with status=",exit_status,".\n Some sort of error ocurred.")
+                print("Simulation ended unsucessfully with status=", exit_status, ".\n Some sort of error ocurred.")
 
     def getStatus(self):
 
@@ -249,7 +249,7 @@ class Simulation:
         Show the results for the current simulation in a table for easy visualization
         """
 
-        assert self.output!=None, "\nShould run the simulation prior to showing results."
+        assert self.output != None, "\nShould run the simulation prior to showing results."
 
         if self.configurations['is_dynamic'] == True:
 
@@ -264,10 +264,9 @@ class Simulation:
             tab.field_names = self.configurations['output_headers']
 
             for i in range(len(time_points)):
+                tab.add_row(np.concatenate(([time_points[i]], Y[i, :])))
 
-                tab.add_row(np.concatenate(([time_points[i]], Y[i,:])))
-
-            print(header+str(tab))
+            print(header + str(tab))
 
         else:
 
@@ -275,34 +274,35 @@ class Simulation:
 
             tab = prettytable.PrettyTable()
 
-            tab.field_names=["Variable","Unit","Value"]
+            tab.field_names = ["Variable", "Unit", "Value"]
 
             for var_i in list(self.output.keys()):
-
-                tab.add_row([ str(var_i),
-                              str(self.problem.equation_block.variable_dict[str(var_i)].units),
-                              self.output[var_i]
-                            ]
-                )
+                tab.add_row([str(var_i),
+                             str(self.problem.equation_block.variable_dict[str(var_i)].units),
+                             self.output[var_i]
+                             ]
+                            )
 
             print(header + str(tab))
 
-    def plotTimeSeries(self, x_data=None, y_data=None, set_style='darkgrid', x_label='time', y_label='output', labels=None, linewidth=2.5, markers=None, grid=False, save_file=None, show_plot=True, data=None, legend=False):
+    def plotTimeSeries(self, x_data=None, y_data=None, set_style='darkgrid', x_label='time', y_label='output',
+                       labels=None, linewidth=2.5, markers=None, grid=False, save_file=None, show_plot=True, data=None,
+                       legend=False):
 
         self.plotter.plotTimeSeries(x_data=x_data,
-                                     y_data=y_data,
-                                     set_style=set_style,
-                                     x_label=x_label,
-                                     y_label=y_label,
-                                     linewidth=linewidth,
-                                     labels=labels,
-                                     markers=markers,
-                                     grid=grid,
-                                     save_file=save_file,
-                                     show_plot=show_plot,
-                                     legend=legend,
-                                     data=data
-                    )
+                                    y_data=y_data,
+                                    set_style=set_style,
+                                    x_label=x_label,
+                                    y_label=y_label,
+                                    linewidth=linewidth,
+                                    labels=labels,
+                                    markers=markers,
+                                    grid=grid,
+                                    save_file=save_file,
+                                    show_plot=show_plot,
+                                    legend=legend,
+                                    data=data
+                                    )
 
     def getResults(self, return_type='list'):
 
@@ -315,6 +315,8 @@ class Simulation:
 
         problem_type = self.problem._getProblemType()
 
+        # The default returned type for LA and  NLA problems is a dict
+
         if problem_type == 'linear' or problem_type == 'nonlinear':
 
             if return_type == 'list':
@@ -325,10 +327,10 @@ class Simulation:
 
                 except:
 
-                    print("Output = ",self.output)
+                    print("Output = ", self.output)
 
                     try:
-                        print("Output values = ",self.output.values())
+                        print("Output values = ", self.output.values())
 
                     except:
 
@@ -342,14 +344,14 @@ class Simulation:
 
                 try:
 
-                    output_dict = {str(k):float(v) for (k,v) in output_dict.items()}
+                    output_dict_str = {str(k): v for (k,v) in output_dict.items()}
 
-                    return output_dict
+                    return dict(output_dict_str)
 
                 except:
 
-                    print("Output = ",self.output)
-                    print("Output values = ",self.output.values())
+                    print("Output = ", self.output)
+                    print("Output values = ", self.output.values())
 
                     raise TypeError("!")
 
@@ -365,13 +367,13 @@ class Simulation:
 
                 return [domain_.values[ind_i].values
                         for ind_i in domain_.values.keys()
-                    ]
+                        ]
 
             elif return_type == 'dict':
 
-                return {ind_i:domain_.values[ind_i].to_dict(orient='list')
+                return {ind_i: domain_.values[ind_i].to_dict(orient='list')
                         for ind_i in domain_.values.keys()
-                    }
+                        }
 
             else:
 
@@ -395,11 +397,9 @@ class Simulation:
         """
 
         if file_name is None:
-
-            file_name = self.name+'-conf.json'
+            file_name = self.name + '-conf.json'
 
         with open(file_name, "w") as write_file:
-
             json.dump(self.configurations, write_file)
 
     def reset(self):
@@ -409,7 +409,6 @@ class Simulation:
         """
 
         if self.domain is not None:
-
             self.domain._reset()
 
     def __getitem__(self, obj):
@@ -435,3 +434,25 @@ class Simulation:
         else:
 
             raise UnexpectedValueError("(str, Quantity)")
+
+
+class SimulationAsFunction:
+    # TODO: Work in this class
+
+    """
+    Make the simulation behave as a function. Currently work only for L and NL problems.
+    """
+
+    def __init__(self, simulation, input_variables=[]):
+        """
+        Instantiate an SimulationAsAFunction object
+
+        :param simulation:
+            Simulation object from which the calculations should be performed.
+        :param input_variables:
+            List containing the name of the input variables which will receive the data
+        """
+
+        self.simulation = simulation
+
+        self.input_variables = input_variables

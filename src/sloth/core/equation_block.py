@@ -194,22 +194,7 @@ class EquationBlock:
         :rtype function:
         """
 
-        # POSSIBLY UNECESSARY SNIPPET. REMOVE IN FURTHER REFACTORIES
-        #===========================================================
-        '''
-        if differential_form == 'residual':
 
-            symbolic_map_ = self.equations[0]._getSymbolicMap('residual')
-
-            _ = [symbolic_map_.update(eq_i._getSymbolicMap('residual')) for eq_i in self.equations]
-
-        if differential_form == 'elementary':
-
-            symbolic_map_ = self.equations[0]._getSymbolicMap('elementary', side)
-
-            _ = [symbolic_map_.update(eq_i._getSymbolicMap('elementary', side)) for eq_i in self.equations]
-        '''
-        #=============================================================
 
         if differential_form == 'elementary':
 
@@ -220,25 +205,6 @@ class EquationBlock:
 
             return jit(fun_)
 
-            '''
-            self._fs = [None for i in self._getEquationList(differential_form,side)]
-
-            #print("\n\n\t==>symbols = ",sp.symbols(self._var_list))
-
-            for i, eq_i in enumerate(self._getEquationList(differential_form,side)):
-
-                self._fs[i] = ufuncify(sp.symbols(self._var_list), eq_i, backend='f2py')
-
-            def fun_(*vars):
-
-                #print("\n\n\t======>vars = ",vars)
-
-                rtrn = [fs_i(*vars)[-1] for fs_i in self._fs]
-
-                return rtrn
-
-            return fun_
-            '''
 
         if differential_form == 'residual':
 

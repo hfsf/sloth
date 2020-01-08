@@ -61,7 +61,7 @@ class Variable(Quantity):
             If the current Variable object is exposed in its owner model or not. Defaults to False.
 
         :param str type:
-            The exosure type of the current Variable object in its owner model. Defaults to '', meaning that the object is not exposed.
+            The exposure type of the current Variable object in its owner model. Defaults to '', meaning that the object is not exposed.
 
         :param str latex_text:
             Text for latex representation.
@@ -69,12 +69,8 @@ class Variable(Quantity):
         :param Domain domain:
             Domain
 
-<<<<<<< HEAD
-        :param Domain domain:
-=======
         :ivar str owner_model_name:
             Name of the owner model of the current Quantity object. Defaults to "", meaning that the object was created aside a model.
->>>>>>> e42c4c50337aeff2b985fbd8a491576494c98938
 
         === Coming from base class ===
 

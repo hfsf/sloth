@@ -133,23 +133,57 @@ class LASolver(Solver):
 
             return self._scipySolveMechanism
 
-        if self.solver=='scipy_LU':
+        if self.solver=='symbolicsys':
 
-            pass
+            return self._symbolicSysSolveMechanism
 
     def _sympySolveMechanism(self):
 
-        X = sp.solve(self.problem.equation_block._equations_list, dict=True)
+        var_names = [str(i) for i in self.problem.equation_block._var_list]
 
-        return X[0]
+        x_out = sp.solve(self.problem.equation_block._equations_list, var_names, dict=True)
+
+        return x_out[-1]
 
     def _scipySolveMechanism(self):
 
+        var_names = [i for i in self.problem.equation_block._var_list]
+
         A, b = self._getABfromEquations()
 
-        x = scp_solve(A,b)
+        x_out = scp_solve(A,b)
 
-        return x.tolist()
+        x_dict = {str(var_i): val_i for var_i, val_i in zip(var_names, x_out)}
+
+        return x_dict
+
+    def _symbolicSysSolveMechanism(self):
+
+        var_names = [i for i in self.problem.equation_block._var_list]
+
+        equations_list = self.problem.equation_block._equations_list
+
+        #x_out = sp.solve(equations_list, var_names)
+
+        # TODO: Improve initial guess determination and/or employ a more robust solver
+
+        guess = [1.]*len(var_names)
+
+        eqSys = SymbolicSys(var_names, equations_list)
+
+        x_out, sol_state = eqSys.solve(guess, solver='scipy', tol=1e-8, method='lm')
+
+        #print(sol_state)
+
+        if sol_state['success'] is True:
+
+            x_out_dict = {str(var_i): val_i for var_i, val_i in zip(var_names,x_out)}
+
+            return x_out_dict
+
+        else:
+
+            raise NumericalError()
 
     def _getABfromEquations(self):
 
@@ -157,7 +191,7 @@ class LASolver(Solver):
 
         A, b = np.array(A, dtype=np.float64), np.array(b, dtype=np.float64)
 
-        print("\n\nA=%s b=%s"%(A,b))
+        #print("\n\nA=%s b=%s"%(A,b))
 
         return A,b
 
@@ -188,28 +222,44 @@ class NLASolver(Solver):
         Uses the mechanism provided by the pyneqsys package
         """
 
-        if self.solver==None or self.solver == '*':
+        if self.solver == None or self.solver == '*' or self.solver == 'symbolicsys':
 
-            return self._defaultSolveMechanism
+            return self._symbolicSysSolveMechanism
+
+        elif self.solver == 'sympy':
+
+            return self._sympySolveMechanism
 
         else:
 
             raise AbsentRequiredObjectError("element from {}" % self.expected_solver_names, self.solver)
 
 
-    def _defaultSolveMechanism(self):
+    def _sympySolveMechanism(self):
 
         var_names = [i for i in self.problem.equation_block._var_list]
 
         equations_list = self.problem.equation_block._equations_list
 
+        x_out = sp.solve(equations_list, var_names, dict=True)
+
+        return x_out[-1]
+
+    def _symbolicSysSolveMechanism(self):
+
+        var_names = [i for i in self.problem.equation_block._var_list]
+
+        equations_list = self.problem.equation_block._equations_list
+
+        #x_out = sp.solve(equations_list, var_names)
+
         # TODO: Improve initial guess determination and/or employ a more robust solver
 
-        guess = [1.e-2]*len(var_names)
+        guess = [1.]*len(var_names)
 
         eqSys = SymbolicSys(var_names, equations_list)
 
-        x_out, sol_state = eqSys.solve(guess, solver='scipy', tol=1e-6)
+        x_out, sol_state = eqSys.solve(guess, solver='scipy', tol=1e-8)
 
         print(sol_state)
 
