@@ -2,10 +2,7 @@
 Defines Plotter class
 """
 from .core.error_definitions import *
-import seaborn as sns
 import matplotlib.pyplot as plt
-import pandas as pd
-import numpy as np
 
 class Plotter:
 
