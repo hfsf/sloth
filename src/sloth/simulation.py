@@ -15,6 +15,7 @@ import numpy as np
 from collections import OrderedDict
 import json
 from .core.quantity import Quantity
+from .print_headings import print_heading
 
 
 class Simulation:
@@ -103,6 +104,7 @@ class Simulation:
                           compile_equations=True,
                           domain=None,
                           time_variable_name=None,
+                          initial_guess={},
                           arg_names=[],
                           args=[],
                           verbosity_solver=0,
@@ -124,6 +126,32 @@ class Simulation:
             Dictionary containing configurations for override all Simulation.runSimulation arguments with those defined in it. Tipically used for performing consecutive simulations (eg: optimization) or using predefined simulation configurations
         """
 
+        default_simulation_configurations = {'compile_equations': compile_equations,
+                                             'domain': domain,
+                                             'time_variable_name': time_variable_name,
+                                             'initial_time': initial_time,
+                                             'end_time': end_time,
+                                             'is_dynamic': is_dynamic,
+                                             'arg_names': arg_names,
+                                             'initial_guess': initial_guess,
+                                             'linear_solver': linear_solver,
+                                             'nonlinear_solver': nonlinear_solver,
+                                             'differential_solver': differential_solver,
+                                             'differential_algebraic_solver': differential_algebraic_solver,
+                                             'problem_type': problem_type,
+                                             'args': args,
+                                             'verbosity_solver': verbosity_solver,
+                                             'number_of_time_steps': number_of_time_steps,
+                                             'configuration_args': configuration_args,
+                                             'print_output': print_output,
+                                             'output_headers': output_headers,
+                                             'variable_name_map': variable_name_map,
+                                             'compilation_mechanism': compilation_mechanism,
+                                             'number_parameters_to_optimize': number_parameters_to_optimize,
+                                             'times_for_solution': times_for_solution
+                               }
+
+
         if configurations_file is not None:
 
             with open(configurations_file, "r") as read_file:
@@ -132,7 +160,7 @@ class Simulation:
 
         elif definition_dict is not None and isinstance(definition_dict, dict):
 
-            additional_conf = definition_dict
+            additional_conf = {**default_simulation_configurations, **definition_dict}
 
         else:
 
@@ -146,6 +174,7 @@ class Simulation:
                                'end_time': end_time,
                                'is_dynamic': is_dynamic,
                                'arg_names': arg_names,
+                               'initial_guess': initial_guess,
                                'linear_solver': linear_solver,
                                'nonlinear_solver': nonlinear_solver,
                                'differential_solver': differential_solver,
@@ -171,7 +200,9 @@ class Simulation:
 
         self.configurations = additional_conf
 
-    def runSimulation(self, sanity_check=True, show_output_msg=False):
+    def runSimulation(self, sanity_check=True, show_output_msg=True, show_final_residuals=True):
+
+        print_heading()
 
         problem_type = self.configurations['problem_type']
 
@@ -226,6 +257,31 @@ class Simulation:
 
             if exit_status is not 0:
                 print("Simulation ended unsucessfully with status=", exit_status, ".\n Some sort of error ocurred.")
+
+            self.showResults()
+
+        if show_final_residuals is True:
+
+            if problem_type not in ['differential', 'differential-algebraic']:
+
+                header = "\nFinal residuals from equations:\n"
+
+                tab = prettytable.PrettyTable()
+
+                tab.field_names = ["Equation", "Residual"]
+
+                for i,_ in enumerate(self.problem.equation_block.equations):
+
+                    tab.add_row([self.problem.equation_block.equations[i].name,
+                                 self.problem.equation_block._equations_list[i].subs(self.getResults('dict'))]
+                                )
+
+                print(header + str(tab))
+
+            else:
+
+                print("\nThe final results were not printed, as the current problem is "+problem_type.upper()+".")
+
 
     def getStatus(self):
 

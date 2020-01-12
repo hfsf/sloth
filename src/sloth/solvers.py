@@ -79,7 +79,7 @@ class Solver:
     Defines generic Solver class
     """
 
-    def __init__(self, problem, solver):
+    def __init__(self, problem, solver, additional_configurations):
 
         """
         Instantiate Solver class
@@ -89,6 +89,9 @@ class Solver:
 
         :ivar str solver:
             Name of the solver mechanism that will operate in the problem
+
+        :ivar additional_configurations:
+            Dict containing configuration  parameters for the solver
         """
 
         self.solver = solver
@@ -97,15 +100,16 @@ class Solver:
 
         self.solver_mechanism = None
 
-    def _printSolvingInfo(self):
+        self.additional_configurations = additional_configurations
+
+    def _printSolvingInfo(self, solution_dict):
 
         """
-        Print information about current equation sytem etc
+        Print information about current equation system etc
         :return:
         """
 
         pass
-
 
 class LASolver(Solver):
 
@@ -115,7 +119,7 @@ class LASolver(Solver):
 
     def __init__(self, problem, solver=None, additional_configurations={}):
 
-        super().__init__(problem, solver)
+        super().__init__(problem, solver, additional_configurations)
 
         self.solver_mechanism = self.lookUpForSolver()
 
@@ -167,11 +171,17 @@ class LASolver(Solver):
 
         # TODO: Improve initial guess determination and/or employ a more robust solver
 
-        guess = [1.]*len(var_names)
+        if self.additional_configurations['initial_guess'] == {}:
+
+            initial_guess = [1.] * len(var_names)
+
+        else:
+
+            initial_guess = [self.additional_configurations['initial_guess'][v_i] for v_i in var_names]
 
         eqSys = SymbolicSys(var_names, equations_list)
 
-        x_out, sol_state = eqSys.solve(guess, solver='scipy', tol=1e-8, method='lm')
+        x_out, sol_state = eqSys.solve(initial_guess, solver='scipy', tol=1e-12, method='hybr')
 
         #print(sol_state)
 
@@ -182,6 +192,8 @@ class LASolver(Solver):
             return x_out_dict
 
         else:
+
+            print(sol_state)
 
             raise NumericalError()
 
@@ -209,7 +221,7 @@ class NLASolver(Solver):
 
     def __init__(self, problem, solver=None, additional_configurations={}):
 
-        super().__init__(problem, solver)
+        super().__init__(problem, solver, additional_configurations)
 
         self.expected_solver_names = ['*']
 
@@ -247,7 +259,7 @@ class NLASolver(Solver):
 
     def _symbolicSysSolveMechanism(self):
 
-        var_names = [i for i in self.problem.equation_block._var_list]
+        var_names = [str(i) for i in self.problem.equation_block._var_list]
 
         equations_list = self.problem.equation_block._equations_list
 
@@ -255,13 +267,20 @@ class NLASolver(Solver):
 
         # TODO: Improve initial guess determination and/or employ a more robust solver
 
-        guess = [1.]*len(var_names)
+
+        if self.additional_configurations['initial_guess'] == {}:
+
+            initial_guess = [1.]*len(var_names)
+
+        else:
+
+            initial_guess = [self.additional_configurations['initial_guess'][v_i] for v_i in var_names]
 
         eqSys = SymbolicSys(var_names, equations_list)
 
-        x_out, sol_state = eqSys.solve(guess, solver='scipy', tol=1e-8)
+        x_out, sol_state = eqSys.solve(initial_guess, solver='scipy', tol=1e-14, method='lm')
 
-        print(sol_state)
+        #print(sol_state)
 
         if sol_state['success'] is True:
 
@@ -271,13 +290,17 @@ class NLASolver(Solver):
 
         else:
 
+            print(sol_state)
+
             raise NumericalError()
 
     def solve(self, verbose=True):
 
         if verbose is True:
 
-            self._printSolvingInfo()
+            #self._printSolvingInfo()
+
+            pass
 
         X = self.solver_mechanism()
 
@@ -294,7 +317,7 @@ class DSolver(Solver):
 
     def __init__(self, problem, solver=None, additional_configurations={}):
 
-        super().__init__(problem, solver)
+        super().__init__(problem, solver, additional_configurations)
 
         self.domain = additional_configurations['domain']
 
@@ -736,7 +759,7 @@ class DaeSolver(Solver):
 
     def __init__(self, problem, solver=None, additional_configurations={}):
 
-        super().__init__(problem, solver)
+        super().__init__(problem, solver, additional_configurations)
 
         self.domain = additional_configurations['domain']
 

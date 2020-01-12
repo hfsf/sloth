@@ -147,13 +147,14 @@ def opt(sim, mod, prob, prob_opt):
 
     class opt_study(Optimization):
 
-        def __init__(self, simulation, optimization_problem, simulation_configuration, optimization_parameters, constraints, optimization_configuration=None):
+        def __init__(self, simulation, optimization_problem, simulation_configuration, optimization_parameters, constraints, optimizer, optimization_configuration=None):
 
             super().__init__(simulation=sim,
                              optimization_problem=optimization_problem,
                              simulation_configuration=simulation_configuration,
                              optimization_parameters=optimization_parameters,
                              constraints=constraints,
+                             optimizer=optimizer,
                              optimization_configuration=optimization_configuration)
 
     prob.setTimeVariableName(['t_D0'])
@@ -179,7 +180,14 @@ def opt(sim, mod, prob, prob_opt):
 
     prob_opt()
 
-    return opt_study(sim, prob_opt, None, [mod.a], [-10., 10.], None)
+    return opt_study(simulation=sim,
+                     optimization_problem=prob_opt,
+                     optimization_parameters=[mod.a],
+                     simulation_configuration=None,
+                     constraints=[-10., 10.],
+                     optimizer='pso',
+                     optimization_configuration={'number_of_individuals': 5, 'number_of_generations': 10}
+                     )
 
 def test_model_properties(mod):
 
@@ -269,7 +277,7 @@ def test_simulation_result(mod, prob, sim, compile_equations=True):
 
     assert result['t_D0']['Predators(v)'][-1] == pytest.approx(7.1602100083)
 
-def donot_test_optimization(mod, prob, sim, opt, prob_opt):
+def test_optimization(mod, prob, sim, opt, prob_opt):
 
     prob.addModels(mod)
 
