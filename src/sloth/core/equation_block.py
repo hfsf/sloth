@@ -145,30 +145,6 @@ class EquationBlock:
             List of variable names
         :rtype list(str):
 
-        # TODO
-            * Optimize code snippet marked below
-        """
-
-        """
-        # ========== NEEDS TO BE OPTIMIZED ==========
-
-        var_name_list = []
-
-        var_list = []
-
-        for  eq_i in self.equations:
-
-            for var_i in list(eq_i.objects_declared.values()):
-
-                if var_i not in var_list and isinstance(var_i, Variable):
-
-                    self._var_dict[var_i.name] = var_i
-
-                    var_list.append(var_i)
-
-                    var_name_list.append(var_i.name)
-
-        # ===========================================
         """
 
         var_name_list = list(self.variable_dict.keys())

@@ -17,6 +17,7 @@ from src.sloth.core.equation_operators import *
 from src.sloth.core.template_units import *
 import copy
 
+
 @pytest.fixture
 def mod1():
     """
@@ -112,6 +113,7 @@ def sim():
             super().__init__(name, description)
 
     return simul("simul", "generic simulation")
+
 
 def test_model_properties(mod1):
 

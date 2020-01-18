@@ -258,7 +258,7 @@ class Simulation:
             if exit_status is not 0:
                 print("Simulation ended unsucessfully with status=", exit_status, ".\n Some sort of error ocurred.")
 
-            self.showResults()
+            #self.showResults()
 
         if show_final_residuals is True:
 
@@ -280,7 +280,7 @@ class Simulation:
 
             else:
 
-                print("\nThe final results were not printed, as the current problem is "+problem_type.upper()+".")
+                print("\nThe final results for equation residuals were not printed, as the current problem is "+problem_type.upper()+".")
 
 
     def getStatus(self):

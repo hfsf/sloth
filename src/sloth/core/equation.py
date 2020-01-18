@@ -422,7 +422,15 @@ class Equation:
 
         eval_map = dict( ( (i,j) for i, j in zip(eq_keys,eq_values) ) )
 
-        res = equation_expression_.symbolic_object.evalf(subs=eval_map)
+        #Check if the equation expression is a float. If so, returns it directly
+
+        if isinstance(equation_expression_.symbolic_object, float):
+
+            res = equation_expression_.symbolic_object
+
+        else:
+
+            res = equation_expression_.symbolic_object.evalf(subs=eval_map)
 
         return res
 

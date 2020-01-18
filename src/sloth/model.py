@@ -3,9 +3,7 @@
 """
 Define Model class, for storage of equations, distribution on domains and information about input and output variables (exposed variables), and incorporation of other models variables and equations
 """
-### REMOVE IN THE NEXT REFACTORY ###
-#import collections
-###################################
+
 
 from .core.error_definitions import UnexpectedObjectDeclarationError, UnexpectedValueError, AbsentRequiredObjectError
 from .core.equation import Equation
@@ -225,17 +223,17 @@ class Model:
 
         self.objects_info = {}
 
-        self.objects_info[ 'equations' ] = list(self.equations.keys())
+        self.objects_info['equations'] = list(self.equations.keys())
 
-        self.objects_info[ 'constants' ] = list(self.constants.keys())
+        self.objects_info['constants'] = list(self.constants.keys())
 
-        self.objects_info[ 'parameters' ] = list(self.parameters.keys())
+        self.objects_info['parameters'] = list(self.parameters.keys())
 
-        self.objects_info[ 'variables' ] = list(self.variables.keys())
+        self.objects_info['variables'] = list(self.variables.keys())
 
-        self.objects_info[ 'connections' ] = list(self.connections.keys())
+        self.objects_info['connections'] = list(self.connections.keys())
 
-        self.objects_info[ 'exposed_vars' ] = self.exposed_vars
+        self.objects_info['exposed_vars'] = self.exposed_vars
 
     def _getModelOverviewForGraph(self):
 
@@ -813,7 +811,7 @@ class Model:
         if latex_text is "":
             latex_text = name
 
-        con = Constant(name, units , description, value, latex_text, is_specified=False, owner_model_name=self.name)
+        con = Constant(name, units, description, value, latex_text, is_specified=False, owner_model_name=self.name)
 
         con.name=con.name+'_'+self.name
 
