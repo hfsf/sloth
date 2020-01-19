@@ -7,6 +7,7 @@ Define Connection class. Special type of Equation that are used as source or sin
 """
 
 from .expression_evaluation import EquationNode
+from .template_units import dimless
 from .error_definitions import UnexpectedValueError, AbsentRequiredObjectError, UnresolvedPanicError
 import sympy as sp
 
@@ -28,7 +29,7 @@ class Equation:
     Definition of Equation class. Process the ExpressionNode into one resultant node, which can be evaluated.
     """
 
-    def __init__(self, name, description, fast_expr = None, owner_model_name=""):
+    def __init__(self, name, description, fast_expr=None, owner_model_name=""):
 
         """
         Istantiate Equation.
@@ -51,6 +52,8 @@ class Equation:
 
             name = gen_rnd_str()
 
+        #print("===> fast_expr = ", fast_expr,", owner_model_name = ", owner_model_name)
+
         self.name = name
 
         self.description = description
@@ -67,9 +70,9 @@ class Equation:
 
         self.objects_declared = {}
 
-        if fast_expr != None:
+        if fast_expr is not None:
 
-            self.setResidual( fast_expr )
+            self.setResidual(fast_expr)
 
         self.owner_model_name = owner_model_name
 
@@ -346,15 +349,30 @@ class Equation:
 
         """
 
-        if isinstance(equation_expression, tuple) and \
-           isinstance(equation_expression[0],EquationNode) and \
-           isinstance(equation_expression[1], EquationNode):
+        if isinstance(equation_expression, tuple) and isinstance(equation_expression[0], EquationNode):
 
             # The equation expression is in the elementary form
 
-            self.elementary_equation_expression = tuple([equation_expression[0], equation_expression[1]])
+            if isinstance(equation_expression[1], EquationNode):
 
-            self.equation_expression = equation_expression[0] - equation_expression[1]
+                #If the RHS is an ENODE, pass it directly
+
+                self.elementary_equation_expression = tuple([equation_expression[0], equation_expression[1]])
+
+                self.equation_expression = equation_expression[0] - equation_expression[1]
+
+            if isinstance(equation_expression[1], float) or isinstance(equation_expression[1], int):
+
+                #If the RHS is a float or an int, convert it to ENODE previously
+
+                equation_expression1_as_enode = EquationNode(name='constant'+gen_rnd_str(),
+                                                             symbolic_object=equation_expression[1],
+                                                             unit_object=equation_expression[0].unit_object,
+                                                             repr_symbolic=equation_expression[1])
+
+                self.elementary_equation_expression = tuple([equation_expression[0], equation_expression1_as_enode])
+
+                self.equation_expression = equation_expression[0] - equation_expression1_as_enode
 
             self.equation_form = 'elementary'
 
@@ -410,7 +428,7 @@ class Equation:
 
         if symbolic_map == None:
 
-            symbolic_map = self.equation_expression.symbolic_map
+            symbolic_map_ = self.equation_expression.symbolic_map
 
         else:
 
@@ -422,9 +440,7 @@ class Equation:
 
         eval_map = dict( ( (i,j) for i, j in zip(eq_keys,eq_values) ) )
 
-        #Check if the equation expression is a float. If so, returns it directly
-
-        if isinstance(equation_expression_.symbolic_object, float):
+        if isinstance(equation_expression_.symbolic_object, float) or isinstance(equation_expression_.symbolic_object, int):
 
             res = equation_expression_.symbolic_object
 

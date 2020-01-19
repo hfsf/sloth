@@ -62,7 +62,7 @@ def mod_zero():
 
             expr2 = self.v.Diff(self.t) ==  self.d()*self.b()*self.u()*self.v() -self.c()*self.v()
 
-            expr3 = self.y.Diff(self.t) == self.z()
+            expr3 = self.y.Diff(self.t) == 0.
 
             self.eq1 = self.createEquation("eq1", "Equation 1", expr1)
             self.eq2 = self.createEquation("eq2", "Equation 2", expr2)
@@ -266,18 +266,24 @@ def test_equation_zero_variable(mod_zero, prob, sim, compile_equations):
 
     result = sim.getResults('dict')
 
-    #assert result['t_D0']['Time(t)'][0] == pytest.approx(0.)
+    assert result['t_D0']['Time(t)'][0] == pytest.approx(0.)
 
-    #assert result['t_D0']['Time(t)'][-1] == pytest.approx(16.)
+    assert result['t_D0']['Time(t)'][-1] == pytest.approx(16.)
 
-    #assert result['t_D0']['Preys(u)'][0] == pytest.approx(10.)
+    assert result['t_D0']['Scum(y)'][0] == pytest.approx(0.)
 
-    #assert result['t_D0']['Preys(u)'][-1] == pytest.approx(8.38505427)
+    assert result['t_D0']['Scum(y)'][-1] == pytest.approx(0.)
 
-    #assert result['t_D0']['Predators(v)'][0] == pytest.approx(5.)
+    assert result['t_D0']['Preys(u)'][0] == pytest.approx(10.)
 
-    #assert result['t_D0']['Predators(v)'][-1] == pytest.approx(7.1602100083)
+    assert result['t_D0']['Preys(u)'][-1] == pytest.approx(8.38505427)
+
+    assert result['t_D0']['Predators(v)'][0] == pytest.approx(5.)
+
+    assert result['t_D0']['Predators(v)'][-1] == pytest.approx(7.1602100083)
 
     sim.showResults()
 
-    assert False
+    #assert False
+
+    #Removed ridiculously wrong test for zero-valued differential equations

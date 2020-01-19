@@ -30,10 +30,10 @@ def mod1():
 
             super().__init__(name, description)
 
-            self.a =  self.createVariable("a", kg, "A")
-            self.b =  self.createVariable("b", kg, "B")
-            self.c =  self.createVariable("c", kg, "C", is_exposed=True, type='output')            
-            self.d =  self.createVariable("d", kg, "D", is_exposed=True, type='output')
+            self.a = self.createVariable("a", kg, "A")
+            self.b = self.createVariable("b", kg, "B")
+            self.c = self.createVariable("c", kg, "C", is_exposed=True, type='output')
+            self.d = self.createVariable("d", kg, "D", is_exposed=True, type='output')
 
         def DeclareEquations(self):
 
@@ -117,7 +117,7 @@ def sim():
 
 def test_model_properties(mod1):
 
-    mod=mod1
+    mod = mod1
 
     assert mod.name == "L0"
     

@@ -18,7 +18,8 @@ class EquationNode:
           Eg: IfThen(CONDITION, [THEN_CLAUSE,ELSE_CAUSE]) 
     """
 
-    def __init__(self, name='', symbolic_object=None, symbolic_map={}, variable_map={}, is_linear=True, is_nonlinear=False, is_differential=False, unit_object=None, args=[], latex_text='', repr_symbolic=None):
+    def __init__(self, name='', symbolic_object=None, symbolic_map={}, variable_map={}, is_linear=True, is_nonlinear=False,
+                 is_differential=False, unit_object=None, args=[], latex_text='', repr_symbolic=None):
 
         """
         Instantiate EquationNode
@@ -65,8 +66,8 @@ class EquationNode:
 
         self.variable_map = variable_map
 
-        self.equation_type = {'is_linear':is_linear, \
-                              'is_nonlinear':is_nonlinear, \
+        self.equation_type = {'is_linear':is_linear,
+                              'is_nonlinear':is_nonlinear,
                               'is_differential':is_differential
                              }
 
@@ -139,13 +140,13 @@ class EquationNode:
         :rtype tuple(EquationNode, EquationNode):
         """
 
-        if isinstance(other_obj, self.__class__):
+        if isinstance(other_obj, self.__class__) or isinstance(other_obj, int) or isinstance(other_obj, float):
 
             return tuple([self, other_obj])
 
         else:
 
-            return UnexpectedValueError("EquationNode")
+            raise UnexpectedValueError("EquationNode")
 
     def __add__(self, other_obj):
 

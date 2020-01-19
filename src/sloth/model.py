@@ -836,7 +836,7 @@ class Model:
         """
 
         eq = Equation(name, description, expr, owner_model_name=self.name)
-        eq.setResidual(expr) # I DON'T UNDERSTAND WHY THIS NEED TO BE HERE! x)
+        #eq.setResidual(expr) # I DON'T UNDERSTAND WHY THIS NEED TO BE HERE! x)
 
         eq.name=eq.name+'_'+self.name
 

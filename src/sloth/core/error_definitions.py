@@ -80,6 +80,8 @@ class UnexpectedValueError(Exception):
 
         msg = "Unexpected value error. A %s was expected, but one divergent type was supplied." % (self.expected_type)
 
+        return msg
+
 class UnresolvedPanicError(Exception):
 
     """
