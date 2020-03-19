@@ -12,8 +12,8 @@ from .core.variable import Variable
 from .core.parameter import Parameter
 from .model import Model
 from .analysis import Analysis
-import numpy as np
-from .graph_creator import ConnectionGraph
+#import numpy as np
+#from .graph_creator import ConnectionGraph
 
 import threading
 

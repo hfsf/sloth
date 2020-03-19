@@ -7,10 +7,9 @@ Define Connection class. Special type of Equation that are used as source or sin
 """
 
 from .expression_evaluation import EquationNode
-from .template_units import dimless
 from .error_definitions import UnexpectedValueError, AbsentRequiredObjectError, UnresolvedPanicError
 import sympy as sp
-
+#import symengine as sp
 import threading
 
 _uid = threading.local()
@@ -227,7 +226,7 @@ class Equation:
 
             self.equation_form = "residual"
 
-    def _convertToFunction(self, symbolic_map=None, side=None, compilation_mechanism='numpy'):
+    def _convertToFunction(self, symbolic_map=None, side=None, compilation_mechanism='llvm'):
 
         """
         Convert the current equation expression into a function.

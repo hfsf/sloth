@@ -1,10 +1,10 @@
 # Sloth - A noobish, humble and umpretentious tool for process simulation using simultaneous equation solving
 
-![](https://github.com/hfsf/sloth/blob/master/docs/imgs/sloth_logo.png)
+![](https://github.com/hfsf/sloth/blob/master/docs/imgs/sloth-bandana.png)
 
 ## Sloth aims to be:
 
-* Simple, as the application scenario are intendly restricted (eg:process simulation using simultaneous equation solving)
+* Simple, as the application scenario are intently restricted (eg:process simulation using simultaneous equation solving)
 * Easy to be extended, as a minimal working kernel is provided (Process connection, Degrees of Freedom Analysis, Support for external optimizers, etc)
 * Humble, as the intent of this tool is to provide ground for further development from external developers in their own packages, or helping with Sloth project :)
 

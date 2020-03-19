@@ -68,10 +68,10 @@ def mod2():
 
             super().__init__(name, description)
 
-            self.a =  self.createVariable("a", kg_s, "A")
-            self.b =  self.createVariable("b", kg_s, "B")
-            self.c =  self.createVariable("c", kg, "C", is_exposed=True, type='input')
-            self.d =  self.createConstant("d", s**-1, "D")
+            self.a = self.createVariable("a", kg_s, "A")
+            self.b = self.createVariable("b", kg_s, "B")
+            self.c = self.createVariable("c", kg, "C", is_exposed=True, type='input')
+            self.d = self.createConstant("d", s**-1, "D")
             self.d.setValue(0.7)
 
         def DeclareEquations(self):
@@ -190,7 +190,7 @@ def test_simulation_result(mod1, prob, sim):
 
     assert sim.getResults(return_type='dict') == pytest.approx({'a_L0': 2.00000000000000, 'b_L0': 0.0, 'c_L0': 6.00000000000000, 'd_L0': 5.00000000000000})
 
-def ttest_model_connection(mod1, mod2, prob, sim):
+def test_model_connection(mod1, mod2, prob, sim):
 
     prob.addModels([mod1, mod2])
 
@@ -202,7 +202,7 @@ def ttest_model_connection(mod1, mod2, prob, sim):
 
     sim.setProblem(prob)
 
-    sim.setConfigurations()
+    sim.setConfigurations(linear_solver='sympy')
 
     sim.runSimulation()
 
@@ -214,12 +214,12 @@ def ttest_model_connection(mod1, mod2, prob, sim):
 
     print("sim.getResults('dict') = ", sim.getResults(return_type='dict'))
 
-    expected = {'a_L0':1.0, 'b_L0':0.0, 'c_L0':1.4285714285714286, 'd_L0':1.4285714285714286, 'a_L1':-0.2, 'b_L1':7.4, 'c_L1':1.4285714285714286}
+    expected = {'a_L0': 2.0, 'b_L0': 0.0, 'c_L0': 6.0, 'd_L0': 5.0, 'a_L1':2.36, 'b_L1':9.96, 'c_L1':6.0}
 
     assert results == pytest.approx(expected)
 
     
-def ttest_model_multi_connection(mod1, mod2, prob, sim):
+def test_model_multi_connection(mod1, mod2, prob, sim):
 
     prob.addModels([mod1, mod2])
 
@@ -231,7 +231,7 @@ def ttest_model_multi_connection(mod1, mod2, prob, sim):
 
     sim.setProblem(prob)
 
-    sim.setConfigurations()
+    sim.setConfigurations(linear_solver='sympy')
 
     sim.runSimulation()
 
@@ -243,11 +243,11 @@ def ttest_model_multi_connection(mod1, mod2, prob, sim):
 
     print("sim.getResults('dict') = ", sim.getResults(return_type='dict'))
 
-    expected = {'a_L0':1.0, 'b_L0':0.0, 'c_L0':1.4285714285714286, 'd_L0':1.4285714285714286, 'a_L1':-0.2, 'b_L1':7.4, 'c_L1':1.4285714285714286}
+    expected = {'a_L0': 2.0, 'b_L0': 0.0, 'c_L0': 6.0, 'd_L0': 5.0, 'a_L1':2.36, 'b_L1':9.96, 'c_L1':6.0}
 
     assert results == pytest.approx(expected)
 
-def ttest_model_multi_connection_2(mod1, mod2, prob, sim):
+def test_model_multi_connection_2(mod1, mod2, prob, sim):
 
     prob.addModels([mod1, mod2])
 
@@ -259,7 +259,7 @@ def ttest_model_multi_connection_2(mod1, mod2, prob, sim):
 
     sim.setProblem(prob)
 
-    sim.setConfigurations()
+    sim.setConfigurations(linear_solver='sympy')
 
     sim.runSimulation()
 
@@ -271,6 +271,6 @@ def ttest_model_multi_connection_2(mod1, mod2, prob, sim):
 
     print("sim.getResults('dict') = ", sim.getResults(return_type='dict'))
 
-    expected = {'a_L0': 1.0, 'a_L1': 0.6, 'b_L0': 0.0, 'b_L1': 8.2, 'c_L0': 1.4285714285714286, 'c_L1': 2.857142857142857, 'd_L0': 1.4285714285714286}
+    expected = {'a_L0': 2.0, 'b_L0': 0.0, 'c_L0': 6.0, 'd_L0': 5.0, 'a_L1':5.16, 'b_L1':12.76, 'c_L1':11.0}
 
     assert results == pytest.approx(expected)

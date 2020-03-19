@@ -2,12 +2,10 @@
 # *coding:utf-8*
 import math
 import sympy as sp
-from sympy.utilities.autowrap import ufuncify
+#import symengine as sp
 import numpy as np
 from numpy import array as np_array
-from scipy.linalg import solve
 from collections import OrderedDict
-from .variable import Variable
 from numba import jit
 
 class EquationBlock:
@@ -151,7 +149,7 @@ class EquationBlock:
 
         return var_name_list
 
-    def _getEquationBlockAsFunction(self, differential_form='residual', side='rhs', compilation_mechanism='numpy'):
+    def _getEquationBlockAsFunction(self, differential_form='residual', side='rhs', compilation_mechanism="mpmath"):
 
         """
         Return the Equations that compose the current EquationBlock object into a monolithical function that will return an array of results.
@@ -170,40 +168,53 @@ class EquationBlock:
         :rtype function:
         """
 
+        #Check if the problem is differential or purely algebraic
+
+        if len(self._equation_groups["differential"]) > 0:
+
+            if differential_form == 'elementary':
+
+                fun_ = sp.lambdify(self._var_list,
+                                   np_array(self._getEquationList(differential_form,side)),
+                                   [{'Min':min, 'Max':max, 'Sin':np.sin, 'Cos':np.cos}, compilation_mechanism]
+                            )
+
+                return jit(fun_)
 
 
-        if differential_form == 'elementary':
+            if differential_form == 'residual':
+
+                yd_map, y_map = self._getMapForRewriteSystemAsResidual()
+
+                # Add y_map dict to yd_map
+
+                yd_map.update(y_map)
+
+                original_eqs = self._getEquationList(differential_form, side)
+
+                rewritten_eqs = [eq_i.subs(yd_map) for eq_i in original_eqs]
+
+                _fun_ = sp.lambdify(["t","y","yd"],
+                                   np_array(rewritten_eqs),
+                                   [{'Min':min, 'Max':max, 'Sin':math.sin, 'Cos':math.cos}, compilation_mechanism]
+                            )
+
+                #Provide result as numpy.array
+
+                fun_ = lambda t,y,yd: np_array( jit( _fun_(t,y,yd) ) )
+
+                return fun_
+
+        else:
 
             fun_ = sp.lambdify(self._var_list,
-                               np_array(self._getEquationList(differential_form,side)),
-                               [{'Min':min, 'Max':max, 'Sin':np.sin, 'Cos':np.cos}, compilation_mechanism]
-                        )
+                               np_array(self._equations_list),
+                               [{'Min': min, 'Max': max, 'Sin': np.sin, 'Cos': np.cos}, compilation_mechanism]
+                               )
 
-            return jit(fun_)
+            funs_ = lambda x: fun_(*x)
 
-
-        if differential_form == 'residual':
-
-            yd_map, y_map = self._getMapForRewriteSystemAsResidual()
-
-            # Add y_map dict to yd_map
-
-            yd_map.update(y_map)
-
-            original_eqs = self._getEquationList(differential_form, side)
-
-            rewritten_eqs = [eq_i.subs(yd_map) for eq_i in original_eqs]
-
-            _fun_ = sp.lambdify(["t","y","yd"],
-                               np_array(rewritten_eqs),
-                               [{'Min':min, 'Max':max, 'Sin':math.sin, 'Cos':math.cos}, compilation_mechanism]
-                        )
-
-            #Provide result as numpy.array
-
-            fun_ = lambda t,y,yd: np_array( _fun_(t,y,yd) )
-
-            return fun_
+            return funs_
 
     def _getBooleanDiffFlagsForEquations(self):
 

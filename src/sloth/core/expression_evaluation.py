@@ -5,7 +5,6 @@ Define EquationNode class, that holds the reference to variables in the equation
 """
 
 from .error_definitions import UnexpectedValueError, DimensionalCoherenceError
-import sympy as sp
 
 class EquationNode:
 

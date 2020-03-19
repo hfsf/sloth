@@ -11,7 +11,6 @@ from .core.equation_operators import *
 from .core.variable import Variable
 from .core.constant import Constant
 from .core.parameter import Parameter
-from . import analysis
 from . import connection
 from . import analysis
 from .core.template_units import *

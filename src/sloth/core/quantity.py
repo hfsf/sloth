@@ -7,6 +7,7 @@ Define the Quantity (QTY), base-class for all unit-containg objects (Variables, 
 import copy
 from .error_definitions import DimensionalCoherenceError, UnexpectedValueError
 import sympy as sp
+#import symengine as sp
 from .expression_evaluation import EquationNode
 
 # Null dimension dict

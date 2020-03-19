@@ -4,21 +4,24 @@
 Define solver mechanisms
 """
 
-import numpy as np
-from scipy.linalg import solve as scp_solve
-import sympy as sp
-from assimulo.solvers import IDA
-from assimulo.problem import Implicit_Problem
-import pylab as P
-import scipy.integrate as integrate
-from assimulo.problem import Explicit_Problem
-from assimulo.solvers import CVode
 from collections import OrderedDict
-from .core.error_definitions import AbsentRequiredObjectError, UnexpectedValueError, NumericalError
-from .core.equation_operators import *
-import prettytable
 
+import prettytable
+import numpy as np
+from sympy import solve as sp_solve
+#import symengine as sp
+import scipy.integrate as integrate
+from scipy.optimize import root as scp_root
+
+from assimulo.problem import Explicit_Problem
+from assimulo.problem import Implicit_Problem
+from assimulo.solvers import CVode
+from assimulo.solvers import IDA
 from pyneqsys.symbolic import SymbolicSys
+from scipy.linalg import solve as scp_solve
+
+from .core.equation_operators import *
+from .core.error_definitions import AbsentRequiredObjectError, UnexpectedValueError, NumericalError
 
 
 def _createSolver(problem, additional_configurations):
@@ -111,6 +114,41 @@ class Solver:
 
         pass
 
+    def _polishRoot(self, initial_guess, polisher='hybr'):
+
+        fun = self.problem.equation_block._getEquationBlockAsFunction()
+
+        if polisher is None or polisher == '' or polisher == 'hybr':
+
+            # Default option is scipy's HYBR method
+
+            # initial_guess = nparray(initial_guess)
+
+            polished_root = scp_root(fun, x0=initial_guess, method='hybr')
+
+            if polished_root.success is True:
+
+                return polished_root.x
+
+            else:
+
+                return None
+
+        if polisher == 'anderson':
+
+            # Default option is scipy's HYBR method
+
+            polished_root = scp_root(fun, initial_guess, method='anderson')
+
+            if polished_root.success is True:
+
+                return polished_root.x
+
+            else:
+
+                return None
+
+
 class LASolver(Solver):
 
     """
@@ -145,7 +183,7 @@ class LASolver(Solver):
 
         var_names = [str(i) for i in self.problem.equation_block._var_list]
 
-        x_out = sp.solve(self.problem.equation_block._equations_list, var_names, dict=True)
+        x_out = sp_solve(self.problem.equation_block._equations_list, var_names, dict=True)
 
         return x_out[-1]
 
@@ -267,6 +305,8 @@ class NLASolver(Solver):
 
         # TODO: Improve initial guess determination and/or employ a more robust solver
 
+        # ### INSERTED A MECHANISM FOR INITIAL GUESS GENERATION ###
+        # ##########################################################
 
         if self.additional_configurations['initial_guess'] == {}:
 
@@ -276,9 +316,22 @@ class NLASolver(Solver):
 
             initial_guess = [self.additional_configurations['initial_guess'][v_i] for v_i in var_names]
 
+        if self.additional_configurations['initial_guess_solver'] is not None:
+
+            # Use the first guess for obtain a preliminary point somewhat closely to root                                 initial_guess))
+            polished_initial_guess = self._polishRoot(initial_guess, self.additional_configurations['initial_guess_solver'])
+
+            # Check if the polish was successful
+
+            if polished_initial_guess is not None:
+
+                initial_guess = polished_initial_guess
+
         eqSys = SymbolicSys(var_names, equations_list)
 
-        x_out, sol_state = eqSys.solve(initial_guess, solver='scipy', tol=1e-14, method='lm')
+        #REMOVE ME:print("\n ->initial_guess={}".format(initial_guess))
+
+        x_out, sol_state = eqSys.solve(initial_guess, solver='scipy', tol=1e-8,  method='lm', options={'maxiter':5000})
 
         #print(sol_state)
 
