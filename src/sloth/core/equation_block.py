@@ -201,7 +201,7 @@ class EquationBlock:
 
                 #Provide result as numpy.array
 
-                fun_ = lambda t,y,yd: np_array( jit( _fun_(t,y,yd) ) )
+                fun_ = lambda t,y,yd: np_array( _fun_(t,y,yd)  )
 
                 return fun_
 
