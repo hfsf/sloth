@@ -201,7 +201,7 @@ class EquationBlock:
 
                 #Provide result as numpy.array
 
-                fun_ = lambda t,y,yd: np_array( _fun_(t,y,yd)  )
+                fun_ = lambda t,y,yd: np_array(_fun_(t,y,yd))
 
                 return fun_
 
@@ -212,9 +212,9 @@ class EquationBlock:
                                [{'Min': min, 'Max': max, 'Sin': np.sin, 'Cos': np.cos}, compilation_mechanism]
                                )
 
-            funs_ = lambda x: fun_(*x)
+            fun_unpacked_ = lambda x: fun_(*x)
 
-            return funs_
+            return fun_unpacked_
 
     def _getBooleanDiffFlagsForEquations(self):
 
