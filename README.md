@@ -1,6 +1,6 @@
-# Sloth - A noobish, humble and umpretentious tool for process simulation using simultaneous equation solving
+# ATTENTION: This package is now deprecated and closed, in favor of ANTARES PROJECT
 
-![](https://github.com/hfsf/sloth/blob/master/docs/imgs/sloth-bandana.png)
+# Sloth - A noobish, humble and umpretentious tool for process simulation using simultaneous equation solving
 
 ## Sloth aims to be:
 
